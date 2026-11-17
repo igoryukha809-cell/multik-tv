@@ -1,45 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; frame-src 'none'; base-uri 'none'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
-<meta name="referrer" content="no-referrer">
-<title>МУЛЬТИК ТВ — Профилактика</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#7132a8">
+<meta name="description" content="МУЛЬТИК ТВ — бесплатные инструменты для подготовки и локального воспроизведения детского телеканала.">
+<title>МУЛЬТИК ТВ — главный экран</title>
 <link rel="stylesheet" href="styles.css">
-<script src="player.js" defer></script>
+<style>
+.portal{max-width:980px;margin:auto;padding:12px}
+.hero{background:#fff;color:#30215b;border-radius:22px;padding:clamp(20px,5vw,36px);text-align:center;box-shadow:0 8px 25px #35136b55}
+.hero h1{font-size:clamp(32px,7vw,58px);margin:0 0 8px}
+.hero p{line-height:1.6}
+.state{display:inline-block;padding:8px 13px;border-radius:30px;background:#fff0c2;color:#714400;font-weight:800;font-size:13px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:16px 0}
+.tile{display:block;text-decoration:none;background:#fff;color:#30215b;border-radius:18px;padding:20px;box-shadow:0 6px 18px #35136b33;min-height:150px}
+.tile strong{display:block;font-size:20px;margin-bottom:8px}
+.tile span{line-height:1.5;font-size:14px}
+.info{background:#fff;color:#30215b;border-radius:18px;padding:18px;line-height:1.6}
+.info h2{margin-top:0}
+</style>
 </head>
 <body>
 <header>
 <div class="logo">🌈 МУЛЬТИК ТВ</div>
 <p>Волшебный мир любимых мультфильмов!</p>
 </header>
-<main>
-<section class="card">
-<h2>🛠️ Техническая профилактика</h2>
-<p class="status">● ВРЕМЕННО ПРИОСТАНОВЛЕНО · ИДЁТ ПРОФИЛАКТИКА</p>
-<div class="player">
-<div class="player-stage test-stage" role="img" aria-label="Заставка МУЛЬТИК ТВ: идут технические работы">
-<div class="orbit orbit-one">⭐</div>
-<div class="orbit orbit-two">☁️</div>
-<div class="test-content">
-<div class="test-mark">🌈 📺</div>
-<h3>МУЛЬТИК ТВ</h3>
-<p class="test-tagline">На канале профилактика</p>
-<div class="test-clock" id="test-clock">--:--:--</div>
-<span class="test-pill">ТЕХНИЧЕСКИЕ РАБОТЫ</span>
-</div>
-<div class="ticker"><span>МУЛЬТИК ТВ · ИДЁТ ПРОФИЛАКТИКА · ПРИНОСИМ ИЗВИНЕНИЯ ЗА ВРЕМЕННЫЕ НЕУДОБСТВА ·</span></div>
-</div>
-</div>
-<p class="player-label">Вещание временно приостановлено. На этой странице отображается информационная заставка о профилактике.</p>
-<p class="note">Это режим обслуживания сайта, а не подтверждение работы отдельного телевизионного видеопотока.</p>
-<p><a class="promo-link" href="stream.html">📺 Открыть плеер эфира</a></p>
-<p><a class="promo-link" href="voice-studio.html">🎙️ Открыть бесплатную студию озвучки</a></p>
-<p><a class="promo-link" href="montage-studio.html">🎬 Открыть бесплатную студию автомонтажа</a></p>
-<p><a class="promo-link" href="ai-studio.html">🌈 Открыть бесплатную AI-мастерскую</a></p>
+<main class="portal">
+<section class="hero">
+<div class="state">БЕСПЛАТНЫЙ РЕЖИМ · ПОДГОТОВКА ЭФИРА</div>
+<h1>Добро пожаловать!</h1>
+<p>Здесь можно собрать плейлист, настроить расписание, подготовить видео и озвучку. Файлы обрабатываются в браузере на твоём устройстве.</p>
+</section>
+<section class="tiles" aria-label="Инструменты канала">
+<a class="tile" href="free-broadcast.html"><strong>📺 Пульт эфира</strong><span>Добавляй свои видео, запускай плейлист и настраивай расписание локального воспроизведения.</span></a>
+<a class="tile" href="stream.html"><strong>▶️ Видеоплеер</strong><span>Проверяй публичные HTTPS-потоки HLS, MP4 и WebM, когда появится адрес работающего источника.</span></a>
+<a class="tile" href="montage-studio.html"><strong>🎬 Студия монтажа</strong><span>Собирай ролики, добавляй титры и музыку, экспортируй результат в поддерживаемом браузером формате.</span></a>
+<a class="tile" href="voice-studio.html"><strong>🎙️ Студия озвучки</strong><span>Подготавливай текст и переходи к бесплатным инструментам синтеза речи.</span></a>
+<a class="tile" href="ai-studio.html"><strong>✨ AI-мастерская</strong><span>Создавай сценарии, раскадровки и простые иллюстрации.</span></a>
+<a class="tile" href="stream-server/README.md"><strong>🛠️ Серверная инструкция</strong><span>Исходная конфигурация SRS и описание того, что потребуется для настоящего онлайн-эфира.</span></a>
+</section>
+<section class="info">
+<h2>Что уже можно делать бесплатно</h2>
+<ul>
+<li>Воспроизводить выбранные видео и собирать плейлист в открытом браузере.</li>
+<li>Настраивать расписание локального показа на этом устройстве.</li>
+<li>Монтировать собственные материалы и готовить заставки.</li>
+<li>Подготавливать сценарии, раскадровки и текст озвучки.</li>
+</ul>
+<h2>Важное уточнение</h2>
+<p>Сейчас это бесплатный набор веб-инструментов, а не подтверждённая круглосуточная трансляция для зрителей в интернете. Для публичного эфира нужен реально запущенный потоковый сервер и подходящий интернет-канал. Мы не подключаем платные ресурсы. Используй только видео, на публичный показ которых есть разрешение.</p>
 </section>
 </main>
-<footer>© МУЛЬТИК ТВ · Техническая профилактика</footer>
+<footer>© МУЛЬТИК ТВ · Бесплатные инструменты канала</footer>
 </body>
 </html>
