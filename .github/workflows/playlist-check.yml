@@ -1,0 +1,76 @@
+name: Check broadcast playlist
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17,47 * * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check repository
+        uses: actions/checkout@v4
+
+      - name: Validate playlist and write honest status
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          playlist_path = Path("broadcast/playlist.json")
+          status_path = Path("broadcast/status.json")
+          playlist = json.loads(playlist_path.read_text(encoding="utf-8"))
+          items = playlist.get("items", [])
+          now = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+          errors = []
+          for i, item in enumerate(items):
+              if not isinstance(item, dict):
+                  errors.append(f"Запись {i + 1}: ожидался объект")
+                  continue
+              for field in ("title", "url", "startAt", "endAt"):
+                  if not item.get(field):
+                      errors.append(f"Запись {i + 1}: нет поля {field}")
+              url = str(item.get("url", ""))
+              if not url.startswith("https://"):
+                  errors.append(f"Запись {i + 1}: ссылка должна начинаться с https://")
+              if item.get("rightsConfirmed") is not True:
+                  errors.append(f"Запись {i + 1}: не подтверждены права на публичный показ")
+
+          if errors:
+              state = "playlist_has_errors"
+              message = "Плейлист содержит ошибки. Исправь записи; эфир не запущен."
+          elif not items:
+              state = "not_configured"
+              message = "Плейлист пуст. Мониторинг работает, но видеотрансляции нет."
+          else:
+              state = "playlist_ready_server_required"
+              message = "Плейлист прошёл базовую проверку. Это не запускает видеосервер и не означает, что эфир идёт."
+
+          status = {
+              "channel": playlist.get("channel", "МУЛЬТИК ТВ"),
+              "state": state,
+              "checkedAt": now,
+              "activeItem": None,
+              "itemsChecked": len(items),
+              "errors": errors,
+              "message": message,
+              "streaming": False
+          }
+          status_path.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+          PY
+
+      - name: Save status
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add broadcast/status.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update broadcast readiness status"
+            git push
+          fi
