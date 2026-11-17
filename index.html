@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-XO2p3vY2uiYU0gDDT/9V2lUuqN1vxRDapChmjyAzWkc='; style-src 'sha256-c/RuND1h/PLG5QIpWxIU2RefIKTqJm8YNbWl9BGFQ8Y='; frame-src https://starlitetv.com; base-uri 'none'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
 <title>МУЛЬТИК ТВ — Детский телеканал</title>
 <style>
 *{box-sizing:border-box}
@@ -52,7 +54,7 @@ footer{text-align:center;padding:25px;color:#fff}
 <p>Впереди целый мир весёлых историй!</p><p><strong>Смотри любимые мультфильмы вместе с нами</strong></p>
 <button id="start-stream" disabled>Реклама · 5</button>
 </div>
-<iframe class="player-frame" id="stream-frame" title="Внешний прямой эфир мультфильмов Starlite TV" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" hidden></iframe>
+<iframe class="player-frame" id="stream-frame" title="Внешний прямой эфир мультфильмов Starlite TV" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" referrerpolicy="no-referrer" hidden></iframe>
 </div></div>
 <p class="player-label">Сначала короткая заставка МУЛЬТИК ТВ, затем откроется доступный внешний эфир.</p>
 <a class="watch" href="https://starlitetv.com/channel/cartoon" target="_blank" rel="noopener noreferrer">Открыть эфир отдельно</a>
