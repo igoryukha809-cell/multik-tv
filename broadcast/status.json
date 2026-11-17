@@ -1,7 +1,10 @@
 {
   "channel": "МУЛЬТИК ТВ",
   "state": "not_configured",
-  "checkedAt": null,
+  "checkedAt": "2026-11-17T20:29:46Z",
   "activeItem": null,
-  "message": "Плейлист пока пуст. Добавь лицензированные HTTPS-ссылки в broadcast/playlist.json."
+  "itemsChecked": 0,
+  "errors": [],
+  "message": "Плейлист пуст. Мониторинг работает, но видеотрансляции нет.",
+  "streaming": false
 }
