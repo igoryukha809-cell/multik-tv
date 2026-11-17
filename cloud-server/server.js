@@ -18,17 +18,21 @@ function send(res, status, body, type = 'application/json; charset=utf-8') {
     'X-Content-Type-Options': 'nosniff',
     'Access-Control-Allow-Origin': '*'
   });
-  res.end(body);
+  res.end(res.req && res.req.method === 'HEAD' ? undefined : body);
 }
 
 function safeFile(base, requestPath) {
-  const decoded = decodeURIComponent(requestPath);
+  let decoded;
+  try { decoded = decodeURIComponent(requestPath); } catch { return null; }
   const candidate = path.resolve(base, '.' + decoded);
   return candidate.startsWith(base + path.sep) ? candidate : null;
 }
 
 const server = http.createServer((req, res) => {
-  const url = new URL(req.url, 'http://localhost');
+  let url;
+  try { url = new URL(req.url, 'http://localhost'); } catch {
+    return send(res, 400, JSON.stringify({ error: 'Bad request URL' }));
+  }
 
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     return send(res, 405, JSON.stringify({ error: 'Method not allowed' }));
