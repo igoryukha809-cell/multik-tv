@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#25134d">
+<title>МУЛЬТИК ТВ Cloud — панель управления</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+main{max-width:900px;margin:auto;padding:16px}.panel{background:#fff;color:#25134d;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 6px 18px #180c3b33}
+h1{font-size:clamp(28px,6vw,42px);margin:8px 0}.muted{color:#625a78;line-height:1.5}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label{display:block;font-weight:700;margin:10px 0 6px}input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #c9c2d8;border-radius:10px;font:inherit}button,.action{display:inline-block;border:0;border-radius:10px;background:#6336a5;color:white;padding:12px 16px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;margin:8px 6px 0 0}
+.status{padding:12px;border-radius:12px;background:#f1edfa;font-weight:700;overflow-wrap:anywhere}.good{background:#e5f7e9;color:#145c29}.warn{background:#fff3d8;color:#704900}.bad{background:#ffe7e7;color:#851d1d}
+small{display:block;color:#625a78;margin-top:6px}
+</style>
+</head>
+<body>
+<header><div class="logo">🌈 МУЛЬТИК ТВ CLOUD</div><p>Бесплатная панель управления собственным сервером</p></header>
+<main>
+<section class="panel">
+<p class="muted">ПАНЕЛЬ ПРОВЕРКИ · БЕЗ ПЛАТНЫХ API</p>
+<h1>Состояние сервера</h1>
+<p class="muted">Укажи адрес уже запущенного сервера Node.js. Панель проверит его доступность и наличие HLS-плейлиста. Эта страница сама по себе не запускает облачный сервер.</p>
+<label for="base">Адрес сервера</label>
+<input id="base" type="url" placeholder="Например: https://твой-сервер.example" autocomplete="url">
+<small>Для локального теста можно указать http://localhost:8080</small>
+<button id="check">Проверить сервер</button>
+<div id="result" class="status warn" role="status" aria-live="polite">Сервер ещё не проверялся.</div>
+</section>
+<section class="grid">
+<div class="panel"><h2>🖥️ Процесс</h2><p id="process" class="muted">Нет данных</p></div>
+<div class="panel"><h2>📡 Видеопоток</h2><p id="stream" class="muted">Нет данных</p></div>
+</section>
+<section class="panel">
+<h2>Адреса сервера</h2>
+<p><strong>Проверка:</strong> <code>/health</code></p>
+<p><strong>Статус канала:</strong> <code>/api/channel</code></p>
+<p><strong>HLS-плейлист:</strong> <code>/hls/live.m3u8</code></p>
+<a class="action" href="tv.html">Открыть плеер</a>
+<a class="action" href="index.html">На главную</a>
+</section>
+<section class="panel">
+<h2>Что означает результат</h2>
+<ul>
+<li>«Сервер доступен» — отвечает программа Node.js.</li>
+<li>«Плейлист найден» — сервер видит файл HLS, но это ещё не доказывает, что видео воспроизводится.</li>
+<li>«Поток отсутствует» — нужно запустить источник видео и FFmpeg/SRS.</li>
+</ul>
+<p class="muted">Для реального публичного эфира нужны ресурсы хостинга, стабильный трафик и права на показ видео. Бесплатность исходного кода не означает, что любой хостинг предоставляет неограниченные вычисления и трафик.</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+$('check').addEventListener('click',async()=>{
+ let base=$('base').value.trim().replace(/\/$/,'');
+ if(!base){$('result').className='status warn';$('result').textContent='Сначала укажи адрес сервера.';return}
+ try{
+  $('check').disabled=true;$('result').className='status warn';$('result').textContent='Проверяем…';
+  const [h,c]=await Promise.all([fetch(base+'/health',{cache:'no-store'}),fetch(base+'/api/channel',{cache:'no-store'})]);
+  if(!h.ok||!c.ok)throw new Error('Сервер вернул HTTP '+(!h.ok?h.status:c.status));
+  const health=await h.json(),channel=await c.json();
+  $('result').className='status good';$('result').textContent='Сервер отвечает. Проверка завершена.';
+  $('process').textContent=health.status==='online'?'Работает':'Ответ получен: '+health.status;
+  $('stream').textContent=channel.broadcast==='playlist-found'?'HLS-плейлист найден: '+channel.playlist:'Поток пока не опубликован.';
+ }catch(e){
+  $('result').className='status bad';$('result').textContent='Не удалось проверить сервер: '+e.message+'. Проверь адрес и доступность сервера.';
+  $('process').textContent='Нет соединения';$('stream').textContent='Неизвестно';
+ }finally{$('check').disabled=false}
+});
+</script>
+</body>
+</html>
