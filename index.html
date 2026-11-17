@@ -15,6 +15,16 @@ main{max-width:900px;margin:auto;padding:12px}
 h2{margin-top:0}
 .player{background:#171329;border-radius:16px;overflow:hidden}
 iframe{width:100%;aspect-ratio:16/9;border:0;display:block;background:#080713}
+.player-stage{position:relative;aspect-ratio:16/9;background:#171329;overflow:hidden}
+.ad-screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:radial-gradient(circle at 20% 20%,#ffcf4a,transparent 35%),linear-gradient(130deg,#7438d5,#f33d91,#ff8a25);color:#fff}
+.ad-screen h3{font-size:clamp(24px,5vw,42px);margin:8px 0;text-shadow:2px 3px 0 #55228d}
+.ad-screen p{font-size:clamp(14px,2.4vw,19px);margin:6px 0}
+.ad-screen .ad-mark{font-size:clamp(38px,8vw,68px)}
+.ad-screen button{border:0;border-radius:12px;padding:12px 18px;font-weight:bold;font-size:15px;background:#fff;color:#7132a8}
+.ad-screen button:disabled{opacity:.7}
+.player-frame{width:100%;aspect-ratio:16/9;display:block}
+.player-frame[hidden],.ad-screen[hidden]{display:none}
+.player-label{font-size:12px;color:#d8d0ef;margin:8px 4px 0}
 .status{color:#16834a;font-weight:bold}
 .schedule{line-height:2}
 footer{text-align:center;padding:25px;color:#fff}
@@ -35,11 +45,21 @@ footer{text-align:center;padding:25px;color:#fff}
 <section class="card">
 <h2>📺 Прямой эфир</h2>
 <p class="status">● ВНЕШНИЙ ЭФИР · SATURDAY MORNING</p>
-<div class="player">
-<iframe src="https://starlitetv.com/channel/cartoon" title="Внешний прямой эфир мультфильмов Starlite TV" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="eager"></iframe>
+<div class="player" id="multik-player">
+<div class="player-stage">
+<div class="ad-screen" id="ad-screen">
+<div class="ad-mark">🌈 📺</div><h3>МУЛЬТИК ТВ</h3>
+<p>Впереди целый мир весёлых историй!</p><p><strong>Смотри любимые мультфильмы вместе с нами</strong></p>
+<button id="start-stream" disabled>Реклама · 5</button>
 </div>
+<iframe class="player-frame" id="stream-frame" title="Внешний прямой эфир мультфильмов Starlite TV" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" hidden></iframe>
+</div></div>
+<p class="player-label">Сначала короткая заставка МУЛЬТИК ТВ, затем откроется доступный внешний эфир.</p>
 <a class="watch" href="https://starlitetv.com/channel/cartoon" target="_blank" rel="noopener noreferrer">Открыть эфир отдельно</a>
-<p class="note">Трансляция предоставляется сторонним каналом Starlite TV и управляется им. Встроенный плеер может быть недоступен, если сторонний сервис запрещает показ на других сайтах. GitHub Pages бесплатно размещает сайт, но не является сервером для приёма и круглосуточной раздачи собственного видеопотока.</p>
+<p class="note">Это собственная оболочка плеера и рекламная заставка сайта. Сам видеопоток предоставляет и контролирует Starlite TV; вставить рекламу внутрь их трансляции без разрешения оператора нельзя. Встроенный эфир может быть недоступен, если сервис запрещает показ на других сайтах. GitHub Pages размещает сайт, но не является видеосервером.</p>
+<script>
+(function(){const ad=document.getElementById('ad-screen'),button=document.getElementById('start-stream'),frame=document.getElementById('stream-frame');let seconds=5;button.textContent='Реклама · '+seconds;const timer=setInterval(()=>{seconds--;if(seconds>0){button.textContent='Реклама · '+seconds;}else{clearInterval(timer);button.disabled=false;button.textContent='▶ Смотреть эфир';}},1000);button.addEventListener('click',()=>{if(button.disabled)return;ad.hidden=true;frame.src='https://starlitetv.com/channel/cartoon';frame.hidden=false;});})();
+</script>
 </section>
 <section class="promo">
 <h2>🎉 Встречайте «МУЛЬТИК ТВ»!</h2>
