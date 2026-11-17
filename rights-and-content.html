@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#171c38">
+<title>МУЛЬТИК ТВ — права на видео</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:22px;font:16px/1.6 system-ui,Arial,sans-serif;background:linear-gradient(145deg,#11172e,#293b69);color:#f7f8ff}
+main{max-width:900px;margin:auto}.panel{background:#1b2443;border:1px solid #46547f;border-radius:18px;padding:20px;margin:16px 0}
+h1{font-size:clamp(30px,6vw,46px);color:#ffdf65;line-height:1.1}h2{margin-top:0}p,li{color:#cbd4ef}a{color:#ffe17a}.note{border-left:4px solid #ffdf65;padding-left:14px}
+label{display:block;margin:12px 0 5px}input,textarea{width:100%;padding:11px;border-radius:9px;border:1px solid #53618b;background:#111a32;color:white;font:inherit}
+button{padding:11px 16px;border:0;border-radius:9px;background:#ffdf65;color:#171b2c;font-weight:800;margin-top:12px}
+</style></head><body><main>
+<a href="index.html">← На главную</a>
+<h1>Права на мультфильмы</h1>
+<p>Страница помогает проверить, можно ли законно включить конкретный ролик в публичный интернет-эфир «МУЛЬТИК ТВ».</p>
+<section class="panel">
+<h2>Главное правило</h2>
+<p class="note"><b>Бесплатно посмотреть видео — не значит получить право ретранслировать его.</b> Открытая публикация в интернете, возможность встроить ролик и право вести отдельный телеканал — разные вещи.</p>
+<p>Нужны права, охватывающие публичное онлайн-использование и трансляцию для зрителей. Проверяй также музыку, озвучку, изображения и другие сторонние элементы.</p>
+</section>
+<section class="panel">
+<h2>Где искать материалы с разрешённым повторным использованием</h2>
+<ul>
+<li><a href="https://creativecommons.org/share-your-work/cclicenses/" target="_blank" rel="noopener">Creative Commons — виды лицензий</a>: проверь точный тип лицензии и её условия.</li>
+<li><a href="https://morevnaproject.org/shorts/deadline/" target="_blank" rel="noopener">Morevna Project — «Дедлайн»</a>: на странице проекта указаны условия CC BY 4.0. Перед эфиром проверь лицензию именно скачиваемой версии и все компоненты.</li>
+<li><a href="https://archivesupport.zendesk.com/hc/en-us/articles/360017808151-Movies-and-Videos-A-Basic-Guide" target="_blank" rel="noopener">Internet Archive — руководство по фильмам</a>: архив предупреждает, что нужно проверять авторские права; наличие файла в архиве само по себе не даёт разрешения на использование.</li>
+</ul>
+<p>Даже отметка «public domain» требует проверки страны, даты, версии фильма, музыки и реставрации. Не добавляй материал в эфир, если условия непонятны.</p>
+</section>
+<section class="panel">
+<h2>Чек-лист перед добавлением фильма</h2>
+<ol>
+<li>Известны название, автор и правообладатель.</li>
+<li>Найдена лицензия или письменное разрешение на конкретную версию.</li>
+<li>Разрешена публичная онлайн-трансляция, а не только личный просмотр или встраивание.</li>
+<li>Понятны требования к указанию автора, ссылке на лицензию и изменениям.</li>
+<li>Отдельно проверены музыка, дубляж, субтитры и сторонние изображения.</li>
+<li>Сохранена копия лицензии или разрешения и дата проверки.</li>
+</ol>
+</section>
+<section class="panel">
+<h2>Карточка проверки</h2>
+<p>Заполни эти поля для собственного учёта. Эта форма работает только в браузере и никуда не отправляет данные.</p>
+<label for="name">Название фильма</label><input id="name" placeholder="Название">
+<label for="author">Автор / правообладатель</label><input id="author" placeholder="Имя или организация">
+<label for="license">Лицензия или ссылка на письменное разрешение</label><input id="license" placeholder="CC BY 4.0 или URL документа">
+<label for="scope">Что именно разрешено</label><textarea id="scope" rows="3" placeholder="Например: публичная онлайн-трансляция на сайте телеканала"></textarea>
+<button id="copy">Скопировать карточку проверки</button>
+<p id="status" aria-live="polite"></p>
+</section>
+<section class="panel">
+<h2>Важно</h2>
+<p>Это справочная памятка, а не юридическое заключение. Для спорных материалов попроси взрослого помочь проверить лицензию или получить разрешение у правообладателя.</p>
+<p><a href="online-catalog.html">Вернуться в каталог</a> · <a href="channel.html">Статус канала</a></p>
+</section>
+</main>
+<script>
+document.getElementById('copy').addEventListener('click',async()=>{const v=['Название: '+document.getElementById('name').value,'Автор/правообладатель: '+document.getElementById('author').value,'Лицензия/разрешение: '+document.getElementById('license').value,'Объём разрешения: '+document.getElementById('scope').value].join('\n');try{await navigator.clipboard.writeText(v);document.getElementById('status').textContent='Карточка скопирована.'}catch{document.getElementById('status').textContent='Не удалось скопировать автоматически. Выдели и скопируй заполненные поля вручную.'}});
+</script></body></html>
