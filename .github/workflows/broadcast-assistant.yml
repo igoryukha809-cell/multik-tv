@@ -1,0 +1,45 @@
+name: Multik TV broadcast assistant
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "broadcast/playlist.json"
+      - "scripts/check_broadcast.py"
+      - ".github/workflows/broadcast-assistant.yml"
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: multik-tv-broadcast-check
+  cancel-in-progress: true
+
+jobs:
+  check-playlist:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Get project files
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Check playlist and update channel status
+        run: python scripts/check_broadcast.py
+      - name: Save status if changed
+        run: |
+          if ! git diff --quiet -- broadcast/status.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add broadcast/status.json
+            git commit -m "chore: update automated broadcast status"
+            git push
+          else
+            echo "Broadcast status has not changed."
+          fi
