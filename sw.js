@@ -1,4 +1,4 @@
-const CACHE = 'multik-tv-shell-v3';
+const CACHE = 'multik-tv-shell-v4';
 const CORE = [
   './',
   './index.html',
