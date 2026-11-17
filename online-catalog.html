@@ -19,6 +19,11 @@ iframe{width:100%;height:100%;border:0}
 </style></head><body><main>
 <div class="brand">🌈 МУЛЬТИК ТВ</div><h1>Онлайн-студия мультфильмов</h1>
 <p>Выбирай ролик из официального источника и смотри его во встроенном плеере. Нужна обычная публичная ссылка на YouTube-видео.</p>
+<section class="panel"><h2>Первый мультфильм для просмотра</h2>
+<p><b>Big Buck Bunny (2008)</b> — короткий анимационный фильм Blender Foundation. Он опубликован по лицензии Creative Commons Attribution 3.0: для показа нужно указать авторство и сохранить полный финальный блок титров.</p>
+<div class="actions"><button id="start-bunny">▶ Запустить мультфильм</button><a class="source" href="https://peach.blender.org/about/" target="_blank" rel="noopener">Лицензия и условия показа ↗</a></div>
+<p class="small">Авторство: © copyright 2008, Blender Foundation / www.bigbuckbunny.org. Лицензия CC BY 3.0. Видео открывается с официального канала Blender.</p>
+</section>
 <section class="panel"><h2>Включить мультфильм по ссылке</h2>
 <label for="yt">Ссылка на YouTube</label><input id="yt" type="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
 <div class="actions"><button id="open">▶ Включить</button><button id="clear">Остановить</button></div>
@@ -43,6 +48,7 @@ function getId(raw){try{const u=new URL(raw);if(u.protocol!=='https:')return '';
 if(u.hostname==='youtu.be')id=u.pathname.split('/').filter(Boolean)[0]||'';
 else if(u.hostname==='youtube.com'||u.hostname.endsWith('.youtube.com')){if(u.pathname==='/watch')id=u.searchParams.get('v')||'';else if(/^\/(embed|shorts)\//.test(u.pathname))id=u.pathname.split('/')[2]||'';}
 return /^[A-Za-z0-9_-]{11}$/.test(id)?id:'';}catch{return '';}}
+document.getElementById('start-bunny').onclick=()=>{input.value='https://www.youtube.com/watch?v=aqz-KE-bpKQ';frame.src='https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ?autoplay=1&rel=0';status.textContent='Запущен Big Buck Bunny с официального канала Blender. Если воспроизведение не началось, нажми ▶ в плеере.';};
 document.getElementById('open').onclick=()=>{const id=getId(input.value.trim());if(!id){status.textContent='Не удалось распознать ссылку. Вставь обычную ссылку на YouTube-видео.';return;}frame.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';status.textContent='Видео открыто во встроенном плеере. Если оно запрещает встраивание, открой его на YouTube.';};
 document.getElementById('clear').onclick=()=>{frame.src='about:blank';status.textContent='Воспроизведение остановлено.';};
 })();
