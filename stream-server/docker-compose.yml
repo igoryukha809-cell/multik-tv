@@ -1,0 +1,34 @@
+services:
+  srs:
+    image: ossrs/srs:5
+    container_name: multik-tv-srs
+    restart: unless-stopped
+    command: ["./objs/srs", "-c", "conf/srs.conf"]
+    ports:
+      - "1935:1935"
+      - "8080:8080"
+    volumes:
+      - ./srs.conf:/usr/local/srs/conf/srs.conf:ro
+      - srs-hls:/usr/local/srs/objs/nginx/html
+    networks:
+      - tv
+
+  playlist:
+    build:
+      context: ./playlist
+    container_name: multik-tv-playlist
+    restart: unless-stopped
+    depends_on:
+      - srs
+    volumes:
+      - ./media:/media:ro
+    environment:
+      STREAM_URL: rtmp://srs/live/multiktv
+    networks:
+      - tv
+
+volumes:
+  srs-hls:
+
+networks:
+  tv:
