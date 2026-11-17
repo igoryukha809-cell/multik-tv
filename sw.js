@@ -1,4 +1,4 @@
-const CACHE = 'multik-tv-shell-v2';
+const CACHE = 'multik-tv-shell-v3';
 const CORE = [
   './',
   './index.html',
@@ -9,7 +9,11 @@ const CORE = [
   './channel.html',
   './cloud.html',
   './online-catalog.html',
-  './free-broadcast.html'
+  './free-broadcast.html',
+  './stream.html',
+  './montage-studio.html',
+  './voice-studio.html',
+  './ai-studio.html'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting()));
