@@ -1,7 +1,9 @@
-const CACHE = 'multik-tv-shell-v1';
+const CACHE = 'multik-tv-shell-v2';
 const CORE = [
   './',
   './index.html',
+  './manifest.webmanifest',
+  './icon.svg',
   './styles.css',
   './tv.html',
   './channel.html',
