@@ -21,12 +21,12 @@ iframe{width:100%;height:100%;border:0}
 <p>Выбирай ролик из официального источника и смотри его во встроенном плеере. Нужна обычная публичная ссылка на YouTube-видео.</p>
 <section class="panel"><h2>🇷🇺 Русские мультфильмы</h2>
 <p>Подборка на русском языке из официальных каналов. Здесь — отечественная анимация и мультфильмы других стран с русской озвучкой.</p>
-<div class="actions"><button id="start-soyuz">▶ Включить «Чемпионы»</button><a class="source" href="https://www.youtube.com/@soyuzmultfilm" target="_blank" rel="noopener">Официальный канал «Союзмультфильм» ↗</a></div>
+<div class="actions"><a class="source" href="https://www.youtube.com/@soyuzmultfilm" target="_blank" rel="noopener">Открыть официальный канал «Союзмультфильм» ↗</a></div>
 <p class="small">Отечественная анимация: «Простоквашино», «Ну, погоди!», «Оранжевая корова», «Зебра в клеточку» и другие подборки на канале студии.</p>
 </section>
 <section class="panel"><h2>🌍 Зарубежные мультфильмы с русской озвучкой</h2>
 <p><b>Покойо</b> — зарубежный мультсериал, опубликованный на официальном русскоязычном канале.</p>
-<div class="actions"><button id="start-pocoyo">▶ Включить «Покойо»</button><a class="source" href="https://www.youtube.com/@pocoyorussian" target="_blank" rel="noopener">Pocoyo — официальный канал на русском ↗</a></div>
+<div class="actions"><button id="start-pocoyo">▶ Включить «Покойо» на русском</button><a class="source" href="https://www.youtube.com/@pocoyorussian" target="_blank" rel="noopener">Pocoyo — официальный канал на русском ↗</a></div>
 <p class="small">Язык выпуска проверяется по описанию и дорожке конкретного видео. Если русская озвучка недоступна, такой выпуск не добавляем.</p>
 </section>
 <section class="panel"><h2>Включить мультфильм по ссылке</h2>
@@ -34,6 +34,10 @@ iframe{width:100%;height:100%;border:0}
 <div class="actions"><button id="open">▶ Включить</button><button id="clear">Остановить</button></div>
 <p class="small" id="status" aria-live="polite">Вставь ссылку на видео, которое доступно для встраивания.</p>
 <div class="frame"><iframe id="player" title="Встроенный видеоплеер YouTube" src="about:blank" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+</section>
+<section class="panel"><h2>🔧 Фиксики</h2>
+<p>Российский познавательный мультсериал. Выпуск «Стиральная машина» — на русском языке, на верифицированном канале Fixiki.</p>
+<div class="actions"><button id="start-fixiki">▶ Включить «Стиральная машина»</button><a class="source" href="https://www.youtube.com/@fixiki" target="_blank" rel="noopener">Канал Fixiki ↗</a></div>
 </section>
 <section class="panel"><h2>Правила каталога</h2>
 <p>В каталог добавляем только мультфильмы с русской речью: российские и советские мультфильмы, а также зарубежные мультфильмы с русским дубляжом или озвучкой.</p>
@@ -50,8 +54,8 @@ function getId(raw){try{const u=new URL(raw);if(u.protocol!=='https:')return '';
 if(u.hostname==='youtu.be')id=u.pathname.split('/').filter(Boolean)[0]||'';
 else if(u.hostname==='youtube.com'||u.hostname.endsWith('.youtube.com')){if(u.pathname==='/watch')id=u.searchParams.get('v')||'';else if(/^\/(embed|shorts)\//.test(u.pathname))id=u.pathname.split('/')[2]||'';}
 return /^[A-Za-z0-9_-]{11}$/.test(id)?id:'';}catch{return '';}}
-document.getElementById('start-soyuz').onclick=()=>{input.value='https://www.youtube.com/watch?v=mJkEj846Et4';frame.src='https://www.youtube-nocookie.com/embed/mJkEj846Et4?autoplay=1&rel=0';status.textContent='Открыт ролик с официального канала «Союзмультфильм».';};
-document.getElementById('start-pocoyo').onclick=()=>{input.value='https://www.youtube.com/watch?v=jOcai_ZPiL0';frame.src='https://www.youtube-nocookie.com/embed/jOcai_ZPiL0?autoplay=1&rel=0';status.textContent='Открыт выпуск «Покойо» на официальном русскоязычном канале.';};
+document.getElementById('start-pocoyo').onclick=()=>{input.value='https://www.youtube.com/watch?v=2MD1rxUl4_E';frame.src='https://www.youtube-nocookie.com/embed/2MD1rxUl4_E?autoplay=1&rel=0';status.textContent='Запущен выпуск «Покойо» на русском с официального канала.';};
+document.getElementById('start-fixiki').onclick=()=>{input.value='https://www.youtube.com/watch?v=eozoK9RPHJc';frame.src='https://www.youtube-nocookie.com/embed/eozoK9RPHJc?autoplay=1&rel=0';status.textContent='Запущен выпуск «Фиксики — Стиральная машина» на русском.';};
 document.getElementById('open').onclick=()=>{const id=getId(input.value.trim());if(!id){status.textContent='Не удалось распознать ссылку. Вставь обычную ссылку на YouTube-видео.';return;}frame.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';status.textContent='Видео открыто во встроенном плеере. Если оно запрещает встраивание, открой его на YouTube.';};
 document.getElementById('clear').onclick=()=>{frame.src='about:blank';status.textContent='Воспроизведение остановлено.';};
 })();
