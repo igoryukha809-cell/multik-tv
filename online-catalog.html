@@ -29,6 +29,11 @@ iframe{width:100%;height:100%;border:0}
 <div class="actions"><button id="start-pocoyo">▶ Включить «Покойо» на русском</button><a class="source" href="https://www.youtube.com/@pocoyorussian" target="_blank" rel="noopener">Pocoyo — официальный канал на русском ↗</a></div>
 <p class="small">Язык выпуска проверяется по описанию и дорожке конкретного видео. Если русская озвучка недоступна, такой выпуск не добавляем.</p>
 </section>
+<section class="panel"><h2>🧽 Губка Боб Квадратные Штаны</h2>
+<p>Зарубежный мультсериал с русскоязычным выпуском на канале Nickelodeon Cyrillic.</p>
+<div class="actions"><button id="start-spongebob">▶ Смотреть «Клуб Губки Боба»</button><a class="source" href="https://www.youtube.com/@nickelodeoncyrillic" target="_blank" rel="noopener">Канал Nickelodeon Cyrillic ↗</a></div>
+<p class="small">Видео открывается с исходного YouTube-канала. Встраивание зависит от доступности ролика и настроек правообладателя. Это просмотр, а не разрешение на отдельную ретрансляцию.</p>
+</section>
 <section class="panel"><h2>Включить мультфильм по ссылке</h2>
 <label for="yt">Ссылка на YouTube</label><input id="yt" type="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
 <div class="actions"><button id="open">▶ Включить</button><button id="clear">Остановить</button></div>
@@ -54,6 +59,7 @@ function getId(raw){try{const u=new URL(raw);if(u.protocol!=='https:')return '';
 if(u.hostname==='youtu.be')id=u.pathname.split('/').filter(Boolean)[0]||'';
 else if(u.hostname==='youtube.com'||u.hostname.endsWith('.youtube.com')){if(u.pathname==='/watch')id=u.searchParams.get('v')||'';else if(/^\/(embed|shorts)\//.test(u.pathname))id=u.pathname.split('/')[2]||'';}
 return /^[A-Za-z0-9_-]{11}$/.test(id)?id:'';}catch{return '';}}
+document.getElementById('start-spongebob').onclick=()=>{input.value='https://www.youtube.com/watch?v=iguB3BKGSLo';frame.src='https://www.youtube-nocookie.com/embed/iguB3BKGSLo?autoplay=1&rel=0';status.textContent='Открыт выпуск «Клуб Губки Боба» с канала Nickelodeon Cyrillic.';};
 document.getElementById('start-pocoyo').onclick=()=>{input.value='https://www.youtube.com/watch?v=2MD1rxUl4_E';frame.src='https://www.youtube-nocookie.com/embed/2MD1rxUl4_E?autoplay=1&rel=0';status.textContent='Запущен выпуск «Покойо» на русском с официального канала.';};
 document.getElementById('start-fixiki').onclick=()=>{input.value='https://www.youtube.com/watch?v=eozoK9RPHJc';frame.src='https://www.youtube-nocookie.com/embed/eozoK9RPHJc?autoplay=1&rel=0';status.textContent='Запущен выпуск «Фиксики — Стиральная машина» на русском.';};
 document.getElementById('open').onclick=()=>{const id=getId(input.value.trim());if(!id){status.textContent='Не удалось распознать ссылку. Вставь обычную ссылку на YouTube-видео.';return;}frame.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';status.textContent='Видео открыто во встроенном плеере. Если оно запрещает встраивание, открой его на YouTube.';};
