@@ -1,0 +1,7 @@
+{
+  "channel": "МУЛЬТИК ТВ",
+  "state": "not_configured",
+  "checkedAt": null,
+  "activeItem": null,
+  "message": "Плейлист пока пуст. Добавь лицензированные HTTPS-ссылки в broadcast/playlist.json."
+}
