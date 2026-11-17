@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self'; style-src 'self'; media-src 'self' blob:; img-src 'self' blob: data:; connect-src 'self'; object-src 'none'; base-uri 'self'">
+<title>МУЛЬТИК ТВ — Автомонтаж</title><link rel="stylesheet" href="montage-studio.css"><script src="montage-studio.js" defer></script></head>
+<body><header><a href="index.html">← МУЛЬТИК ТВ</a><h1>🎬 МУЛЬТИК ТВ — Автомонтаж</h1><p>Бесплатная монтажная студия прямо в браузере</p></header>
+<main>
+<section class="panel"><h2>1. Добавь материалы</h2><p>Выбери свои видео, картинки и музыку. Файлы остаются на твоём устройстве и никуда не загружаются.</p>
+<label class="pick">＋ Добавить видео и картинки<input id="mediaFiles" type="file" accept="video/*,image/*" multiple></label>
+<label class="pick secondary">♫ Добавить музыку<input id="musicFile" type="file" accept="audio/*"></label>
+<div id="clipList" class="clips"><p class="empty">Пока нет материалов. Добавь несколько файлов.</p></div></section>
+<section class="panel"><h2>2. Настрой мультфильм</h2>
+<div class="grid"><label>Название мультфильма<input id="movieTitle" value="Приключения Радужки"></label>
+<label>Подпись на экране<input id="caption" value="Волшебная звёздочка"></label>
+<label>Длительность показа картинки (сек.)<input id="imageDuration" type="number" min="2" max="30" value="5"></label>
+<label>Переход между сценами<select id="transition"><option value="fade">Плавное растворение</option><option value="cut">Без перехода</option></select></label>
+<label>Формат кадра<select id="aspect"><option value="16:9">Широкий 16:9</option><option value="9:16">Вертикальный 9:16</option><option value="1:1">Квадрат 1:1</option></select></label>
+<label class="check"><input id="showCaption" type="checkbox" checked> Показывать название и подпись</label></div>
+<div class="actions"><button id="autoBtn">✨ Собрать черновой монтаж</button><button id="playBtn" class="secondary" disabled>▶ Предпросмотр</button><button id="stopBtn" class="secondary" disabled>■ Стоп</button></div>
+<p id="status" class="status" aria-live="polite">Добавь материалы, затем нажми «Собрать черновой монтаж».</p></section>
+<section class="panel"><h2>3. Предпросмотр и экспорт</h2><div class="screen"><canvas id="preview" width="1280" height="720"></canvas></div>
+<div class="actions"><button id="exportBtn" disabled>⬇ Экспортировать видео (WebM)</button><a id="download" hidden>Скачать готовый мультфильм</a></div>
+<p class="hint">Экспорт идёт в реальном времени: 1 минута мультфильма может собираться около минуты. Не закрывай вкладку. Экспорт создаёт WebM; MP4 и профессиональный монтаж звука пока не поддерживаются.</p></section>
+<section class="panel"><h2>Что здесь значит «автомонтаж»?</h2><p>Студия автоматически собирает выбранные сцены в последовательность, задаёт длительность изображениям, добавляет переходы, титр и звук из видео/музыкального файла. Это бесплатный браузерный монтажный помощник, а не обученная нейросеть: он не понимает сюжет и не выбирает лучшие моменты как профессиональный AI-редактор.</p><p>Для полноценного мультфильма добавь готовые сцены, озвученные реплики и музыку. Студия соберёт их в один ролик.</p></section>
+</main><footer>МУЛЬТИК ТВ · Файлы обрабатываются локально в браузере</footer></body></html>
