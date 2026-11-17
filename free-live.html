@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Бесплатный запуск — МУЛЬТИК ТВ</title>
+<style>
+:root{color-scheme:dark;--bg:#10152b;--panel:#1b2444;--accent:#ffd54a;--muted:#bdc7e8}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(140deg,#10152b,#263b68);color:#fff;font:16px/1.55 system-ui,Arial,sans-serif}
+main{max-width:900px;margin:auto;padding:28px 18px 60px}h1{font-size:clamp(2rem,6vw,3.3rem);line-height:1.1;margin:.3em 0;color:var(--accent)}
+h2{margin-top:0}p{color:var(--muted)}.panel{background:var(--panel);padding:22px;border-radius:18px;margin:18px 0;box-shadow:0 8px 30px #0003}
+a.btn{display:inline-block;background:var(--accent);color:#171b2e;text-decoration:none;font-weight:800;padding:12px 18px;border-radius:12px;margin:6px 8px 6px 0}
+a.secondary{background:#35436d;color:#fff}.tag{display:inline-block;padding:4px 9px;border-radius:30px;background:#39466e;color:#fff;font-size:.85rem}
+li{margin:9px 0}code{color:#ffe58b;overflow-wrap:anywhere}.warning{border-left:4px solid #ffca4b;padding-left:14px}
+</style>
+</head>
+<body><main>
+<span class="tag">МУЛЬТИК ТВ · бесплатный режим</span>
+<h1>Запуск эфира</h1>
+<p>Пульт для бесплатного тестового показа и подготовки настоящего онлайн-канала.</p>
+<section class="panel">
+<h2>Что можно запустить прямо сейчас</h2>
+<p>Локальный показ видеофайлов в браузере. Он бесплатный и не требует сервера, но видео увидит только тот, кто сам открыл пульт и выбрал свои файлы.</p>
+<a class="btn" href="./free-broadcast.html">Открыть бесплатный пульт</a>
+<a class="btn secondary" href="./tv.html">Открыть ТВ-плеер</a>
+</section>
+<section class="panel">
+<h2>Подготовка общего интернет-эфира</h2>
+<ol>
+<li><b>Контент.</b> Используй только собственные мультфильмы или материалы, для которых письменно разрешена публичная онлайн-трансляция. Сохраняй ссылку на лицензию и имя правообладателя.</li>
+<li><b>Видеосервер.</b> Для общего потока нужен постоянно работающий компьютер или хостинг с поддержкой потокового видео. Бесплатный статический GitHub Pages этого не предоставляет.</li>
+<li><b>Поток.</b> Сервер должен принимать видео и выдавать зрителям HLS/HTTPS-плейлист. Плеер сайта уже предназначен для воспроизведения готового HLS/MP4-адреса.</li>
+<li><b>Проверка.</b> Сначала проверь эфир в закрытом тесте. Не публикуй домашний IP, не открывай порты роутера и не подключай неизвестные файлы/сервисы без помощи взрослого.</li>
+</ol>
+<p class="warning"><b>Важно:</b> этот сайт и GitHub Actions не создают непрерывный видеопоток. Автопроверка плейлиста — это мониторинг, а не трансляция.</p>
+<a class="btn secondary" href="./stream.html">Проверить готовый HLS-поток</a>
+<a class="btn secondary" href="./broadcast-assistant.html">Открыть помощник эфира</a>
+</section>
+<section class="panel">
+<h2>Проверка перед публикацией</h2>
+<ul>
+<li>Есть подтверждённые права на каждый фильм.</li>
+<li>Источник видео стабилен и разрешает встраивание/публичный показ.</li>
+<li>Есть постоянный видеосервер и понятный ответственный взрослый.</li>
+<li>HLS-адрес открывается в плеере с другого устройства.</li>
+<li>На странице канала честно указано, идёт ли эфир или это тест.</li>
+</ul>
+<p>Пока эти условия не выполнены, канал не должен показывать статус «В эфире».</p>
+</section>
+</main></body></html>
