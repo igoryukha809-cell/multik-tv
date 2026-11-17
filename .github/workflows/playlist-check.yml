@@ -62,7 +62,7 @@ jobs:
               "message": message,
               "streaming": False
           }
-          status_path.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+          status_path.write_text(json.dumps(status, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
           PY
 
       - name: Save status
