@@ -19,10 +19,15 @@ iframe{width:100%;height:100%;border:0}
 </style></head><body><main>
 <div class="brand">🌈 МУЛЬТИК ТВ</div><h1>Онлайн-студия мультфильмов</h1>
 <p>Выбирай ролик из официального источника и смотри его во встроенном плеере. Нужна обычная публичная ссылка на YouTube-видео.</p>
-<section class="panel"><h2>Первый мультфильм для просмотра</h2>
-<p><b>Big Buck Bunny (2008)</b> — короткий анимационный фильм Blender Foundation. Он опубликован по лицензии Creative Commons Attribution 3.0: для показа нужно указать авторство и сохранить полный финальный блок титров.</p>
-<div class="actions"><button id="start-bunny">▶ Запустить мультфильм</button><a class="source" href="https://peach.blender.org/about/" target="_blank" rel="noopener">Лицензия и условия показа ↗</a></div>
-<p class="small">Авторство: © copyright 2008, Blender Foundation / www.bigbuckbunny.org. Лицензия CC BY 3.0. Видео открывается с официального канала Blender.</p>
+<section class="panel"><h2>🇷🇺 Русские мультфильмы</h2>
+<p>Подборка на русском языке из официальных каналов. Здесь — отечественная анимация и мультфильмы других стран с русской озвучкой.</p>
+<div class="actions"><button id="start-soyuz">▶ Включить «Чемпионы»</button><a class="source" href="https://www.youtube.com/@soyuzmultfilm" target="_blank" rel="noopener">Официальный канал «Союзмультфильм» ↗</a></div>
+<p class="small">Отечественная анимация: «Простоквашино», «Ну, погоди!», «Оранжевая корова», «Зебра в клеточку» и другие подборки на канале студии.</p>
+</section>
+<section class="panel"><h2>🌍 Зарубежные мультфильмы с русской озвучкой</h2>
+<p><b>Покойо</b> — зарубежный мультсериал, опубликованный на официальном русскоязычном канале.</p>
+<div class="actions"><button id="start-pocoyo">▶ Включить «Покойо»</button><a class="source" href="https://www.youtube.com/@pocoyorussian" target="_blank" rel="noopener">Pocoyo — официальный канал на русском ↗</a></div>
+<p class="small">Язык выпуска проверяется по описанию и дорожке конкретного видео. Если русская озвучка недоступна, такой выпуск не добавляем.</p>
 </section>
 <section class="panel"><h2>Включить мультфильм по ссылке</h2>
 <label for="yt">Ссылка на YouTube</label><input id="yt" type="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
@@ -30,12 +35,9 @@ iframe{width:100%;height:100%;border:0}
 <p class="small" id="status" aria-live="polite">Вставь ссылку на видео, которое доступно для встраивания.</p>
 <div class="frame"><iframe id="player" title="Встроенный видеоплеер YouTube" src="about:blank" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
 </section>
-<section class="panel"><h2>Бесплатные источники</h2>
-<a class="source" href="https://www.youtube.com/@soyuzmultfilm" target="_blank" rel="noopener">Официальный канал «Союзмультфильм» на YouTube ↗</a>
-<a class="source" href="https://archive.org/details/animationandcartoons" target="_blank" rel="noopener">Internet Archive — коллекция анимации ↗</a>
-<a class="source" href="https://www.pubtoons.com/" target="_blank" rel="noopener">PubToons — каталог анимации общественного достояния ↗</a>
-<a class="source" href="https://www.emol.org/movies/cartoons/" target="_blank" rel="noopener">EMOL — подборка мультфильмов, заявленных как public domain ↗</a>
-<p class="small">Перед публичным показом проверяй права на конкретный ролик, включая музыку, озвучку, перевод и территорию. Пометка «бесплатно смотреть» не даёт права ретранслировать его в собственном канале.</p>
+<section class="panel"><h2>Правила каталога</h2>
+<p>В каталог добавляем только мультфильмы с русской речью: российские и советские мультфильмы, а также зарубежные мультфильмы с русским дубляжом или озвучкой.</p>
+<p>Используем официальные каналы и встроенный просмотр оригинального видео. Наличие видео в открытом доступе не означает разрешения на отдельную публичную ретрансляцию телеканалом.</p>
 </section>
 <section class="panel"><h2>Что важно знать</h2>
 <p>Этот плеер встраивает видео с исходного сервиса и не скачивает его. Доступность зависит от настроек правообладателя, региона и правил площадки. Встроенное видео может быть недоступно для некоторых роликов.</p>
@@ -48,7 +50,8 @@ function getId(raw){try{const u=new URL(raw);if(u.protocol!=='https:')return '';
 if(u.hostname==='youtu.be')id=u.pathname.split('/').filter(Boolean)[0]||'';
 else if(u.hostname==='youtube.com'||u.hostname.endsWith('.youtube.com')){if(u.pathname==='/watch')id=u.searchParams.get('v')||'';else if(/^\/(embed|shorts)\//.test(u.pathname))id=u.pathname.split('/')[2]||'';}
 return /^[A-Za-z0-9_-]{11}$/.test(id)?id:'';}catch{return '';}}
-document.getElementById('start-bunny').onclick=()=>{input.value='https://www.youtube.com/watch?v=aqz-KE-bpKQ';frame.src='https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ?autoplay=1&rel=0';status.textContent='Запущен Big Buck Bunny с официального канала Blender. Если воспроизведение не началось, нажми ▶ в плеере.';};
+document.getElementById('start-soyuz').onclick=()=>{input.value='https://www.youtube.com/watch?v=mJkEj846Et4';frame.src='https://www.youtube-nocookie.com/embed/mJkEj846Et4?autoplay=1&rel=0';status.textContent='Открыт ролик с официального канала «Союзмультфильм».';};
+document.getElementById('start-pocoyo').onclick=()=>{input.value='https://www.youtube.com/watch?v=jOcai_ZPiL0';frame.src='https://www.youtube-nocookie.com/embed/jOcai_ZPiL0?autoplay=1&rel=0';status.textContent='Открыт выпуск «Покойо» на официальном русскоязычном канале.';};
 document.getElementById('open').onclick=()=>{const id=getId(input.value.trim());if(!id){status.textContent='Не удалось распознать ссылку. Вставь обычную ссылку на YouTube-видео.';return;}frame.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';status.textContent='Видео открыто во встроенном плеере. Если оно запрещает встраивание, открой его на YouTube.';};
 document.getElementById('clear').onclick=()=>{frame.src='about:blank';status.textContent='Воспроизведение остановлено.';};
 })();
