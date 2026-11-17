@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'">
+<meta name="referrer" content="no-referrer">
+<title>МУЛЬТИК ТВ — Бесплатная AI-мастерская</title>
+<link rel="stylesheet" href="ai-studio.css"><script src="ai-studio.js" defer></script>
+</head>
+<body>
+<header><a href="index.html">← МУЛЬТИК ТВ</a><h1>🌈 Бесплатная AI-мастерская</h1><p>Набор творческих инструментов для мультфильмов</p></header>
+<main>
+<section class="intro"><h2>Пять инструментов в одной мастерской</h2><p>Инструменты работают бесплатно в браузере. Некоторые используют встроенные возможности устройства или обычные алгоритмы — это не то же самое, что собственная обученная нейросеть.</p></section>
+<nav class="tabs" aria-label="Инструменты">
+<button class="tab active" data-tab="script">📝 Сценарий</button><button class="tab" data-tab="voice">🎙️ Озвучка</button><button class="tab" data-tab="image">🎨 Иллюстрация</button><button class="tab" data-tab="video">🎞️ Видеоанализ</button><button class="tab" data-tab="edit">✂️ Автомонтаж</button>
+</nav>
+<section class="panel tool active" id="tool-script">
+<h2>1. Помощник сценариста</h2><p class="note">Собирает черновик сцены по твоим вводным. Это шаблонный помощник, а не языковая нейросеть.</p>
+<label>Название мультфильма<input id="story-title" value="Приключения Радужки"></label>
+<label>Герои<input id="story-heroes" value="Радужка, Бублик, Пик"></label>
+<label>Тема серии<input id="story-topic" value="Друзья помогают потерявшейся звёздочке"></label>
+<label>Место действия<input id="story-place" value="Волшебный лес"></label>
+<button id="make-script">Создать черновик сцены</button><textarea id="script-output" rows="12" placeholder="Здесь появится сценарий…"></textarea>
+<button class="secondary" id="copy-script">Скопировать сценарий</button>
+</section>
+<section class="panel tool" id="tool-voice">
+<h2>2. Студия озвучки</h2><p class="note">Использует голоса, доступные в браузере и на устройстве. Наличие естественных русских голосов зависит от Android/браузера; отдельная голосовая модель на сайт не загружается.</p>
+<label>Текст реплики<textarea id="voice-text" rows="5">Радужка: Какой чудесный сегодня день! Интересно, какие приключения нас ждут?</textarea></label>
+<label>Голос устройства<select id="voice-select"><option value="">Автоматически выбрать русский голос</option></select></label>
+<div class="actions"><button id="speak">▶ Озвучить</button><button class="secondary" id="stop-speech">■ Остановить</button></div><p id="voice-status" class="note" aria-live="polite">Проверяю доступные голоса…</p>
+</section>
+<section class="panel tool" id="tool-image">
+<h2>3. Конструктор иллюстраций</h2><p class="note">Создаёт оригинальную простую картинку из фигур и цветов по выбранной теме. Это генератор на Canvas, не текстовая нейросеть и не фотореалистичная генерация.</p>
+<label>Тема<select id="art-theme"><option value="rainbow">Радужный мир</option><option value="star">Волшебная звёздочка</option><option value="forest">Сказочный лес</option><option value="cloud">Облачный город</option></select></label>
+<label>Надпись на картинке<input id="art-title" value="Приключения Радужки"></label>
+<canvas id="art-canvas" width="1200" height="675"></canvas><div class="actions"><button id="make-art">Создать иллюстрацию</button><button class="secondary" id="save-art">Скачать PNG</button></div>
+</section>
+<section class="panel tool" id="tool-video">
+<h2>4. Анализ видео и кадров</h2><p>В существующей студии можно загрузить свои видео и изображения, посмотреть яркость, насыщенность цветов, детали и ориентировочную выразительность кадров. Анализатор не распознаёт персонажей и не понимает сюжет.</p><a class="biglink" href="montage-studio.html#aiBtn">Открыть анализатор кадров →</a>
+</section>
+<section class="panel tool" id="tool-edit">
+<h2>5. Умный автомонтаж</h2><p>Собирает видео и картинки в последовательность, помогает выбрать динамичные фрагменты и экспортирует результат в WebM. Подбор сцен основан на анализе движения, а не на понимании истории.</p><a class="biglink" href="montage-studio.html">Открыть монтажную студию →</a>
+</section>
+<section class="panel"><h2>Что здесь действительно работает</h2><ul><li>Сценарный шаблон создаёт редактируемый черновик.</li><li>Озвучка запускает доступные голоса устройства.</li><li>Конструктор рисует и сохраняет PNG.</li><li>Анализ кадров и монтаж находятся в отдельной студии.</li></ul><p class="note">Это первая версия мастерской. Настоящее распознавание объектов, генерация изображений нейросетью и генерация речи отдельными моделями пока не встроены. Для них нужно отдельно подключить и проверить открытые модели, размер загрузки, лицензии и совместимость с телефоном.</p></section>
+</main><footer>МУЛЬТИК ТВ · Бесплатные инструменты · Обработка локально в браузере</footer>
+</body></html>
