@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10152b">
+<title>Мультик-Бот — умный каталог МУЛЬТИК ТВ</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,Arial,sans-serif;background:#0b1023;color:#f7f8ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#443477,#0b1023 65%);min-height:100vh}
+header,main,footer{max-width:1000px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+a{color:#ffe17a}h1{font-size:clamp(30px,6vw,46px);margin:20px 0 8px}.tag{display:inline-block;padding:7px 12px;border-radius:30px;background:#174b3c;color:#baffdc;font-weight:800;font-size:12px}
+.panel,.film{background:#171f3b;border:1px solid #39466f;border-radius:16px;padding:18px;margin:14px 0}
+p{color:#c7d1ee;line-height:1.55}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.film h2{font-size:19px;margin:0 0 8px}.film p{font-size:14px}.film a,.btn{display:inline-block;border:0;border-radius:10px;padding:10px 13px;background:#ffe17a;color:#1b2033;font-weight:850;text-decoration:none}
+button{cursor:pointer}.muted{color:#aab8df;font-size:13px}.status{color:#baffdc;font-weight:700}.pill{color:#baffdc;font-size:12px;font-weight:800}
+</style></head>
+<body>
+<header><div class="top"><b style="color:#ffe17a">🌈 МУЛЬТИК ТВ · МУЛЬТИК-БОТ</b><a href="index.html">← На главную</a></div>
+<h1>Умный поиск мультфильмов</h1><span class="tag">БЕСПЛАТНЫЙ ПРОТОТИП · БЕЗ РЕГИСТРАЦИИ</span></header>
+<main>
+<section class="panel"><h2>🤖 Что умеет бот</h2>
+<p>Это первая версия умного помощника: он показывает подборку анимации из открытых проектов, помогает выбрать материал и ведёт на страницу правообладателя или архива. Подборка ограничена произведениями, опубликованными как общественное достояние или по открытым лицензиям.</p>
+<p><b>Честно о возможностях:</b> это пока не обученная нейросеть и не автономный поисковый сервер. Статический сайт не может сам непрерывно обходить интернет, проверять все лицензии или вести общий круглосуточный эфир. Сейчас здесь — проверенная вручную стартовая подборка и ссылки на первоисточники.</p>
+<p class="status" id="status">Бот готов. Выбери мультфильм для просмотра у официального источника.</p></section>
+<section class="grid">
+<article class="film"><div class="pill">CREATIVE COMMONS · CC BY 3.0</div><h2>🐰 Big Buck Bunny</h2><p>Короткий анимационный фильм Blender Foundation. Для повторного использования нужно соблюдать условия лицензии и указывать авторство.</p><a href="https://www.blender.org/about/projects/" target="_blank" rel="noopener">Открыть проекты Blender</a></article>
+<article class="film"><div class="pill">CREATIVE COMMONS · CC BY 3.0</div><h2>🐉 Sintel</h2><p>Анимационный фильм Blender Foundation. Перед публичным показом проверь актуальные условия лицензии и атрибуцию.</p><a href="https://www.blender.org/about/projects/" target="_blank" rel="noopener">Открыть проекты Blender</a></article>
+<article class="film"><div class="pill">ОТКРЫТЫЙ КАТАЛОГ</div><h2>🎬 Open Animation</h2><p>Каталог открытых анимационных фильмов с указанием архивов и сведений о лицензиях у отдельных произведений.</p><a href="https://www.thestudio.io/osvideo/" target="_blank" rel="noopener">Открыть каталог</a></article>
+</section>
+<section class="panel"><h2>🛡️ Проверка перед эфиром</h2><p>Бот не должен считать ролик разрешённым только потому, что он бесплатен для просмотра. Перед добавлением в общий эфир нужно открыть карточку конкретного произведения и проверить: статус общественного достояния или лицензию, разрешение на публичный показ, требования к указанию автора и ограничения на коммерческое использование.</p><p class="muted">Пока бот не запускает найденные ролики автоматически и не включает их в общий поток. Ссылки открывают первоисточники, а не копируют видео.</p><a class="btn" href="tv.html">Перейти к плееру МУЛЬТИК ТВ</a></section>
+</main><footer class="muted">МУЛЬТИК ТВ · Мультик-Бот — экспериментальный каталог открытой анимации.</footer>
+</body></html>
