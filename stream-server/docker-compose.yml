@@ -2,7 +2,9 @@ services:
   srs:
     image: ossrs/srs:5
     container_name: multik-tv-srs
+    init: true
     restart: unless-stopped
+    stop_grace_period: 20s
     command: ["./objs/srs", "-c", "conf/srs.conf"]
     ports:
       - "1935:1935"
@@ -12,20 +14,34 @@ services:
       - srs-hls:/usr/local/srs/objs/nginx/html
     networks:
       - tv
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   playlist:
     build:
       context: ./playlist
     container_name: multik-tv-playlist
+    init: true
     restart: unless-stopped
+    stop_grace_period: 30s
     depends_on:
       - srs
     volumes:
       - ./media:/media:ro
     environment:
       STREAM_URL: rtmp://srs/live/multiktv
+      WAIT_SECONDS: "5"
+      RETRY_SECONDS: "10"
     networks:
       - tv
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   srs-hls:
