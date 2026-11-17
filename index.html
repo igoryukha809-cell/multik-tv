@@ -3,40 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-XO2p3vY2uiYU0gDDT/9V2lUuqN1vxRDapChmjyAzWkc='; style-src 'sha256-c/RuND1h/PLG5QIpWxIU2RefIKTqJm8YNbWl9BGFQ8Y='; frame-src https://starlitetv.com; base-uri 'none'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; frame-src https://starlitetv.com; base-uri 'none'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <title>МУЛЬТИК ТВ — Детский телеканал</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;color:#fff;background:linear-gradient(135deg,#3917a5,#ed54b8,#ffb43d);min-height:100vh}
-header{text-align:center;padding:28px 12px}
-.logo{font-size:clamp(35px,8vw,65px);font-weight:900;text-shadow:3px 4px 0 #6530a0}
-header p{font-size:18px}
-main{max-width:900px;margin:auto;padding:12px}
-.card{background:#fff;color:#30215b;border-radius:22px;padding:20px;margin-bottom:18px;box-shadow:0 8px 25px #35136b55}
-h2{margin-top:0}
-.player{background:#171329;border-radius:16px;overflow:hidden}
-iframe{width:100%;aspect-ratio:16/9;border:0;display:block;background:#080713}
-.player-stage{position:relative;aspect-ratio:16/9;background:#171329;overflow:hidden}
-.ad-screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;background:radial-gradient(circle at 20% 20%,#ffcf4a,transparent 35%),linear-gradient(130deg,#7438d5,#f33d91,#ff8a25);color:#fff}
-.ad-screen h3{font-size:clamp(24px,5vw,42px);margin:8px 0;text-shadow:2px 3px 0 #55228d}
-.ad-screen p{font-size:clamp(14px,2.4vw,19px);margin:6px 0}
-.ad-screen .ad-mark{font-size:clamp(38px,8vw,68px)}
-.ad-screen button{border:0;border-radius:12px;padding:12px 18px;font-weight:bold;font-size:15px;background:#fff;color:#7132a8}
-.ad-screen button:disabled{opacity:.7}
-.player-frame{width:100%;aspect-ratio:16/9;display:block}
-.player-frame[hidden],.ad-screen[hidden]{display:none}
-.player-label{font-size:12px;color:#d8d0ef;margin:8px 4px 0}
-.status{color:#16834a;font-weight:bold}
-.schedule{line-height:2}
-footer{text-align:center;padding:25px;color:#fff}
-.watch,.promo-link{display:inline-block;background:#ff6b35;color:white;text-decoration:none;border-radius:12px;padding:12px 18px;font-weight:bold;margin-top:12px}
-.note{font-size:13px;color:#5c5278;line-height:1.5}
-.promo{background:linear-gradient(120deg,#ff7a18,#ff3d81,#7438d5);color:white;text-align:center;border-radius:18px;padding:26px 18px;box-shadow:0 8px 24px #35136b44}
-.promo h2{font-size:clamp(25px,5vw,38px);margin:0 0 10px;text-shadow:2px 2px 0 #65209a}
-.promo p{font-size:17px;line-height:1.5;margin:8px auto;max-width:650px}
-.promo-link{background:#fff;color:#7132a8}
-</style>
+<link rel="stylesheet" href="styles.css">
+<!-- removed inline styles -->
+
 </head>
 <body>
 <header>
@@ -59,15 +31,13 @@ footer{text-align:center;padding:25px;color:#fff}
 <p class="player-label">Сначала короткая заставка МУЛЬТИК ТВ, затем откроется доступный внешний эфир.</p>
 <a class="watch" href="https://starlitetv.com/channel/cartoon" target="_blank" rel="noopener noreferrer">Открыть эфир отдельно</a>
 <p class="note">Это собственная оболочка плеера и рекламная заставка сайта. Сам видеопоток предоставляет и контролирует Starlite TV; вставить рекламу внутрь их трансляции без разрешения оператора нельзя. Встроенный эфир может быть недоступен, если сервис запрещает показ на других сайтах. GitHub Pages размещает сайт, но не является видеосервером.</p>
-<script>
-(function(){const ad=document.getElementById('ad-screen'),button=document.getElementById('start-stream'),frame=document.getElementById('stream-frame');let seconds=5;button.textContent='Реклама · '+seconds;const timer=setInterval(()=>{seconds--;if(seconds>0){button.textContent='Реклама · '+seconds;}else{clearInterval(timer);button.disabled=false;button.textContent='▶ Смотреть эфир';}},1000);button.addEventListener('click',()=>{if(button.disabled)return;ad.hidden=true;frame.src='https://starlitetv.com/channel/cartoon';frame.hidden=false;});})();
-</script>
+<script src="player.js" defer></script>
 </section>
 <section class="promo">
 <h2>🎉 Встречайте «МУЛЬТИК ТВ»!</h2>
 <p>Заглядывайте в волшебный мир мультфильмов, знакомьтесь с нашими героями и включайте доступный тестовый эфир прямо на сайте.</p>
 <a class="promo-link" href="https://igoryukha809-cell.github.io/multik-tv/">Смотреть МУЛЬТИК ТВ</a>
-<p style="font-size:12px">Рекламный баннер собственного сайта · Не является рекламой стороннего телеканала</p>
+<p class="fine-print">Рекламный баннер собственного сайта · Не является рекламой стороннего телеканала</p>
 </section>
 <section class="card">
 <h2>🦊 Наши герои</h2>
