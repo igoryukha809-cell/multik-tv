@@ -1,0 +1,11 @@
+МУЛЬТИК ТВ — запуск на macOS / Linux
+
+1. Установи Docker Desktop (macOS) или Docker Engine + Compose (Linux).
+2. Положи разрешённые видеофайлы в stream-server/media.
+3. Открой терминал в папке stream-server.
+4. Запусти: docker compose up -d --build
+5. Проверка: docker compose ps
+6. Поток в домашней сети: http://localhost:8080/live/multiktv.m3u8
+7. Остановка: docker compose down
+
+Компьютер должен оставаться включённым. Для публикации в интернет попроси родителя/опекуна помочь с HTTPS, доменом и безопасной настройкой роутера.
