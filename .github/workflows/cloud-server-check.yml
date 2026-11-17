@@ -1,0 +1,41 @@
+name: Check МУЛЬТИК ТВ Cloud server
+
+on:
+  push:
+    paths:
+      - "cloud-server/**"
+      - ".github/workflows/cloud-server-check.yml"
+  pull_request:
+    paths:
+      - "cloud-server/**"
+      - ".github/workflows/cloud-server-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: node --check cloud-server/server.js
+      - name: Start server and verify endpoints
+        shell: bash
+        run: |
+          set -euo pipefail
+          PORT=8765 node cloud-server/server.js > /tmp/multik-cloud.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for i in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8765/health > /tmp/health.json; then break; fi
+            sleep 1
+          done
+          node -e "const x=require('/tmp/health.json'); if(x.status!=='online') process.exit(1)"
+          curl --fail --silent http://127.0.0.1:8765/api/channel > /tmp/channel.json
+          node -e "const x=require('/tmp/channel.json'); if(x.channel!=='МУЛЬТИК ТВ') process.exit(1)"
+          echo "Health and channel API checks passed."
