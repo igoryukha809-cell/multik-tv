@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101426">
+<title>МУЛЬТИК ТВ — онлайн-студия</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,Arial,sans-serif;background:#101426;color:#f6f7ff}
+*{box-sizing:border-box}body{margin:0;padding:20px;background:radial-gradient(circle at top,#283765,#101426 58%);min-height:100vh}
+main{max-width:1000px;margin:auto}.brand{font-weight:900;color:#ffdf65;letter-spacing:.1em}h1{font-size:clamp(28px,6vw,46px);margin:10px 0}
+.panel{background:#1b2340;border:1px solid #354166;border-radius:18px;padding:18px;margin:16px 0}
+p,.muted{color:#bbc5e8;line-height:1.5}a{color:#ffe17a}input{width:100%;padding:13px;border-radius:10px;border:1px solid #53618b;background:#111a32;color:white;font-size:16px}
+button{border:0;border-radius:10px;padding:12px 16px;background:#ffdf65;color:#171b2c;font-weight:800;cursor:pointer}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.frame{position:relative;width:100%;aspect-ratio:16/9;background:#080b16;border-radius:12px;overflow:hidden}
+iframe{width:100%;height:100%;border:0}
+.source{display:block;padding:12px;border-radius:10px;background:#111a32;margin:8px 0;text-decoration:none}
+.small{font-size:13px;color:#aab6dc}
+</style></head><body><main>
+<div class="brand">🌈 МУЛЬТИК ТВ</div><h1>Онлайн-студия мультфильмов</h1>
+<p>Выбирай ролик из официального источника и смотри его во встроенном плеере. Нужна обычная публичная ссылка на YouTube-видео.</p>
+<section class="panel"><h2>Включить мультфильм по ссылке</h2>
+<label for="yt">Ссылка на YouTube</label><input id="yt" type="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+<div class="actions"><button id="open">▶ Включить</button><button id="clear">Остановить</button></div>
+<p class="small" id="status" aria-live="polite">Вставь ссылку на видео, которое доступно для встраивания.</p>
+<div class="frame"><iframe id="player" title="Встроенный видеоплеер YouTube" src="about:blank" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+</section>
+<section class="panel"><h2>Бесплатные источники</h2>
+<a class="source" href="https://www.youtube.com/@soyuzmultfilm" target="_blank" rel="noopener">Официальный канал «Союзмультфильм» на YouTube ↗</a>
+<a class="source" href="https://archive.org/details/animationandcartoons" target="_blank" rel="noopener">Internet Archive — коллекция анимации ↗</a>
+<a class="source" href="https://www.pubtoons.com/" target="_blank" rel="noopener">PubToons — каталог анимации общественного достояния ↗</a>
+<a class="source" href="https://www.emol.org/movies/cartoons/" target="_blank" rel="noopener">EMOL — подборка мультфильмов, заявленных как public domain ↗</a>
+<p class="small">Перед публичным показом проверяй права на конкретный ролик, включая музыку, озвучку, перевод и территорию. Пометка «бесплатно смотреть» не даёт права ретранслировать его в собственном канале.</p>
+</section>
+<section class="panel"><h2>Что важно знать</h2>
+<p>Этот плеер встраивает видео с исходного сервиса и не скачивает его. Доступность зависит от настроек правообладателя, региона и правил площадки. Встроенное видео может быть недоступно для некоторых роликов.</p>
+<p>Сайт и плеер работают на GitHub Pages бесплатно. Но это не создаёт общий синхронный прямой эфир: каждый зритель запускает ролик у себя. Для круглосуточной общей трансляции нужен отдельный разрешённый источник видеопотока и постоянно работающий сервер.</p>
+<p><a href="index.html">← На главную</a> · <a href="free-broadcast.html">Локальный пульт эфира</a></p></section>
+</main>
+<script>
+(()=>{const input=document.getElementById('yt'),frame=document.getElementById('player'),status=document.getElementById('status');
+function getId(raw){try{const u=new URL(raw);if(u.protocol!=='https:')return '';let id='';
+if(u.hostname==='youtu.be')id=u.pathname.split('/').filter(Boolean)[0]||'';
+else if(u.hostname==='youtube.com'||u.hostname.endsWith('.youtube.com')){if(u.pathname==='/watch')id=u.searchParams.get('v')||'';else if(/^\/(embed|shorts)\//.test(u.pathname))id=u.pathname.split('/')[2]||'';}
+return /^[A-Za-z0-9_-]{11}$/.test(id)?id:'';}catch{return '';}}
+document.getElementById('open').onclick=()=>{const id=getId(input.value.trim());if(!id){status.textContent='Не удалось распознать ссылку. Вставь обычную ссылку на YouTube-видео.';return;}frame.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';status.textContent='Видео открыто во встроенном плеере. Если оно запрещает встраивание, открой его на YouTube.';};
+document.getElementById('clear').onclick=()=>{frame.src='about:blank';status.textContent='Воспроизведение остановлено.';};
+})();
+</script></body></html>
