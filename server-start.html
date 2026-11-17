@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#11182d">
+<title>Запуск общего эфира — МУЛЬТИК ТВ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#11182d;color:#f5f6ff;font:16px/1.6 system-ui,Arial,sans-serif;padding:20px}
+main{max-width:850px;margin:auto}.hero,.card{background:#202b49;border:1px solid #3a4b73;border-radius:18px;padding:20px;margin:14px 0}
+h1{font-size:clamp(28px,6vw,42px);line-height:1.15}.tag{color:#ffe17a;font-weight:800;letter-spacing:.08em}
+a{color:#ffe17a}code{background:#101629;padding:3px 7px;border-radius:6px;overflow-wrap:anywhere}
+.step{display:flex;gap:14px}.num{flex:0 0 34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#ffe17a;color:#151b2d;font-weight:900}
+.notice{border-left:4px solid #ffcf5c;padding-left:14px}.muted{color:#c0cbe5}.btn{display:inline-block;background:#ffe17a;color:#171d30;text-decoration:none;padding:10px 15px;border-radius:10px;font-weight:800;margin:5px 5px 5px 0}
+</style></head><body><main>
+<div class="hero"><div class="tag">🌈 МУЛЬТИК ТВ</div><h1>Как запустить общий интернет-эфир бесплатно</h1>
+<p>Сайт канала уже опубликован. Для настоящего общего эфира нужен отдельный компьютер-сервер, который постоянно передаёт видео. Ни GitHub Pages, ни обычная веб-страница не могут работать вместо такого сервера.</p>
+<a class="btn" href="./free-broadcast.html">Открыть пульт браузерного эфира</a><a class="btn" href="./tv.html">Открыть ТВ-плеер</a></div>
+<section class="card"><h2>Что реально можно сделать без платы за ПО</h2>
+<p>Использовать собственный компьютер и бесплатные программы Docker, SRS и FFmpeg. Компьютер должен оставаться включённым, а интернет — работать. Это не требует аренды облака, но не является бесплатным облачным хостингом.</p>
+<p class="notice"><b>Важно:</b> поскольку настройка сервера и домашней сети затрагивает безопасность, попроси родителя или опекуна помочь. Не открывай порты роутера и не публикуй домашний IP самостоятельно.</p></section>
+<section class="card"><h2>Порядок запуска на компьютере</h2>
+<div class="step"><div class="num">1</div><div>На компьютере установи <a href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a>. Для установки и принятия условий попроси взрослого помочь.</div></div>
+<div class="step"><div class="num">2</div><div>Открой <a href="https://github.com/igoryukha809-cell/multik-tv/tree/main/stream-server">папку stream-server в проекте</a> и скачай проект. Помести только свои видео или материалы с явным разрешением на публичный показ в папку <code>stream-server/media</code>.</div></div>
+<div class="step"><div class="num">3</div><div>Открой папку <code>stream-server</code> в терминале и запусти <code>docker compose up -d --build</code>.</div></div>
+<div class="step"><div class="num">4</div><div>Проверь состояние командой <code>docker compose ps</code>. В домашней сети тестовый адрес потока: <code>http://localhost:8080/live/multiktv.m3u8</code>.</div></div>
+<div class="step"><div class="num">5</div><div>Для общего просмотра через интернет взрослому потребуется безопасный публичный HTTPS-адрес и проверка настроек сети. Не публикуй служебные порты или ключи.</div></div>
+<a class="btn" href="https://github.com/igoryukha809-cell/multik-tv/blob/main/stream-server/START-WINDOWS.txt">Инструкция Windows</a>
+<a class="btn" href="https://github.com/igoryukha809-cell/multik-tv/blob/main/stream-server/START-MAC-LINUX.txt">Инструкция Mac/Linux</a>
+</section>
+<section class="card"><h2>Что пока не запущено</h2><ul><li>Общий публичный поток — сервер ещё не запущен.</li><li>Круглосуточная автоматическая передача — требует работающего компьютера.</li><li>Автоматический поиск с проверкой лицензий — бот пока каталог, а не автономная нейросеть.</li><li>Библиотека мультфильмов — в серверную папку ещё не добавлены разрешённые видео.</li></ul>
+<p>Доступность ролика в интернете не означает разрешение на ретрансляцию. Нужны права на публичный показ и распространение.</p></section>
+</main></body></html>
