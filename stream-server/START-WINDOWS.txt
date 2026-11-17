@@ -1,0 +1,13 @@
+МУЛЬТИК ТВ — запуск на Windows
+
+1. Установи Docker Desktop: https://www.docker.com/products/docker-desktop/
+2. Дождись, пока Docker Desktop покажет, что движок запущен.
+3. Положи разрешённые видеофайлы в папку stream-server\media.
+4. Открой папку stream-server в Проводнике.
+5. Нажми в адресной строке Проводника, введи powershell и нажми Enter.
+6. Введи: docker compose up -d --build
+7. Для проверки: docker compose ps
+8. Адрес потока в домашней сети: http://localhost:8080/live/multiktv.m3u8
+9. Чтобы остановить: docker compose down
+
+Компьютер должен оставаться включённым, Docker Desktop должен работать, а интернет — быть доступным. Для публикации в интернет попроси родителя/опекуна помочь с доменом, HTTPS и настройками роутера. Не открывай порты самостоятельно.
