@@ -1,0 +1,8 @@
+{
+  "name": "multik-tv-cloud",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Free, self-hosted control and HLS delivery server for МУЛЬТИК ТВ",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=20" }
+}
