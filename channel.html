@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#171c38"><title>МУЛЬТИК ТВ — статус канала</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:22px;font:16px system-ui,Arial;background:radial-gradient(circle at top,#303e76,#111629 65%);color:#f7f8ff;min-height:100vh}
+main{max-width:850px;margin:auto}.brand{font-weight:900;letter-spacing:.12em;color:#ffdf65}h1{font-size:clamp(30px,7vw,48px);margin:12px 0}
+.panel{background:#1b2443;border:1px solid #46547f;border-radius:18px;padding:20px;margin:16px 0}
+p{line-height:1.6;color:#c8d1ed}.state{font-size:20px;font-weight:800;color:#ffdf65}.small{font-size:13px;color:#aebbe0}
+a{color:#ffe17a}button{background:#ffdf65;color:#171b2c;border:0;border-radius:10px;padding:12px 16px;font-weight:800}
+</style></head>
+<body><main>
+<div class="brand">🌈 МУЛЬТИК ТВ</div><h1>Статус телеканала</h1>
+<section class="panel"><div class="state" id="state">Проверяем статус…</div><p id="message">Загружаем состояние плейлиста.</p><p class="small" id="checked"></p></section>
+<section class="panel"><h2>Что уже работает бесплатно</h2><p>Сайт размещён на GitHub Pages. GitHub Actions автоматически проверяет файл расписания два раза в час и обновляет статус готовности.</p><p><b>Важно:</b> автоматическая проверка — не видеотрансляция. Сейчас отдельный потоковый сервер не запущен, поэтому общий эфир 24/7 ещё не идёт.</p></section>
+<section class="panel"><h2>Следующие необходимые шаги</h2><ol><li>Добавить только русскоязычные мультфильмы, на публичный показ которых получено разрешение.</li><li>Получить разрешённые видеофайлы или потоковые URL.</li><li>Подключить постоянно работающий видеосервер. Бесплатный статический GitHub Pages этого не заменяет.</li></ol></section>
+<section class="panel"><h2>Смотреть мультфильмы</h2><p><a href="online-catalog.html">Открыть каталог русских мультфильмов</a></p><p><a href="free-broadcast.html">Открыть локальный пульт воспроизведения</a></p><p><a href="index.html">На главную</a></p></section>
+<script>
+(async()=>{try{const r=await fetch('broadcast/status.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('status unavailable');const s=await r.json();const labels={not_configured:'Эфир пока не настроен',playlist_has_errors:'В расписании есть ошибки',playlist_ready_server_required:'Плейлист готов к следующему этапу'};document.getElementById('state').textContent=labels[s.state]||'Статус: '+s.state;document.getElementById('message').textContent=s.message||'Нет дополнительной информации.';document.getElementById('checked').textContent=s.checkedAt?'Последняя автоматическая проверка: '+s.checkedAt+' UTC':'Автоматическая проверка ещё не выполнялась';}catch(e){document.getElementById('state').textContent='Статус пока недоступен';document.getElementById('message').textContent='Проверка GitHub Actions ещё не выполнилась или страница не смогла загрузить файл статуса.';}})();
+</script>
+</main></body></html>
