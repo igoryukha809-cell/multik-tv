@@ -1,0 +1,11 @@
+{
+  "name": "МУЛЬТИК ТВ",
+  "short_name": "МУЛЬТИК ТВ",
+  "description": "Бесплатный портал детского телеканала и его инструментов",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#25134d",
+  "theme_color": "#7132a8"
+}
