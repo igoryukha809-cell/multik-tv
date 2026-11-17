@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; frame-src https://starlitetv.com; base-uri 'none'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; frame-src 'none'; base-uri 'none'; form-action 'self'; object-src 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
-<title>МУЛЬТИК ТВ — Детский телеканал</title>
+<title>МУЛЬТИК ТВ — Тестовый экран</title>
 <link rel="stylesheet" href="styles.css">
-<!-- removed inline styles -->
-
+<script src="player.js" defer></script>
 </head>
 <body>
 <header>
@@ -17,27 +16,30 @@
 </header>
 <main>
 <section class="card">
-<h2>📺 Прямой эфир</h2>
-<p class="status">● ВНЕШНИЙ ЭФИР · SATURDAY MORNING</p>
-<div class="player" id="multik-player">
-<div class="player-stage">
-<div class="ad-screen" id="ad-screen">
-<div class="ad-mark">🌈 📺</div><h3>МУЛЬТИК ТВ</h3>
-<p>Впереди целый мир весёлых историй!</p><p><strong>Смотри любимые мультфильмы вместе с нами</strong></p>
-<button id="start-stream" disabled>Реклама · 5</button>
+<h2>📺 Тестовый экран</h2>
+<p class="status">● ДЕМО-РЕЖИМ · ВИДЕОЭФИР НЕ ПОДКЛЮЧЁН</p>
+<div class="player">
+<div class="player-stage test-stage" role="img" aria-label="Анимированная тестовая заставка МУЛЬТИК ТВ">
+<div class="orbit orbit-one">⭐</div>
+<div class="orbit orbit-two">☁️</div>
+<div class="test-content">
+<div class="test-mark">🌈 📺</div>
+<h3>МУЛЬТИК ТВ</h3>
+<p class="test-tagline">Скоро в эфире!</p>
+<div class="test-clock" id="test-clock">--:--:--</div>
+<span class="test-pill">ТЕХНИЧЕСКАЯ ЗАСТАВКА</span>
 </div>
-<iframe class="player-frame" id="stream-frame" title="Внешний прямой эфир мультфильмов Starlite TV" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" referrerpolicy="no-referrer" hidden></iframe>
-</div></div>
-<p class="player-label">Сначала короткая заставка МУЛЬТИК ТВ, затем откроется доступный внешний эфир.</p>
-<a class="watch" href="https://starlitetv.com/channel/cartoon" target="_blank" rel="noopener noreferrer">Открыть эфир отдельно</a>
-<p class="note">Это собственная оболочка плеера и рекламная заставка сайта. Сам видеопоток предоставляет и контролирует Starlite TV; вставить рекламу внутрь их трансляции без разрешения оператора нельзя. Встроенный эфир может быть недоступен, если сервис запрещает показ на других сайтах. GitHub Pages размещает сайт, но не является видеосервером.</p>
-<script src="player.js" defer></script>
+<div class="ticker"><span>МУЛЬТИК ТВ · ТЕСТОВОЕ ВЕЩАНИЕ · СКОРО В ЭФИРЕ · МУЛЬТИК ТВ ·</span></div>
+</div>
+</div>
+<p class="player-label">Это демонстрационная анимированная заставка на сайте. Она не является круглосуточным видеопотоком и не передаёт мультфильмы.</p>
+<p class="note">Для настоящего 24/7 эфира потребуется отдельный видеосервер, разрешённые для трансляции видео и проверка воспроизведения. Серверный хостинг может быть платным; перед подключением расходов нужно согласие родителя или опекуна.</p>
 </section>
 <section class="promo">
-<h2>🎉 Встречайте «МУЛЬТИК ТВ»!</h2>
-<p>Заглядывайте в волшебный мир мультфильмов, знакомьтесь с нашими героями и включайте доступный тестовый эфир прямо на сайте.</p>
-<a class="promo-link" href="https://igoryukha809-cell.github.io/multik-tv/">Смотреть МУЛЬТИК ТВ</a>
-<p class="fine-print">Рекламный баннер собственного сайта · Не является рекламой стороннего телеканала</p>
+<h2>🎉 «МУЛЬТИК ТВ» готовится к запуску!</h2>
+<p>Мы готовим волшебный эфир с любимыми историями, героями и мультфильмами.</p>
+<a class="promo-link" href="https://igoryukha809-cell.github.io/multik-tv/">Открыть тестовый экран</a>
+<p class="fine-print">Демонстрационная страница · Не является лицензированным телеканалом</p>
 </section>
 <section class="card">
 <h2>🦊 Наши герои</h2>
@@ -46,7 +48,7 @@
 <p>🐥 Пиксель — любознательный цыплёнок</p>
 </section>
 <section class="card">
-<h2>🗓️ Программа передач</h2>
+<h2>🗓️ Планируемая программа</h2>
 <div class="schedule">
 09:00 — Утренние мультфильмы<br>
 11:00 — Приключения Рыжика<br>
@@ -54,9 +56,9 @@
 16:00 — Мир сказок<br>
 19:00 — Вечер мультфильмов
 </div>
-<p class="note">Это примерная программа оформления канала, а не подтверждённое расписание внешнего эфира.</p>
+<p class="note">Это пример оформления будущей программы, а не действующее расписание вещания.</p>
 </section>
 </main>
-<footer>© МУЛЬТИК ТВ · Детский телеканал</footer>
+<footer>© МУЛЬТИК ТВ · Демонстрационный проект</footer>
 </body>
 </html>
