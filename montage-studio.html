@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self'; style-src 'self'; media-src 'self' blob:; img-src 'self' blob: data:; connect-src 'self'; object-src 'none'; base-uri 'self'">
-<title>МУЛЬТИК ТВ — Автомонтаж</title><link rel="stylesheet" href="montage-studio.css"><script src="montage-studio.js" defer></script></head>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self' https://cdn.jsdelivr.net 'wasm-unsafe-eval'; style-src 'self'; media-src 'self' blob:; img-src 'self' blob: data:; connect-src 'self' https://cdn.jsdelivr.net https://huggingface.co https://*.hf.co; worker-src 'self' blob:; object-src 'none'; base-uri 'self'">
+<title>МУЛЬТИК ТВ — Автомонтаж</title><link rel="stylesheet" href="montage-studio.css"><script src="montage-studio.js" defer></script><script type="module" src="montage-ai.js"></script></head>
 <body><header><a href="index.html">← МУЛЬТИК ТВ</a><h1>🎬 МУЛЬТИК ТВ — Автомонтаж</h1><p>Бесплатная монтажная студия прямо в браузере</p></header>
 <main>
 <section class="panel"><h2>1. Добавь материалы</h2><p>Выбери свои видео, картинки и музыку. Файлы остаются на твоём устройстве и никуда не загружаются.</p>
@@ -15,8 +15,8 @@
 <label>Переход между сценами<select id="transition"><option value="fade">Плавное растворение</option><option value="cut">Без перехода</option></select></label>
 <label>Формат кадра<select id="aspect"><option value="16:9">Широкий 16:9</option><option value="9:16">Вертикальный 9:16</option><option value="1:1">Квадрат 1:1</option></select></label>
 <label class="check"><input id="showCaption" type="checkbox" checked> Показывать название и подпись</label></div>
-<div class="actions"><button id="autoBtn">✨ Собрать черновой монтаж</button><button id="smartBtn" class="secondary">🧠 Умный подбор сцен</button><button id="detectBtn" class="secondary">✂️ Найти границы сцен</button><button id="playBtn" class="secondary" disabled>▶ Предпросмотр</button><button id="stopBtn" class="secondary" disabled>■ Стоп</button></div>
-<p id="status" class="status" aria-live="polite">Добавь материалы, затем нажми «Собрать черновой монтаж».</p></section>
+<div class="actions"><button id="autoBtn">✨ Собрать черновой монтаж</button><button id="smartBtn" class="secondary">🧠 Умный подбор сцен</button><button id="detectBtn" class="secondary">✂️ Найти границы сцен</button><button id="aiBtn" class="secondary">🤖 Распознать кадры ИИ</button><button id="playBtn" class="secondary" disabled>▶ Предпросмотр</button><button id="stopBtn" class="secondary" disabled>■ Стоп</button></div>
+<p id="status" class="status" aria-live="polite">Добавь материалы, затем нажми «Собрать черновой монтаж».</p><div id="aiResults" class="ai-results" aria-live="polite"><strong>ИИ-анализ:</strong> пока не запускался. При первом запуске модель загрузится из интернета (около нескольких мегабайт).</div></section>
 <section class="panel"><h2>3. Предпросмотр и экспорт</h2><div class="screen"><canvas id="preview" width="1280" height="720"></canvas></div>
 <div class="actions"><button id="exportBtn" disabled>⬇ Экспортировать видео (WebM)</button><a id="download" hidden>Скачать готовый мультфильм</a></div>
 <p class="hint">Экспорт идёт в реальном времени: 1 минута мультфильма может собираться около минуты. Не закрывай вкладку. Экспорт создаёт WebM; MP4 и профессиональный монтаж звука пока не поддерживаются.</p></section>
