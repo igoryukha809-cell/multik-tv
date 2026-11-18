@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#54238a">
+<title>Автоподбор мультфильмов — МУЛЬТИК ТВ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#17123c,#4b2375 55%,#102b4b);color:#fff;font:16px system-ui}main{max-width:1050px;margin:auto;padding:18px}a{color:#ffe28a}.hero,.panel,.item{background:#fff;color:#292044;border-radius:17px;padding:18px;margin:14px 0}.hero h1{font-size:clamp(27px,6vw,42px);margin:0 0 8px}.muted{color:#6b6680;font-size:14px;line-height:1.5}.controls{display:flex;gap:9px;flex-wrap:wrap}input,select,button{font:inherit;border-radius:10px;padding:11px;border:1px solid #c9c3da}input{flex:1;min-width:180px}button{background:#5b2c91;color:white;border:0;font-weight:750;cursor:pointer}.item h3{margin:0 0 7px}.item p{line-height:1.45}.item .controls{margin-top:12px}.item a{color:#55318b}.pill{display:inline-block;background:#e9f8ed;color:#17612e;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:800}.warning{background:#fff2cc;padding:12px;border-radius:12px;color:#684900;line-height:1.5}ol{padding-left:22px}li{padding:5px 0}.small{font-size:12px;color:#6c6680}
+</style></head>
+<body><main>
+<p><a href="index.html">← На главную</a> · <a href="tv.html">Открыть эфир</a></p>
+<section class="hero"><h1>🤖 Автоподбор мультфильмов</h1><p>Сайт ищет видео на Wikimedia Commons, показывает сведения об авторе и лицензии, а выбранные материалы добавляет в список подготовки эфира.</p><span class="pill">Поиск в открытом архиве</span></section>
+<section class="panel"><h2>Поиск анимации</h2><div class="controls"><input id="query" value="animated cartoon animation" aria-label="Поисковый запрос"><button id="search">Найти видео</button></div><p class="muted">По умолчанию ищем англоязычные названия, потому что в архиве так чаще индексируются файлы. Можно вводить запрос по-русски или по-английски.</p><p id="status" role="status">Нажми «Найти видео», чтобы обновить каталог.</p></section>
+<div id="results"></div>
+<section class="panel"><h2>📋 Список для подготовки эфира</h2><p class="muted">Список хранится только в этом браузере. Он не загружает файлы в Kinescope/PulseCast и не запускает общую трансляцию.</p><ol id="playlist"><li>Пока ничего не добавлено.</li></ol><div class="controls"><button id="export">Скачать список JSON</button><button id="clear">Очистить список</button></div></section>
+<section class="panel"><h2>Важно о лицензиях</h2><div class="warning">Автоматический фильтр показывает только файлы, у которых API указывает CC0, CC BY, CC BY-SA или общественное достояние. Это предварительная проверка, а не юридическая гарантия: перед публичным показом взрослый владелец канала должен открыть страницу файла, проверить условия, ограничения и корректность атрибуции.</div><p class="muted">Источник каталога: <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a>. Метаданные лицензий читаются через официальный MediaWiki API.</p></section>
+</main>
+<script>
+(()=>{
+const $=id=>document.getElementById(id),api='https://commons.wikimedia.org/w/api.php';
+const allowed=/^(CC0|CC BY|CC BY-SA|Public domain)/i;
+let found=[];
+function clean(v){const d=document.createElement('div');d.innerHTML=v||'';return d.textContent.trim()}
+function readList(){try{return JSON.parse(localStorage.getItem('multikTvRightsPlaylist')||'[]')}catch{return[]}}
+function saveList(x){localStorage.setItem('multikTvRightsPlaylist',JSON.stringify(x));renderList()}
+function renderList(){const list=readList(),el=$('playlist');el.replaceChildren();if(!list.length){const li=document.createElement('li');li.textContent='Пока ничего не добавлено.';el.append(li);return}list.forEach(x=>{const li=document.createElement('li');li.textContent=x.title+' — '+x.license+' — '+x.artist;el.append(li)})}
+function add(item){const list=readList();if(!list.some(x=>x.page===item.page)){list.push(item);saveList(list)}}
+function card(item){const box=document.createElement('article');box.className='item';const h=document.createElement('h3');h.textContent=item.title;box.append(h);const p=document.createElement('p');p.textContent='Автор: '+item.artist+' · Лицензия: '+item.license;box.append(p);const desc=document.createElement('p');desc.className='muted';desc.textContent=item.description||'Описание не указано.';box.append(desc);const links=document.createElement('div');links.className='controls';const source=document.createElement('a');source.href=item.page;source.target='_blank';source.rel='noopener';source.textContent='Страница и полные условия лицензии ↗';links.append(source);const download=document.createElement('a');download.href=item.file;download.target='_blank';download.rel='noopener';download.textContent='Открыть оригинальный видеофайл ↗';links.append(download);const addBtn=document.createElement('button');addBtn.textContent='＋ Добавить в список';addBtn.onclick=()=>{add(item);addBtn.textContent='✓ Добавлено'};links.append(addBtn);box.append(links);return box}
+async function search(){const q=$('query').value.trim();if(!q)return;$('status').textContent='Ищем видео и проверяем метаданные лицензий…';$('results').replaceChildren();$('search').disabled=true;try{
+const params=new URLSearchParams({action:'query',format:'json',origin:'*',generator:'search',gsrsearch:'filetype:video '+q,gsrnamespace:'6',gsrlimit:'30',prop:'imageinfo',iiprop:'url|mime|extmetadata',iiurlwidth:'480',iiextmetadatalanguage:'en'});
+const response=await fetch(api+'?'+params);if(!response.ok)throw Error('HTTP '+response.status);const data=await response.json();const pages=Object.values(data.query?.pages||{});found=pages.map(p=>{const ii=p.imageinfo?.[0];const m=ii?.extmetadata||{};const license=clean(m.LicenseShortName?.value||'');const mime=ii?.mime||'';return {title:clean(m.ObjectName?.value)||p.title.replace(/^File:/,''),artist:clean(m.Artist?.value||m.Credit?.value)||'Не указан',license,description:clean(m.ImageDescription?.value),page:'https://commons.wikimedia.org/wiki/'+encodeURIComponent(p.title.replace(/ /g,'_')),file:ii?.url||'',mime}}).filter(x=>x.file&&x.mime.startsWith('video/')&&allowed.test(x.license));
+if(!found.length){$('status').textContent='Подходящих видео с распознанной открытой лицензией не найдено. Попробуй другой запрос.';return}
+$('status').textContent='Найдено видео с подходящими обозначениями лицензии: '+found.length+'. Проверь каждую страницу перед эфиром.';found.forEach(x=>$('results').append(card(x)));
+}catch(e){$('status').textContent='Не удалось получить каталог: '+e.message+'. Проверь интернет и попробуй ещё раз.'}finally{$('search').disabled=false}}
+$('search').onclick=search;$('query').addEventListener('keydown',e=>{if(e.key==='Enter')search()});$('clear').onclick=()=>{saveList([])};$('export').onclick=()=>{const blob=new Blob([JSON.stringify(readList(),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='multik-tv-playlist.json';a.click();URL.revokeObjectURL(url)};renderList();
+})();
+</script></body></html>
