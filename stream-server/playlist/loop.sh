@@ -17,8 +17,18 @@ while (( STOP == 0 )); do
   files=("${MEDIA_DIR}"/*.mp4 "${MEDIA_DIR}"/*.mkv "${MEDIA_DIR}"/*.mov "${MEDIA_DIR}"/*.webm)
 
   if (( ${#files[@]} == 0 )); then
-    echo "В ${MEDIA_DIR} нет видео. Повторная проверка через 30 секунд."
-    for ((i=0; i<30 && STOP==0; i++)); do sleep 1; done
+    echo "В ${MEDIA_DIR} нет видео. Передаю безопасную тестовую заставку и повторно проверяю каталог через 30 секунд."
+    until (( STOP == 1 )) || wget -q -T 3 -O /dev/null http://srs:8080/; do
+      echo "Видеосервер SRS пока недоступен; повтор через ${WAIT_SECONDS} секунд."
+      sleep "${WAIT_SECONDS}"
+    done
+    (( STOP == 1 )) && break
+    ffmpeg -hide_banner -nostdin -loglevel warning -re \
+      -f lavfi -i "color=c=0x172554:s=1280x720:r=25:d=30" \
+      -vf "drawtext=fontfile=/usr/share/fonts/TTF/DejaVuSans.ttf:text='MULTIK TV':fontcolor=white:fontsize=72:x=(w-text_w)/2:y=(h-text_h)/2-55,drawtext=fontfile=/usr/share/fonts/TTF/DejaVuSans.ttf:text='TECHNICAL BREAK - TEST SIGNAL':fontcolor=0xFDE68A:fontsize=30:x=(w-text_w)/2:y=(h-text_h)/2+55" \
+      -an -c:v libx264 -preset veryfast -tune zerolatency \
+      -pix_fmt yuv420p -r 25 -g 50 -b:v 900k -maxrate 900k -bufsize 1800k \
+      -f flv "${STREAM_URL}" || echo "Тестовая заставка завершилась; повторяю проверку."
     continue
   fi
 
