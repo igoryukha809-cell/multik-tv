@@ -1,32 +1,16 @@
 <!doctype html>
-<html lang="ru">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#7132a8"><title>Погода на МУЛЬТИК ТВ — Барнаул</title>
-<link rel="stylesheet" href="styles.css">
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#7132a8"><title>Погода на МУЛЬТИК ТВ</title><link rel="stylesheet" href="styles.css">
 <style>
-main{max-width:900px;margin:auto;padding:16px}.weather{background:linear-gradient(135deg,#2f80c9,#7146b5);color:white;border-radius:24px;padding:26px;box-shadow:0 8px 24px #24104455}.temp{font-size:clamp(56px,12vw,88px);font-weight:900;margin:8px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:16px 0}.metric{background:#fff;color:#30215b;padding:16px;border-radius:16px}.metric b{display:block;font-size:22px;margin-top:6px}.note{background:#fff;color:#30215b;padding:18px;border-radius:18px;line-height:1.6;margin-top:16px}a{color:inherit}
-</style></head>
-<body>
-<header><div class="logo">🌈 МУЛЬТИК ТВ</div><p>Погода на нашем телеканале</p></header>
-<main>
-<section class="weather">
-<div>📍 Барнаул · Алтайский край</div>
-<div class="temp">−7 °C</div>
-<h2>Ясно</h2>
-<p>Ощущается как −12 °C · Осадков сегодня не ожидается</p>
-<div class="grid">
-<div class="metric">💨 Ветер<b>3 м/с</b><small>восточный</small></div>
-<div class="metric">💧 Влажность<b>93%</b></div>
-<div class="metric">🌡️ Давление<b>763 мм</b><small>рт. ст.</small></div>
-</div>
-</section>
-<section class="note">
-<h2>Прогноз на сегодня, 18 ноября</h2>
-<p>По данным страницы Яндекс Погоды: утром около −7 °C, днём до 0 °C, вечером около −3 °C. Ясно, без ожидаемых осадков.</p>
-<p><strong>Важно:</strong> это информационный снимок прогноза на момент подготовки страницы, а не автоматически обновляемый эфирный погодный виджет. Перед показом в эфире проверяйте свежие значения на Яндекс Погоде.</p>
-<p><a href="https://yandex.ru/pogoda/ru/barnaul" target="_blank" rel="noopener">Открыть актуальную погоду в Яндексе ↗</a></p>
-</section>
-<p><a href="index.html">← На главную МУЛЬТИК ТВ</a></p>
-</main><footer>Погодная рубрика МУЛЬТИК ТВ · Источник прогноза: Яндекс Погода</footer>
-</body></html>
+main{max-width:1000px;margin:auto;padding:16px}.hero{background:linear-gradient(135deg,#287ec4,#7146b5);color:white;border-radius:24px;padding:24px}.cities{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:18px 0}.city{background:#fff;color:#30215b;border-radius:16px;padding:16px;text-decoration:none;box-shadow:0 5px 15px #35136b22}.city b{display:block;font-size:18px;margin-bottom:5px}.panel{background:#fff;color:#30215b;padding:20px;border-radius:18px;margin-top:16px;line-height:1.6}.pill{display:inline-block;background:#fff0c2;color:#714400;border-radius:30px;padding:7px 12px;font-weight:800}
+</style></head><body><header><div class="logo">🌈 МУЛЬТИК ТВ</div><p>Погода в городах России</p></header><main>
+<section class="hero"><span class="pill">ПОГОДНЫЙ РАЗДЕЛ</span><h1>🌤️ Выбери свой город</h1><p>Прогнозы открываются на Яндекс Погоде. Выбери город, чтобы увидеть актуальную температуру, осадки, ветер и прогноз.</p><p><b>Главный город выпуска: Барнаул</b></p></section>
+<section class="cities" id="cities"></section>
+<section class="panel"><h2>📺 Отдельная передача «Погода с Мультиком»</h2><p>Ежедневный выпуск с ведущим — Мультиком, добрым мультяшным метеоведущим. Продолжительность: примерно 2 минуты 30 секунд. Формат: приветствие, погода в Барнауле, обзор крупных городов, полезный совет и прощание.</p><p><a href="weather-show.html">Открыть страницу передачи и сценарий выпуска →</a></p></section>
+<section class="panel"><h2>Источник и обновление</h2><p>Все ссылки ведут на соответствующие страницы Яндекс Погоды. Числа здесь намеренно не подставляются вручную: текущие значения должны браться из актуального прогноза.</p><p>Для автоматического вывода погодных данных прямо на сайте или в эфирной графике нужен API-ключ Яндекс Погоды. Ключ нельзя публиковать в открытом HTML-коде; его подключают через защищённый сервер. <a href="https://yandex.ru/dev/weather/doc/ru/concepts/api" target="_blank" rel="noopener">Документация API</a>.</p></section>
+<p><a href="index.html">← На главную МУЛЬТИК ТВ</a></p></main><footer>Погодный раздел МУЛЬТИК ТВ · Источник прогнозов: Яндекс Погода</footer>
+<script>
+const cities=[
+["Барнаул","barnaul"],["Москва","moscow"],["Санкт-Петербург","saint-petersburg"],["Новосибирск","novosibirsk"],["Екатеринбург","yekaterinburg"],["Казань","kazan"],["Нижний Новгород","nizhny-novgorod"],["Самара","samara"],["Омск","omsk"],["Челябинск","chelyabinsk"],["Красноярск","krasnoyarsk"],["Пермь","perm"],["Уфа","ufa"],["Воронеж","voronezh"],["Волгоград","volgograd"],["Ростов-на-Дону","rostov-na-donu"],["Краснодар","krasnodar"],["Сочи","sochi"],["Иркутск","irkutsk"],["Томск","tomsk"],["Кемерово","kemerovo"],["Тюмень","tyumen"],["Хабаровск","khabarovsk"],["Владивосток","vladivostok"],["Якутск","yakutsk"],["Мурманск","murmansk"],["Калининград","kaliningrad"],["Саратов","saratov"],["Тула","tula"],["Ярославль","yaroslavl"],["Белгород","belgorod"],["Барнаул","barnaul"]
+];
+document.getElementById("cities").innerHTML=cities.filter((c,i,a)=>a.findIndex(x=>x[1]===c[1])===i).map(c=>'<a class="city" target="_blank" rel="noopener" href="https://yandex.ru/pogoda/ru/'+c[1]+'"><b>📍 '+c[0]+'</b><span>Открыть прогноз на Яндексе ↗</span></a>').join("");
+</script></body></html>
