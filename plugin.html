@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#25134d">
+<title>МУЛЬТИК ТВ — бесплатный помощник эфира</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+main{max-width:900px;margin:auto;padding:18px}.panel{background:#fff;color:#25134d;border-radius:18px;padding:18px;margin:14px 0}.muted{color:#655c79;line-height:1.6}.step{padding:13px;border:1px solid #e3dced;border-radius:12px;margin:10px 0}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}a.action{display:inline-block;padding:12px 15px;border-radius:10px;background:#6336a5;color:white;text-decoration:none;font-weight:700}a.secondary{background:#eee8f7;color:#43236f}.notice{padding:13px;border-radius:12px;background:#fff3d9;color:#684800;line-height:1.55}
+</style>
+</head>
+<body>
+<header><div class="logo">🛠️ МУЛЬТИК ТВ — ПОМОЩНИК ЭФИРА</div><p>Бесплатная панель подготовки и проверки локального сервера</p></header>
+<main>
+<section class="panel">
+<h1>Бесплатный помощник эфира</h1>
+<p class="muted">Это веб-панель с инструкциями и ссылками для запуска домашнего видеосервера МУЛЬТИК ТВ. Программа сервера бесплатная и открытая. Сам сайт не может включить выключенный компьютер или запустить Docker на чужом устройстве.</p>
+<div class="notice"><b>Важно:</b> сейчас публичный круглосуточный эфир не запущен. Сервер будет работать только после настройки на компьютере, где установлен Docker, и пока этот компьютер включён. Для установки, сетевых настроек и любого публичного доступа попроси взрослого помочь.</div>
+</section>
+<section class="panel">
+<h2>Запуск на компьютере Windows</h2>
+<div class="step"><b>1. Скачай файлы сервера</b><p class="muted">Открой ZIP-архив проекта и распакуй папку. Не запускай неизвестные файлы из сторонних источников.</p><div class="actions"><a class="action" href="https://github.com/igoryukha809-cell/multik-tv/archive/refs/heads/main.zip">Скачать файлы проекта</a><a class="action secondary" href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a></div></div>
+<div class="step"><b>2. Добавь разрешённые видео</b><p class="muted">Помести MP4, MKV, MOV или WebM в папку <code>stream-server/media</code>. Используй только свои видео или мультфильмы, для которых есть явное разрешение на публичный показ. Не загружай личные данные.</p></div>
+<div class="step"><b>3. Запусти сервер</b><p class="muted">Открой папку <code>stream-server</code> и дважды нажми START-MULTIK-TV-WINDOWS.bat. Дождись завершения запуска Docker.</p><div class="actions"><a class="action" href="https://raw.githubusercontent.com/igoryukha809-cell/multik-tv/main/stream-server/START-MULTIK-TV-WINDOWS.bat">Открыть файл запуска Windows</a><a class="action secondary" href="https://github.com/igoryukha809-cell/multik-tv/tree/main/stream-server">Все файлы сервера</a></div></div>
+<div class="step"><b>4. Проверка локального потока</b><p class="muted">Когда сервер уже запущен и в папке media есть видео, открой адрес потока на том же компьютере:</p><div class="actions"><a class="action" href="http://localhost:8080/live/multiktv.m3u8">Открыть локальный поток</a><a class="action secondary" href="https://github.com/igoryukha809-cell/multik-tv/blob/main/stream-server/README.md">Инструкция и устранение ошибок</a></div></div>
+</section>
+<section class="panel">
+<h2>Что помощник может и чего не может</h2>
+<ul class="muted">
+<li>Помогает скачать исходники и найти сценарий запуска.</li>
+<li>Даёт ссылку для проверки локального HLS-потока.</li>
+<li>Сервер и плейлист автоматически перезапускаются Docker, пока компьютер включён.</li>
+<li>Не создаёт бесплатный облачный сервер и не держит трансляцию после выключения компьютера.</li>
+<li>Не открывает порты роутера и не публикует домашний IP. Для публичного эфира нужна отдельная безопасная настройка со взрослым.</li>
+</ul>
+<p class="muted">Если видео нет, проверь папку media и логи командой <code>docker compose logs -f</code> из папки stream-server. Остановить сервер можно файлом STOP-MULTIK-TV-WINDOWS.bat.</p>
+</section>
+<section class="panel">
+<h2>Другие страницы канала</h2>
+<p><a href="index.html">Главная МУЛЬТИК ТВ</a> · <a href="tv.html">Браузерный телевизор</a> · <a href="autopilot.html">Автопилот программы</a></p>
+</section>
+</main>
+</body>
+</html>
