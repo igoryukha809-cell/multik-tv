@@ -1,0 +1,10 @@
+{
+  "name": "МУЛЬТИК ТВ CLOUD",
+  "short_name": "МУЛЬТИК ТВ",
+  "start_url": "/multik-tv/cloud.html",
+  "scope": "/multik-tv/",
+  "display": "standalone",
+  "background_color": "#25134d",
+  "theme_color": "#25134d",
+  "icons": []
+}
