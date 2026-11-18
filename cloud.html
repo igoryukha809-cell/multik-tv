@@ -1,72 +1,86 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#25134d">
-<title>МУЛЬТИК ТВ Cloud — панель управления</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#25134d"><title>МУЛЬТИК ТВ CLOUD — бесплатная эфирная студия</title>
 <link rel="stylesheet" href="styles.css">
 <style>
-main{max-width:900px;margin:auto;padding:16px}.panel{background:#fff;color:#25134d;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 6px 18px #180c3b33}
-h1{font-size:clamp(28px,6vw,42px);margin:8px 0}.muted{color:#625a78;line-height:1.5}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-label{display:block;font-weight:700;margin:10px 0 6px}input{width:100%;box-sizing:border-box;padding:12px;border:1px solid #c9c2d8;border-radius:10px;font:inherit}button,.action{display:inline-block;border:0;border-radius:10px;background:#6336a5;color:white;padding:12px 16px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;margin:8px 6px 0 0}
-.status{padding:12px;border-radius:12px;background:#f1edfa;font-weight:700;overflow-wrap:anywhere}.good{background:#e5f7e9;color:#145c29}.warn{background:#fff3d8;color:#704900}.bad{background:#ffe7e7;color:#851d1d}
-small{display:block;color:#625a78;margin-top:6px}
-</style>
-</head>
+main{max-width:1050px;margin:auto;padding:14px}.panel{background:#fff;color:#25134d;border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 6px 18px #180c3b33}
+h1{font-size:clamp(27px,6vw,42px);margin:8px 0}.muted{color:#625a78;line-height:1.5}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+button,.action{display:inline-block;border:0;border-radius:10px;background:#6336a5;color:white;padding:11px 14px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;margin:5px 5px 5px 0}button.secondary{background:#e9e2f5;color:#35205e}button:disabled{opacity:.5}
+input,select{max-width:100%;box-sizing:border-box;padding:10px;border:1px solid #c9c2d8;border-radius:10px;font:inherit;margin:5px 0}
+video{width:100%;max-height:55vh;background:#130d22;border-radius:14px}.status{padding:12px;border-radius:12px;background:#f1edfa;font-weight:700;overflow-wrap:anywhere}.good{background:#e5f7e9;color:#145c29}.warn{background:#fff3d8;color:#704900}
+li{margin:8px 0;overflow-wrap:anywhere}.queue button{padding:6px 9px}.tag{font-size:12px;color:#6c568d}
+</style></head>
 <body>
-<header><div class="logo">🌈 МУЛЬТИК ТВ CLOUD</div><p>Бесплатная панель управления собственным сервером</p></header>
+<header><div class="logo">🌈 МУЛЬТИК ТВ CLOUD</div><p>Бесплатная эфирная студия прямо в браузере</p></header>
 <main>
 <section class="panel">
-<p class="muted">ПАНЕЛЬ ПРОВЕРКИ · БЕЗ ПЛАТНЫХ API</p>
-<h1>Состояние сервера</h1>
-<p class="muted">Укажи адрес уже запущенного сервера Node.js. Панель проверит его доступность и наличие HLS-плейлиста. Эта страница сама по себе не запускает облачный сервер.</p>
-<label for="base">Адрес сервера</label>
-<input id="base" type="url" placeholder="Например: https://твой-сервер.example" autocomplete="url">
-<small>Для локального теста можно указать http://localhost:8080</small>
-<button id="check">Проверить сервер</button>
-<div id="result" class="status warn" role="status" aria-live="polite">Сервер ещё не проверялся.</div>
+<div class="tag">ЛОКАЛЬНАЯ СТУДИЯ · БЕЗ ПОДПИСКИ И ОБЛАЧНОГО СЕРВЕРА</div>
+<h1>Твой эфирный пульт</h1>
+<p class="muted">Добавляй свои видео, сохраняй их в памяти этого браузера, собирай очередь и запускай последовательный показ. Данные остаются на этом устройстве.</p>
+<div id="status" class="status warn">Загружаем видеотеку…</div>
+</section>
+<section class="panel">
+<h2>📺 Экран эфира</h2>
+<video id="player" controls playsinline preload="metadata"></video>
+<p id="now">Пока ничего не воспроизводится.</p>
+<button id="play">▶ Запустить эфир</button><button id="pause" class="secondary">⏸ Пауза</button><button id="next" class="secondary">⏭ Следующее</button>
+<label><input type="checkbox" id="repeat" checked> Повторять плейлист по кругу</label>
 </section>
 <section class="grid">
-<div class="panel"><h2>🖥️ Процесс</h2><p id="process" class="muted">Нет данных</p></div>
-<div class="panel"><h2>📡 Видеопоток</h2><p id="stream" class="muted">Нет данных</p></div>
+<div class="panel"><h2>➕ Добавить видео</h2>
+<input id="files" type="file" accept="video/*" multiple>
+<p class="muted">Выбирай файлы MP4, WebM и другие форматы, которые поддерживает браузер. Не закрывай страницу во время сохранения.</p>
+<button id="add">Сохранить выбранные видео</button>
+</div>
+<div class="panel"><h2>🌐 Добавить открытое видео</h2>
+<input id="url" type="url" placeholder="https://example.org/video.mp4" style="width:100%">
+<input id="urlname" type="text" placeholder="Название мультфильма" style="width:100%">
+<button id="addurl">Добавить ссылку</button>
+<p class="muted">Добавляй только прямые ссылки на видео, которыми разрешено пользоваться. Некоторые сайты запрещают встраивание.</p>
+</div>
 </section>
 <section class="panel">
-<h2>Адреса сервера</h2>
-<p><strong>Проверка:</strong> <code>/health</code></p>
-<p><strong>Статус канала:</strong> <code>/api/channel</code></p>
-<p><strong>HLS-плейлист:</strong> <code>/hls/live.m3u8</code></p>
-<a class="action" href="tv.html">Открыть плеер</a>
-<a class="action" href="index.html">На главную</a>
+<h2>🗂️ Моя видеотека и очередь</h2><p class="muted">Порядок можно менять кнопками. Удаление убирает запись и сохранённый файл из этого браузера.</p>
+<ol id="queue" class="queue"><li>Видеотека пуста.</li></ol>
+<button id="clear" class="secondary">Очистить видеотеку</button>
 </section>
 <section class="panel">
-<h2>Что означает результат</h2>
-<ul>
-<li>«Сервер доступен» — отвечает программа Node.js.</li>
-<li>«Плейлист найден» — сервер видит файл HLS, но это ещё не доказывает, что видео воспроизводится.</li>
-<li>«Поток отсутствует» — нужно запустить источник видео и FFmpeg/SRS.</li>
-</ul>
-<p class="muted">Для реального публичного эфира нужны ресурсы хостинга, стабильный трафик и права на показ видео. Бесплатность исходного кода не означает, что любой хостинг предоставляет неограниченные вычисления и трафик.</p>
+<h2>🕒 Расписание локального показа</h2>
+<p class="muted">Можно назначить время автоматического запуска на этом устройстве. Браузер должен быть открыт, а устройство — включено.</p>
+<label for="starttime">Время запуска</label> <input id="starttime" type="time" value="08:00">
+<button id="schedule">Сохранить расписание</button>
+<p id="schedstate" class="muted">Расписание не настроено.</p>
+</section>
+<section class="panel">
+<h2>Как это работает бесплатно</h2>
+<ul><li>Страница размещена на GitHub Pages бесплатно.</li><li>Видеофайлы хранятся в локальной базе браузера на устройстве.</li><li>Плейлист воспроизводится по очереди, с повтором при включённой настройке.</li><li>Для автоматического старта по времени страница должна быть открыта.</li></ul>
+<p><strong>Важно:</strong> это работающий локальный эфир в открытом браузере, а не единый интернет-канал 24/7. GitHub Pages не передаёт видео зрителям и не хранит твои видеофайлы. Чтобы все зрители смотрели один общий поток круглосуточно, нужен постоянно работающий видеосервер и достаточный трафик. Бесплатная веб-страница не может заменить сервер. Не загружай и не транслируй чужие мультфильмы без разрешения правообладателя.</p>
+<a class="action" href="index.html">На главную</a><a class="action" href="tv.html">Обычный плеер</a>
 </section>
 </main>
 <script>
-const $=id=>document.getElementById(id);
-$('check').addEventListener('click',async()=>{
- let base=$('base').value.trim().replace(/\/$/,'');
- if(!base){$('result').className='status warn';$('result').textContent='Сначала укажи адрес сервера.';return}
- try{
-  $('check').disabled=true;$('result').className='status warn';$('result').textContent='Проверяем…';
-  const [h,c]=await Promise.all([fetch(base+'/health',{cache:'no-store'}),fetch(base+'/api/channel',{cache:'no-store'})]);
-  if(!h.ok||!c.ok)throw new Error('Сервер вернул HTTP '+(!h.ok?h.status:c.status));
-  const health=await h.json(),channel=await c.json();
-  $('result').className='status good';$('result').textContent='Сервер отвечает. Проверка завершена.';
-  $('process').textContent=health.status==='online'?'Работает':'Ответ получен: '+health.status;
-  $('stream').textContent=channel.broadcast==='playlist-found'?'HLS-плейлист найден: '+channel.playlist:'Поток пока не опубликован.';
- }catch(e){
-  $('result').className='status bad';$('result').textContent='Не удалось проверить сервер: '+e.message+'. Проверь адрес и доступность сервера.';
-  $('process').textContent='Нет соединения';$('stream').textContent='Неизвестно';
- }finally{$('check').disabled=false}
-});
-</script>
-</body>
-</html>
+const DB='multiktv-cloud-v1',STORE='videos';let db,items=[],index=0,currentUrl=null;
+const $=id=>document.getElementById(id),video=$('player');
+function say(t,kind='warn'){$('status').className='status '+kind;$('status').textContent=t}
+function openDB(){return new Promise((resolve,reject)=>{const q=indexedDB.open(DB,1);q.onupgradeneeded=()=>q.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)})}
+function all(){return new Promise((resolve,reject)=>{const q=db.transaction(STORE).objectStore(STORE).getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)})}
+function write(item){return new Promise((resolve,reject)=>{const q=db.transaction(STORE,'readwrite').objectStore(STORE).add(item);q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)})}
+function remove(id){return new Promise((resolve,reject)=>{const q=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);q.onsuccess=resolve;q.onerror=()=>reject(q.error)})}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function refresh(){items=await all();render();say('Видеотека готова: '+items.length+' видео.', 'good')}
+function render(){const q=$('queue');q.innerHTML='';if(!items.length){q.innerHTML='<li>Видеотека пуста. Добавь своё видео выше.</li>';return}
+items.forEach((it,i)=>{const li=document.createElement('li');li.innerHTML='<strong>'+esc(it.name)+'</strong> <span class="tag">'+(it.blob?'сохранённый файл':'внешняя ссылка')+'</span><br><button data-act="play" data-i="'+i+'">▶</button><button data-act="up" data-i="'+i+'" class="secondary">↑</button><button data-act="down" data-i="'+i+'" class="secondary">↓</button><button data-act="del" data-i="'+i+'" class="secondary">Удалить</button>';q.append(li)})}
+async function playAt(i){if(!items.length)return say('Сначала добавь видео.');if(i>=items.length){if($('repeat').checked)i=0;else{say('Плейлист завершён.');return}}index=i;const it=items[index];if(currentUrl)URL.revokeObjectURL(currentUrl);currentUrl=it.blob?URL.createObjectURL(it.blob):it.url;video.src=currentUrl;$('now').textContent='Сейчас в эфире: '+it.name;try{await video.play();say('Воспроизведение: '+it.name,'good')}catch(e){say('Нажми кнопку воспроизведения на плеере. Возможно, браузер блокирует автозапуск.')}} 
+$('add').onclick=async()=>{const fs=[...$('files').files];if(!fs.length)return say('Выбери видеофайлы.');$('add').disabled=true;try{for(const f of fs)await write({name:f.name,blob:f,type:f.type});$('files').value='';await refresh()}catch(e){say('Не удалось сохранить файлы. Возможно, не хватает места в памяти браузера.')}finally{$('add').disabled=false}};
+$('addurl').onclick=async()=>{const url=$('url').value.trim(),name=$('urlname').value.trim()||'Видео по ссылке';if(!/^https:\/\//i.test(url))return say('Нужна прямая HTTPS-ссылка на видео.');await write({name,url});$('url').value='';$('urlname').value='';await refresh()};
+$('play').onclick=()=>playAt(index);$('pause').onclick=()=>video.pause();$('next').onclick=()=>playAt(index+1);video.onended=()=>playAt(index+1);
+$('queue').onclick=async e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i,act=b.dataset.act;if(act==='play')playAt(i);if(act==='del'){await remove(items[i].id);if(index>=items.length-1)index=0;await refresh()}if(act==='up'&&i>0){[items[i-1],items[i]]=[items[i],items[i-1]];await reorder()}if(act==='down'&&i<items.length-1){[items[i+1],items[i]]=[items[i],items[i+1]];await reorder()}};
+async function reorder(){const tx=db.transaction(STORE,'readwrite'),st=tx.objectStore(STORE);st.clear();items.forEach(x=>{const {id,...v}=x;st.add(v)});tx.oncomplete=refresh}
+$('clear').onclick=async()=>{if(!confirm('Удалить все видео из этой видеотеки?'))return;const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).clear();tx.oncomplete=()=>{index=0;refresh();video.pause();video.removeAttribute('src');video.load()}};
+$('schedule').onclick=()=>{localStorage.setItem('multiktv-start', $('starttime').value);$('schedstate').textContent='Сохранено: запуск ежедневно в '+$('starttime').value+' (пока эта страница открыта).'};
+const saved=localStorage.getItem('multiktv-start');if(saved){$('starttime').value=saved;$('schedstate').textContent='Сохранено: запуск ежедневно в '+saved+'.'}
+setInterval(()=>{const t=localStorage.getItem('multiktv-start');if(t&&items.length&&!video.src){const now=new Date(),target=t.split(':').map(Number);if(now.getHours()===target[0]&&now.getMinutes()===target[1]&&now.getSeconds()<20)playAt(0)}},10000);
+openDB().then(async x=>{db=x;await refresh()}).catch(()=>say('Браузер не разрешил локальное хранилище. Попробуй открыть страницу в обычном режиме браузера.'));
+</script></body></html>
