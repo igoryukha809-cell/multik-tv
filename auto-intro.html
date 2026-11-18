@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#7132a8">
+<title>Автозаставка — МУЛЬТИК ТВ</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#21123c;color:#fff;font-family:Arial,sans-serif}header{text-align:center;padding:18px}.wrap{max-width:1000px;margin:auto;padding:12px}.panel{background:#fff;color:#30215b;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 8px 24px #0003}label{display:block;font-weight:700;margin:12px 0 5px}input,select,button{font:inherit;padding:11px;border-radius:9px;border:1px solid #c9bddb;max-width:100%}input[type=text]{width:100%}button{background:#7132a8;color:white;border:0;font-weight:700;cursor:pointer;margin:5px 5px 5px 0}button.secondary{background:#eee;color:#30215b}button:disabled{opacity:.5;cursor:wait}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}canvas{width:100%;height:auto;display:block;background:#120b2d;border-radius:14px;aspect-ratio:16/9}.muted{color:#685b78;font-size:13px;line-height:1.5}.status{font-weight:700;min-height:24px;margin:10px 0}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.back{color:#fff}
+</style></head>
+<body>
+<header><div class="logo">🌈 МУЛЬТИК ТВ</div><p>Автоматическая студия заставок</p></header>
+<main class="wrap">
+<section class="panel"><h1>✨ Создай заставку одним нажатием</h1><p>Студия сама нарисует волшебный космический мир, анимированный логотип и сочинит оригинальную музыкальную тему. Загружать картинки и музыку не нужно.</p>
+<div class="grid">
+<div><label for="brand">Название канала</label><input id="brand" type="text" maxlength="28" value="МУЛЬТИК ТВ"></div>
+<div><label for="slogan">Слоган</label><input id="slogan" type="text" maxlength="60" value="МИР НАЧИНАЕТСЯ С ВОЛШЕБСТВА!"></div>
+<div><label for="length">Длительность</label><select id="length"><option value="12">12 секунд</option><option value="18" selected>18 секунд</option><option value="24">24 секунды</option></select></div>
+</div>
+<p class="muted">Музыка генерируется прямо в браузере с помощью синтезированных нот. Видео и звук записываются вместе в WebM. Работает в актуальном Chrome; во время создания не закрывай страницу.</p>
+</section>
+<section class="panel"><h2>Предпросмотр</h2><canvas id="screen" width="1280" height="720"></canvas>
+<div class="row"><button id="make">🌟 Создать заставку и музыку</button><button id="preview" class="secondary" disabled>▶ Повторить просмотр</button><button id="save" disabled>⬇ Сохранить видео со звуком</button></div>
+<div class="status" id="status">Нажми «Создать заставку и музыку».</div>
+<div class="muted" id="note">Готовый файл будет сохранён на твоё устройство. Ничего не публикуется автоматически.</div>
+</section>
+<div class="panel"><a class="back" href="index.html">← На главную МУЛЬТИК ТВ</a></div>
+</main>
+<script>
+const $=id=>document.getElementById(id),c=$('screen'),g=c.getContext('2d'),W=c.width,H=c.height;
+let raf=0,rec=null,chunks=[],lastBlob=null,playing=false,ac=null,master=null,started=0,dur=18,notesTimer=null;
+const stars=Array.from({length:130},(_,i)=>({x:(i*197)%W,y:(i*113)%H,r:1+(i%3),p:i*.71}));
+function rounded(x,y,w,h,r){g.beginPath();g.roundRect(x,y,w,h,r)}
+function draw(t=0,final=false){
+ const grad=g.createLinearGradient(0,0,W,H);grad.addColorStop(0,'#160d3c');grad.addColorStop(.48,'#54248c');grad.addColorStop(1,'#f18eb3');g.fillStyle=grad;g.fillRect(0,0,W,H);
+ stars.forEach(s=>{let y=(s.y+t*(9+s.r*3))%H;g.globalAlpha=.35+.65*(.5+.5*Math.sin(t*2+s.p));g.fillStyle='#fff';g.beginPath();g.arc(s.x,y,s.r,0,Math.PI*2);g.fill()});g.globalAlpha=1;
+ const colors=['#ff5d80','#ffad55','#ffe66b','#6ce6a1','#63c9ff','#b18aff'];
+ colors.forEach((col,i)=>{g.strokeStyle=col;g.globalAlpha=.65+.3*Math.sin(t*1.3+i);g.lineWidth=18;g.beginPath();g.ellipse(W/2,H*.79,390-i*19,330-i*19,0,Math.PI,Math.PI*2);g.stroke()});g.globalAlpha=1;
+ const planets=[[165,170,55,'#ff79ae'],[1090,175,43,'#7de7ff'],[1040,540,70,'#ffc86c'],[230,545,35,'#9af0b6']];
+ planets.forEach((p,i)=>{let x=p[0]+Math.sin(t*.4+i)*16,y=p[1]+Math.cos(t*.5+i)*12;g.fillStyle=p[3];g.globalAlpha=.17;g.beginPath();g.arc(x,y,p[2]+16,0,Math.PI*2);g.fill();g.globalAlpha=1;g.beginPath();g.arc(x,y,p[2],0,Math.PI*2);g.fill();g.strokeStyle='#fff';g.lineWidth=3;g.stroke()});
+ // sparkling portal
+ let pulse=1+Math.sin(t*2.8)*.04;g.save();g.translate(W/2,H/2-15);g.scale(pulse,pulse);g.strokeStyle='rgba(255,255,255,.65)';g.lineWidth=5;g.beginPath();g.ellipse(0,0,245,165,0,0,Math.PI*2);g.stroke();g.restore();
+ let reveal=Math.max(0,Math.min(1,(t-4)/3));g.globalAlpha=reveal;
+ g.fillStyle='rgba(28,10,68,.65)';rounded(180,245,920,235,48);g.fill();g.strokeStyle='rgba(255,255,255,.8)';g.lineWidth=4;g.stroke();
+ g.textAlign='center';g.textBaseline='middle';g.shadowColor='#210a49';g.shadowBlur=22;g.fillStyle='#fff';g.font='900 100px Arial';g.fillText($('brand').value||'МУЛЬТИК ТВ',W/2,350);
+ g.shadowBlur=10;g.fillStyle='#fff0a6';g.font='bold 34px Arial';g.fillText($('slogan').value||'МИР НАЧИНАЕТСЯ С ВОЛШЕБСТВА!',W/2,425);g.shadowBlur=0;g.globalAlpha=1;
+ if(t>dur-3){g.fillStyle='rgba(255,255,255,'+(.3+.5*(.5+.5*Math.sin(t*4)))+')';for(let i=0;i<20;i++){let x=(i*83+t*20)%W,y=(i*57)%H;g.beginPath();g.arc(x,y,2+i%3,0,7);g.fill()}}
+ if(final){g.fillStyle='rgba(255,255,255,.8)';g.font='bold 22px Arial';g.fillText('ТВОЙ МИР МУЛЬТФИЛЬМОВ',W/2,660)}
+}
+function musicStart(){
+ ac=new (window.AudioContext||window.webkitAudioContext)();master=ac.createGain();master.gain.value=.22;master.connect(ac.destination);
+ const dest=ac.createMediaStreamDestination();master.connect(dest);
+ const melody=[523.25,587.33,659.25,783.99,659.25,587.33,523.25,392,440,523.25,587.33,659.25,783.99,880,783.99,659.25];
+ const chords=[[261.63,329.63,392],[349.23,440,523.25],[220,261.63,329.63],[196,246.94,392]];
+ const beat=60/112,step=beat/2;
+ function tone(freq,when,length,type='sine',gain=.1){let o=ac.createOscillator(),v=ac.createGain();o.type=type;o.frequency.value=freq;v.gain.setValueAtTime(.0001,when);v.gain.exponentialRampToValueAtTime(gain,when+.025);v.gain.exponentialRampToValueAtTime(.0001,when+length);o.connect(v);v.connect(master);o.start(when);o.stop(when+length+.03)}
+ for(let i=0;i<Math.ceil(dur/step);i++){let when=ac.currentTime+i*step;let f=melody[i%melody.length];tone(f,when,step*.8,'sine',.09);tone(f*2,when,step*.45,'triangle',.025);if(i%4===0){let chord=chords[Math.floor(i/4)%4];chord.forEach(n=>tone(n,when,beat*1.8,'sine',.025));tone(chord[0]/2,when,beat*.9,'triangle',.055)}}
+ return dest.stream;
+}
+function stop(){playing=false;cancelAnimationFrame(raf);if(rec&&rec.state!=='inactive')rec.stop();if(ac){ac.close();ac=null}}
+function animate(){if(!playing)return;let t=(performance.now()-started)/1000;if(t>=dur){draw(dur,true);playing=false;if(rec&&rec.state==='recording')rec.stop();if(ac){ac.close();ac=null}$('status').textContent='Готово! Заставка и оригинальная музыка созданы.';return}draw(t);$('status').textContent='Создание заставки: '+Math.floor(t/dur*100)+'%';raf=requestAnimationFrame(animate)}
+function start(recording){if(playing)return;dur=Number($('length').value);playing=true;started=performance.now();if(recording){chunks=[];let stream=c.captureStream(30),audio=musicStart();audio.getAudioTracks().forEach(x=>stream.addTrack(x));let mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(x=>MediaRecorder.isTypeSupported(x));if(!mime){$('status').textContent='Этот браузер не поддерживает запись WebM. Открой страницу в Chrome.';playing=false;return}rec=new MediaRecorder(stream,{mimeType:mime});rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};rec.onstop=()=>{lastBlob=new Blob(chunks,{type:mime});$('save').disabled=false;$('preview').disabled=false};rec.start()}animate()}
+$('make').onclick=()=>{if(!window.MediaRecorder||!c.captureStream){$('status').textContent='Для создания файла открой сайт в актуальном Chrome.';return}$('make').disabled=true;$('save').disabled=true;$('preview').disabled=true;start(true);let check=setInterval(()=>{if(!playing){clearInterval(check);$('make').disabled=false}},250)};
+$('preview').onclick=()=>{if(lastBlob){let url=URL.createObjectURL(lastBlob),v=document.createElement('video');v.controls=true;v.src=url;v.style='width:100%;margin-top:12px;border-radius:12px';let old=document.getElementById('resultVideo');if(old)old.remove();v.id='resultVideo';$('note').after(v);v.play().catch(()=>{})}};
+$('save').onclick=()=>{if(!lastBlob)return;let url=URL.createObjectURL(lastBlob),a=document.createElement('a');a.href=url;a.download='multik-tv-zastavka.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);$('status').textContent='Видео со звуком сохранено на устройство.'};
+draw(0);
+</script></body></html>
