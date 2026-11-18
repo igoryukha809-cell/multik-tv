@@ -10,6 +10,21 @@ STOP=0
 stop() { STOP=1; echo "МУЛЬТИК ТВ: получена команда остановки"; }
 trap stop TERM INT
 
+# Check the RTMP ingest port directly. An HTTP GET to SRS "/" may return
+# 404 even when SRS is healthy, which would otherwise leave the playlist waiting forever.
+srs_ready() {
+  (echo > /dev/tcp/srs/1935) >/dev/null 2>&1
+}
+
+wait_for_srs() {
+  until (( STOP == 1 )) || srs_ready; do
+    echo "Видеосервер SRS пока недоступен; повтор через ${WAIT_SECONDS} секунд."
+    sleep "${WAIT_SECONDS}"
+  done
+  (( STOP == 1 )) && return 1
+  return 0
+}
+
 shopt -s nullglob
 echo "МУЛЬТИК ТВ: автоматический плейлист запущен; каталог: ${MEDIA_DIR}"
 
@@ -18,11 +33,7 @@ while (( STOP == 0 )); do
 
   if (( ${#files[@]} == 0 )); then
     echo "В ${MEDIA_DIR} нет видео. Передаю безопасную тестовую заставку и повторно проверяю каталог через 30 секунд."
-    until (( STOP == 1 )) || wget -q -T 3 -O /dev/null http://srs:8080/; do
-      echo "Видеосервер SRS пока недоступен; повтор через ${WAIT_SECONDS} секунд."
-      sleep "${WAIT_SECONDS}"
-    done
-    (( STOP == 1 )) && break
+    wait_for_srs || break
     ffmpeg -hide_banner -nostdin -loglevel warning -re \
       -f lavfi -i "color=c=0x172554:s=1280x720:r=25:d=30" \
       -vf "drawtext=fontfile=/usr/share/fonts/TTF/DejaVuSans.ttf:text='MULTIK TV':fontcolor=white:fontsize=72:x=(w-text_w)/2:y=(h-text_h)/2-55,drawtext=fontfile=/usr/share/fonts/TTF/DejaVuSans.ttf:text='TECHNICAL BREAK - TEST SIGNAL':fontcolor=0xFDE68A:fontsize=30:x=(w-text_w)/2:y=(h-text_h)/2+55" \
@@ -36,12 +47,7 @@ while (( STOP == 0 )); do
     (( STOP == 1 )) && break
     [[ -f "$file" ]] || continue
 
-    # Wait until the SRS HTTP endpoint responds before attempting RTMP ingest.
-    until (( STOP == 1 )) || wget -q -T 3 -O /dev/null http://srs:8080/; do
-      echo "Видеосервер SRS пока недоступен; повтор через ${WAIT_SECONDS} секунд."
-      sleep "$WAIT_SECONDS"
-    done
-    (( STOP == 1 )) && break
+    wait_for_srs || break
 
     echo "Эфир: ${file}"
     if ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$file" \
@@ -57,7 +63,7 @@ while (( STOP == 0 )); do
   done
 
   # Brief pause prevents a tight error loop if every source file is damaged.
-  (( STOP == 1 )) || sleep "$RETRY_SECONDS"
+  (( STOP == 1 )) || sleep "${RETRY_SECONDS}"
 done
 
 echo "МУЛЬТИК ТВ: плейлист остановлен."
