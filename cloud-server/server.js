@@ -1,6 +1,6 @@
 'use strict';
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
-const PORT=Number(process.env.PORT||8080),HLS=path.resolve(process.env.HLS_DIR||'/hls'),DATA=path.resolve(process.env.DATA_DIR||'/data');
+const PORT=Number(process.env.PORT||8080),HLS=path.resolve(process.env.HLS_DIR||'/hls'),DATA=path.resolve(process.env.DATA_DIR||'/data'),MEDIA=path.resolve(process.env.MEDIA_DIR||'/media'),ALLOWED_ORIGIN=process.env.ALLOWED_ORIGIN||'https://igoryukha809-cell.github.io';
 function directorStatus(){try{return JSON.parse(fs.readFileSync(path.join(DATA,'director-status.json'),'utf8'))}catch{return {status:'starting-or-waiting',encoderRunning:false}}}
 const learning=require('./learning');
 const MAX=32768,WRITE_TOKEN=process.env.API_WRITE_TOKEN||'';
@@ -27,11 +27,11 @@ function safeSchedule(value){
  });
  return {items};
 }
-function send(res,status,data,type='application/json; charset=utf-8'){res.writeHead(status,{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':'*'});res.end(typeof data==='string'?data:JSON.stringify(data));}
+function send(res,status,data,type='application/json; charset=utf-8'){res.writeHead(status,{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':ALLOWED_ORIGIN,'Vary':'Origin'});res.end(typeof data==='string'?data:JSON.stringify(data));}
 function safeFile(base,p){let d;try{d=decodeURIComponent(p)}catch{return null}const f=path.resolve(base,'.'+d);return f.startsWith(base+path.sep)?f:null}
 function body(req){return new Promise((resolve,reject)=>{let s='';req.on('data',c=>{s+=c;if(s.length>MAX){reject(Error('Request too large'));req.destroy();}});req.on('end',()=>{try{resolve(JSON.parse(s||'{}'))}catch{reject(Error('Invalid JSON'))}});req.on('error',reject)})}
 const server=http.createServer(async(req,res)=>{let u;try{u=new URL(req.url,'http://localhost')}catch{return send(res,400,{error:'Bad URL'})}
-if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,HEAD,OPTIONS','Access-Control-Allow-Headers':'Content-Type'});return res.end()}
+if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,HEAD,OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization'});return res.end()}
 if(!['GET','HEAD','POST'].includes(req.method))return send(res,405,{error:'Method not allowed'});
 if(req.method==='GET'&&u.pathname==='/health')return send(res,200,{service:'МУЛЬТИК ТВ',status:'online',director:directorStatus().status});
 if(req.method==='GET'&&u.pathname==='/api/channel'){const playlist='/live/multiktv.m3u8',exists=fs.existsSync(path.join(HLS,playlist));return send(res,200,{channel:'МУЛЬТИК ТВ',server:'online',broadcast:exists?'signal-detected':'offline',playlist:exists?'/hls'+playlist:null,director:directorStatus(),updatedAt:new Date().toISOString()})}
@@ -40,6 +40,16 @@ if(req.method==='GET'&&u.pathname==='/api/admin/status'){
  if(!await authorized(req))return send(res,403,{error:'Admin access required'});
  let files=[];try{files=fs.readdirSync(process.env.MEDIA_DIR||'/media').filter(x=>/^[\\w .()-]{1,180}\\.(mp4|m4v|mov|webm)$/i.test(x));}catch{}
  return send(res,200,{director:directorStatus(),playlist:scheduleRead(),media:files,rtmpConfigured:!!process.env.RTMP_TARGET});
+}
+if(req.method==='POST'&&u.pathname==='/api/admin/upload'){
+ if(!await authorized(req))return send(res,403,{error:'Admin access required'});
+ const name=u.searchParams.get('filename')||'';
+ if(!/^[\\w .()-]{1,160}\\.(mp4|m4v|mov|webm)$/i.test(name))return send(res,400,{error:'Use a safe video filename ending in mp4, m4v, mov or webm'});
+ fs.mkdirSync(MEDIA,{recursive:true});const target=path.join(MEDIA,name);let size=0,failed=false;
+ const out=fs.createWriteStream(target,{flags:'wx'});
+ req.on('data',chunk=>{size+=chunk.length;if(size>524288000&&!failed){failed=true;req.destroy();out.destroy();}});
+ req.pipe(out);out.on('finish',()=>send(res,201,{uploaded:true,filename:name,bytes:size}));out.on('error',e=>{if(!res.headersSent)send(res,400,{error:e.code==='EEXIST'?'File already exists':'Upload failed'})});
+ return;
 }
 if(req.method==='PUT'&&u.pathname==='/api/admin/playlist'){
  if(!await authorized(req))return send(res,403,{error:'Admin access required'});
