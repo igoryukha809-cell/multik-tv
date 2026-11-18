@@ -20,4 +20,6 @@ $('csv').onclick=()=>download('multik-tv-log.csv','Время;Тип;Перед�
 $('json').onclick=()=>download('multik-tv-log.json',JSON.stringify(entries,null,2),'application/json');
 $('import').onclick=()=>$('file').click();$('file').onchange=async()=>{const f=$('file').files[0];if(!f)return;try{const v=JSON.parse(await f.text());if(!Array.isArray(v)||v.some(e=>!e||typeof e.kind!=='string'||typeof e.when!=='string'))throw Error();entries=v;save();alert('Импортировано записей: '+entries.length)}catch(e){alert('Не удалось прочитать журнал JSON.')}finally{$('file').value=''}};
 $('clear').onclick=()=>{if(confirm('Удалить все записи этого журнала?')){entries=[];save()}};render();
-</script></body></html>
+</script>
+<script type="module" src="./admin-guard.js"></script>
+</body></html>
