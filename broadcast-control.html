@@ -1,33 +1,71 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Облачный эфир — МУЛЬТИК ТВ</title>
-<style>*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#17133c,#51277c,#102c50);color:#fff;font:16px system-ui}main{max-width:850px;margin:auto;padding:22px}.card{background:white;color:#29204c;border-radius:18px;padding:20px;margin:14px 0}button{border:0;border-radius:10px;padding:13px 18px;font-weight:700;background:#6338a8;color:white;margin:4px}button.stop{background:#a72d45}.muted{color:#6d6680;font-size:14px}.status{padding:12px;background:#f0edf8;border-radius:10px;white-space:pre-wrap}a{color:#ffd978}.warn{background:#fff1ca;color:#654600;padding:12px;border-radius:10px}</style></head><body><main>
-<h1>☁️ Облачный эфир МУЛЬТИК ТВ</h1><p>Управление серверным вещанием без OBS.</p>
-<div class="card"><h2>Состояние</h2><div id="status" class="status">Проверяем права администратора…</div><p><button id="refresh">Обновить статус</button></p></div>
-<div class="card"><h2>Управление эфиром</h2><p class="muted">Запуск доступен, когда сервер настроен, добавлены видео с подтверждёнными правами на публичный показ и сохранён плейлист.</p><button id="start" disabled>Запустить эфир</button><button class="stop" id="stop" disabled>Остановить эфир</button><p id="result" class="muted"></p></div>
-<div class="card"><h2>Подключение сервера</h2><div class="warn">Сервер ещё не подключён. Адрес API и секретный RTMP URL настраиваются в облачных переменных, а не в этом браузере. Не вставляй ключ потока в HTML, репозиторий или чат.</div><p class="muted">После подключения Railway и Supabase эта панель сможет управлять сервером через защищённый API.</p></div>
-<p><a href="admin.html">← В админ-панель</a></p></main>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Пульт эфира — МУЛЬТИК ТВ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#17133c,#51277c,#102c50);color:#fff;font:16px system-ui}main{max-width:920px;margin:auto;padding:22px}.card{background:#fff;color:#29204c;border-radius:18px;padding:20px;margin:14px 0}button,.filebtn{border:0;border-radius:10px;padding:11px 15px;font-weight:700;background:#6338a8;color:#fff;margin:4px;cursor:pointer}.secondary{background:#e9e5f4;color:#30245a}.stop{background:#a72d45}.muted{color:#6d6680;font-size:14px}.status{padding:12px;background:#f0edf8;border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere}.warn{background:#fff1ca;color:#654600;padding:12px;border-radius:10px;line-height:1.5}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.item{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 0;border-bottom:1px solid #e5e0ef}.item small{display:block;color:#716b83}.item button{padding:7px 10px}.item input{margin-right:8px}input[type=text]{width:100%;padding:11px;border:1px solid #c9c2d9;border-radius:9px;margin:5px 0 10px}a{color:#ffd978}#playlist{padding:0;list-style:none}label{font-weight:600}input[type=file]{max-width:100%}
+</style></head>
+<body><main>
+<h1>🌈 Пульт эфира МУЛЬТИК ТВ</h1>
+<p>Управление очередью видео и облачным вещанием.</p>
+<div class="card"><h2>Состояние сервера</h2><div id="status" class="status">Проверяем подключение…</div><div class="row"><button id="refresh">Обновить</button><button id="start" disabled>▶ Запустить эфир</button><button id="stop" class="stop" disabled>■ Остановить эфир</button></div></div>
+<div class="card"><h2>📁 Видеотека сервера</h2><p class="muted">Добавляй только видео, на которые есть разрешение для публичного показа. Загрузка доступна после подключения защищённого сервера.</p><input id="upload" type="file" accept="video/mp4,video/webm,video/quicktime,video/x-m4v"><button id="uploadBtn" disabled>Загрузить на сервер</button><div id="media" class="status">Список файлов появится после подключения сервера.</div></div>
+<div class="card"><h2>🗓️ Очередь эфира</h2><p class="muted">Добавляй файлы из видеотеки, отмечай подтверждение прав, меняй порядок и сохраняй очередь на сервере.</p><div id="playlist" class="status">Очередь пока не загружена.</div><div class="row"><button id="save" disabled>Сохранить очередь на сервере</button><button id="export" class="secondary">Скачать JSON</button></div><p id="result" class="muted" aria-live="polite"></p></div>
+<div class="card"><h2>🔌 Подключение</h2><div class="warn">Сейчас облачный сервер ещё не подключён к этой панели. Адрес API, авторизация Supabase и адрес RTMP-приёмника настраиваются владельцем сервера в переменных окружения. Секретный ключ потока нельзя помещать в HTML, GitHub или чат. Не вставляй сюда RTMP-ключ.</div><p class="muted">Пока API не настроен, можно составить очередь и скачать её JSON-файлом. Это ещё не меняет список видео в PulseCast.</p></div>
+<p><a href="admin.html">← В админ-панель</a> · <a href="https://pulsecast.tv/en/dashboard" target="_blank" rel="noopener">PulseCast</a> · <a href="https://app.kinescope.io/" target="_blank" rel="noopener">Kinescope</a></p>
+</main>
 <script type="module">
 import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import {SUPABASE_URL,SUPABASE_ANON_KEY} from "./admin-config.js";
-const statusEl=document.querySelector("#status"),result=document.querySelector("#result"),start=document.querySelector("#start"),stop=document.querySelector("#stop"),refresh=document.querySelector("#refresh");
 const API_BASE="https://YOUR-RAILWAY-SERVICE.up.railway.app";
-let token=null;
+const $=id=>document.getElementById(id);
+let token=null,media=[],items=[];
+function say(s){$("result").textContent=s}
+function renderMedia(){
+ const box=$("media");box.replaceChildren();
+ if(!media.length){box.textContent="На сервере пока нет загруженных видео.";return}
+ media.forEach(file=>{const row=document.createElement("div");row.className="item";const name=document.createElement("span");name.textContent=file;const add=document.createElement("button");add.textContent="＋ В очередь";add.onclick=()=>{if(items.some(x=>x.file===file)){say("Этот файл уже есть в очереди.");return}items.push({title:file.replace(/\\.[^.]+$/,""),file,rightsCleared:false});renderPlaylist()};row.append(name,add);box.append(row)});
+}
+function renderPlaylist(){
+ const box=$("playlist");box.replaceChildren();
+ if(!items.length){box.textContent="Очередь пуста. Добавь видео из видеотеки после подключения сервера.";return}
+ items.forEach((item,i)=>{
+  const row=document.createElement("li");row.className="item";
+  const left=document.createElement("div");
+  const title=document.createElement("input");title.type="text";title.value=item.title;title.setAttribute("aria-label","Название передачи");title.onchange=()=>item.title=title.value;
+  const rights=document.createElement("label");const check=document.createElement("input");check.type="checkbox";check.checked=item.rightsCleared;check.onchange=()=>item.rightsCleared=check.checked;rights.append(check,document.createTextNode("Права на публичный показ проверены"));
+  const filename=document.createElement("small");filename.textContent=item.file;left.append(title,rights,filename);
+  const actions=document.createElement("div");
+  const up=document.createElement("button");up.textContent="↑";up.disabled=i===0;up.onclick=()=>{[items[i-1],items[i]]=[items[i],items[i-1]];renderPlaylist()};
+  const down=document.createElement("button");down.textContent="↓";down.disabled=i===items.length-1;down.onclick=()=>{[items[i+1],items[i]]=[items[i],items[i+1]];renderPlaylist()};
+  const del=document.createElement("button");del.textContent="Удалить";del.className="stop";del.onclick=()=>{items.splice(i,1);renderPlaylist()};
+  actions.append(up,down,del);row.append(left,actions);box.append(row);
+ });
+}
+async function api(path,method="GET",body,extraHeaders={}){
+ const r=await fetch(API_BASE+path,{method,headers:{Authorization:"Bearer "+token,...(body?{"Content-Type":"application/json"}:{}),...extraHeaders},body:body||undefined});
+ const j=await r.json().catch(()=>({error:"Ответ сервера не JSON"}));if(!r.ok)throw Error(j.error||"HTTP "+r.status);return j;
+}
+async function load(){
+ if(API_BASE.includes("YOUR-RAILWAY")){$("status").textContent="API сервера не настроен. Пульт и экспорт JSON доступны, но удалённое управление пока отключено.";return}
+ try{
+  const j=await api("/api/admin/status");media=j.media||[];items=j.playlist?.items||[];
+  $("status").textContent="Сервер: "+(j.director?.status||"неизвестно")+"\nФайлов: "+media.length+"\nЭлементов очереди: "+items.length+"\nRTMP-приёмник настроен: "+(j.rtmpConfigured?"да":"нет");
+  ["start","stop","save","uploadBtn"].forEach(id=>$(id).disabled=false);renderMedia();renderPlaylist();
+ }catch(e){$("status").textContent="Не удалось подключиться: "+e.message}
+}
+$("refresh").onclick=load;
+$("save").onclick=async()=>{try{const j=await api("/api/admin/playlist","PUT",JSON.stringify({items}));say("Очередь сохранена. Элементов: "+j.items); }catch(e){say("Не удалось сохранить: "+e.message)}};
+$("start").onclick=async()=>{try{await api("/api/admin/broadcast/start","POST","{}");say("Команда запуска отправлена.");await load()}catch(e){say("Запуск не выполнен: "+e.message)}};
+$("stop").onclick=async()=>{try{await api("/api/admin/broadcast/stop","POST","{}");say("Команда остановки отправлена.");await load()}catch(e){say("Остановка не выполнена: "+e.message)}};
+$("uploadBtn").onclick=async()=>{const f=$("upload").files[0];if(!f){say("Сначала выбери видеофайл.");return}try{const r=await fetch(API_BASE+"/api/admin/upload?filename="+encodeURIComponent(f.name),{method:"POST",headers:{Authorization:"Bearer "+token},body:f});const j=await r.json();if(!r.ok)throw Error(j.error||"HTTP "+r.status);say("Файл загружен: "+j.filename);await load()}catch(e){say("Загрузка не выполнена: "+e.message)}};
+$("export").onclick=()=>{const blob=new Blob([JSON.stringify({items},null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="multik-tv-playlist.json";a.click();URL.revokeObjectURL(url);say("JSON-файл очереди подготовлен.")};
 async function init(){
- if(SUPABASE_URL.includes("YOUR_PROJECT")||SUPABASE_ANON_KEY.includes("YOUR_SUPABASE")){statusEl.textContent="Supabase не настроен. Владелец проекта должен подключить авторизацию и назначить администратора.";return;}
- const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {data:{session}}=await sb.auth.getSession();
- if(!session){statusEl.textContent="Войдите в учётную запись администратора через login.html.";return;}
- const {data,error}=await sb.from("admin_users").select("user_id").eq("user_id",session.user.id).maybeSingle();
- if(error||!data){statusEl.textContent="У этой учётной записи нет прав администратора.";return;}
- token=session.access_token;
- if(API_BASE.includes("YOUR-RAILWAY")){statusEl.textContent="Права администратора подтверждены. Облачный сервер ещё не развёрнут и не подключён.";return;}
- start.disabled=stop.disabled=refresh.disabled=false;await load();
+ if(SUPABASE_URL.includes("YOUR_PROJECT")||SUPABASE_ANON_KEY.includes("YOUR_SUPABASE")){$("status").textContent="Supabase не настроен. Для защищённого управления владелец проекта должен настроить авторизацию.";return}
+ try{const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {data:{session}}=await sb.auth.getSession();if(!session){$("status").textContent="Войдите через login.html под учётной записью администратора.";return}
+ const {data,error}=await sb.from("admin_users").select("user_id").eq("user_id",session.user.id).maybeSingle();if(error||!data){$("status").textContent="У этой учётной записи нет прав администратора.";return}token=session.access_token;await load()
+ }catch(e){$("status").textContent="Ошибка проверки входа: "+e.message}
 }
-async function request(path,method="GET",body){
- const r=await fetch(API_BASE+path,{method,headers:{Authorization:"Bearer "+token,...(body?{"Content-Type":"application/json"}:{})},body:body?JSON.stringify(body):undefined});
- const j=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw Error(j.error||"HTTP "+r.status);return j;
-}
-async function load(){try{const j=await request("/api/admin/status");statusEl.textContent="Статус: "+(j.director?.status||"неизвестно")+"\nФайлов: "+j.media.length+"\nЭлементов плейлиста: "+(j.playlist?.items?.length||0)+"\nRTMP настроен: "+(j.rtmpConfigured?"да":"нет");}catch(e){statusEl.textContent="Не удалось связаться с сервером: "+e.message;}}
-refresh.onclick=load;
-start.onclick=async()=>{try{result.textContent="Отправляем команду…";await request("/api/admin/broadcast/start","POST",{});result.textContent="Команда запуска принята. Проверь статус через несколько секунд.";await load();}catch(e){result.textContent="Запуск не выполнен: "+e.message;}};
-stop.onclick=async()=>{try{result.textContent="Останавливаем…";await request("/api/admin/broadcast/stop","POST",{});result.textContent="Команда остановки принята.";await load();}catch(e){result.textContent="Остановка не выполнена: "+e.message;}};
-init().catch(e=>statusEl.textContent="Ошибка проверки входа: "+e.message);
+renderPlaylist();init();
 </script></body></html>
