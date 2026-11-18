@@ -1,23 +1,60 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#25134d"><title>МУЛЬТИК ТВ — открытый эфир</title><link rel="stylesheet" href="styles.css">
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#25134d">
+<title>МУЛЬТИК ТВ — русская подборка</title>
+<link rel="stylesheet" href="styles.css">
 <style>
-main{max-width:950px;margin:auto;padding:16px}.panel{background:#fff;color:#25134d;border-radius:18px;padding:18px;margin:14px 0}.muted{color:#625a78;line-height:1.55}video{width:100%;max-height:65vh;background:#130d22;border-radius:14px}.actions a,button{display:inline-block;border:0;border-radius:10px;background:#6336a5;color:white;padding:11px 15px;font:inherit;font-weight:700;text-decoration:none;margin:5px 5px 5px 0}.item{border:1px solid #e3dced;border-radius:12px;padding:12px;margin:10px 0}.item a{color:#6336a5}
-</style></head><body><header><div class="logo">🌈 МУЛЬТИК ТВ — ОТКРЫТЫЙ ЭФИР</div><p>Автоматический показ произведений с открытыми лицензиями</p></header><main>
-<section class="panel"><h1>Сейчас на экране</h1><video id="player" controls playsinline muted autoplay></video><h2 id="title">Подготавливаем показ…</h2><p id="credit" class="muted"></p><p id="state" class="muted" role="status">Пробуем запустить видео. Если браузер остановил автозапуск, нажми «Начать показ».</p><button id="start">▶ Начать показ со звуком</button><button id="next">⏭ Следующий мультфильм</button><label><input type="checkbox" id="loop" checked> Повторять программу по кругу</label></section>
-<section class="panel"><h2>Программа</h2><div id="list"></div></section>
-<section class="panel"><h2>О проекте и правах</h2><p class="muted">Это браузерная подборка: каждый зритель запускает видео у себя. Она не создаёт общий круглосуточный интернет-поток. Автовоспроизведение со звуком может блокироваться браузером. В список включены материалы, для которых указаны открытые лицензии; сохраняй авторство и проверяй условия конкретного файла.</p><p class="muted">Если видео не открывается, это может быть ограничение источника или формата. Это не означает, что трансляция работает постоянно.</p><a href="autopilot.html">Статус автопилота</a> · <a href="cloud.html">Открыть студию</a> · <a href="index.html">Главная</a></section>
-</main><script>
-const shows=[
-{title:'Pepper & Carrot — Эпизод 6 (русская версия)',src:'https://upload.wikimedia.org/wikipedia/commons/8/8d/Morevna_Project_-_Pepper%26Carrot_%28animated_comic%29_-_Episode_6_-_The_Potion_Contest_%28Russian_variant%29.webm',credit:'Morevna Project · CC BY-SA 4.0',license:'https://creativecommons.org/licenses/by-sa/4.0/',source:'https://commons.wikimedia.org/wiki/File:Morevna_Project_-_Pepper%26Carrot_(animated_comic)_-_Episode_6_-_The_Potion_Contest_(Russian_variant).webm'},
-{title:'Elephants Dream',src:'https://commons.wikimedia.org/wiki/Special:Redirect/file/Elephants_Dream%28HQ%29.webm',credit:'Blender Foundation / Orange Open Movie Team · CC BY-SA 2.5',license:'https://creativecommons.org/licenses/by-sa/2.5/',source:'https://orange.blender.org/'},
-{title:'Caminandes — Llama Drama',src:'https://commons.wikimedia.org/wiki/Special:Redirect/file/Caminandes-_Llama_Drama_-_Short_Movie.ogv',credit:'Pablo Vazquez, Beorn Leonard, Francesco Siddi · CC BY 3.0',license:'https://creativecommons.org/licenses/by/3.0/',source:'https://www.blender.org/about/projects/'}
-];
-let index=0,failed=new Set(),attempts=0;const v=document.getElementById('player');
-function renderList(){document.getElementById('list').innerHTML=shows.map((s,i)=>'<div class="item"><b>'+(i+1)+'. '+s.title+'</b><p class="muted">'+s.credit+'</p><a href="'+s.source+'" target="_blank" rel="noopener">Источник</a> · <a href="'+s.license+'" target="_blank" rel="noopener">Лицензия</a></div>').join('')}
-function play(i){if(attempts>=shows.length){document.getElementById('state').textContent='Не удалось открыть доступные видео автоматически. Проверь источники по ссылкам в программе.';return}index=(i+shows.length)%shows.length;const s=shows[index];document.getElementById('title').textContent=s.title;document.getElementById('credit').textContent=s.credit;document.getElementById('state').textContent='Загружаем видео…';v.src=s.src;v.load();const p=v.play();if(p&&p.catch)p.catch(()=>document.getElementById('state').textContent='Автозапуск остановлен браузером. Нажми кнопку «Начать показ со звуком» или Play на видео.');}
-document.getElementById('start').onclick=()=>{v.muted=false;v.play().then(()=>document.getElementById('state').textContent='Показ идёт в этом браузере.').catch(()=>document.getElementById('state').textContent='Нажми Play на самом видеоплеере.')};
-document.getElementById('next').onclick=()=>{attempts=0;play(index+1)};
-v.onended=()=>{attempts=0;if(document.getElementById('loop').checked)play(index+1);else document.getElementById('state').textContent='Программа завершена.'};
-v.onerror=()=>{attempts++;document.getElementById('state').textContent='Источник не открылся; пробуем следующий материал…';if(attempts<shows.length)setTimeout(()=>play(index+1),800)};
-renderList();play(0);
-</script></body></html>
+main{max-width:950px;margin:auto;padding:16px}.panel{background:#fff;color:#25134d;border-radius:18px;padding:18px;margin:14px 0}
+.muted{color:#625a78;line-height:1.55}video{width:100%;max-height:65vh;background:#130d22;border-radius:14px}
+button,.action{display:inline-block;border:0;border-radius:10px;background:#6336a5;color:white;padding:11px 15px;font:inherit;font-weight:700;text-decoration:none;margin:5px 5px 5px 0}
+.item{border:1px solid #e3dced;border-radius:12px;padding:12px;margin:10px 0}.item a{color:#6336a5}
+</style>
+</head>
+<body>
+<header><div class="logo">🌈 МУЛЬТИК ТВ — РУССКАЯ ПОДБОРКА</div><p>Мультфильмы с указанными открытыми лицензиями</p></header>
+<main>
+<section class="panel">
+<h1>Сейчас на экране</h1>
+<video id="player" controls playsinline muted autoplay preload="metadata"></video>
+<h2 id="title">Pepper &amp; Carrot — Эпизод 6 (русская версия)</h2>
+<p id="credit" class="muted">Morevna Project · CC BY-SA 4.0</p>
+<p id="state" class="muted" role="status">Пробуем запустить видео. Если автозапуск остановлен, нажми Play.</p>
+<button id="start">▶ Начать показ со звуком</button>
+<button id="restart">↻ Повторить мультфильм</button>
+</section>
+<section class="panel">
+<h2>Программа</h2>
+<div class="item">
+<b>Pepper &amp; Carrot — Эпизод 6, русская версия</b>
+<p class="muted">Независимая анимация Morevna Project. Лицензия CC BY-SA 4.0: сохраняй указание авторства и соблюдай условия лицензии.</p>
+<a href="https://commons.wikimedia.org/wiki/File:Morevna_Project_-_Pepper%26Carrot_(animated_comic)_-_Episode_6_-_The_Potion_Contest_(Russian_variant).webm" target="_blank" rel="noopener">Источник видео</a> ·
+<a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">Текст лицензии</a>
+</div>
+<div class="item">
+<b>«Удивительное предложение» — русская анимация</b>
+<p class="muted">Короткометражный фильм, для которого в архивной карточке указаны русский и английский языки и лицензия CC BY 3.0.</p>
+<a href="https://invisiblenetwork.ai/watch/archive/ia/AmazingSentence" target="_blank" rel="noopener">Открыть фильм, источник и сведения о правах</a>
+</div>
+<p class="muted">В автоматическом видеоплеере пока один прямой русскоязычный видеофайл. Второй фильм доступен по ссылке выше; не добавляю непроверенные источники или материалы без ясных условий повторного использования.</p>
+</section>
+<section class="panel">
+<h2>О проекте и правах</h2>
+<p class="muted">Это браузерный показ: каждый зритель запускает видео у себя. Страница не создаёт общий круглосуточный интернет-поток. Автовоспроизведение со звуком может блокироваться браузером.</p>
+<p class="muted">Публичная доступность ролика сама по себе не даёт права на отдельную ретрансляцию. Перед публичным эфиром нужно проверить лицензию конкретного файла и все включённые материалы.</p>
+<a href="autopilot.html">Статус автопилота</a> · <a href="online-catalog.html">Каталог</a> · <a href="index.html">Главная</a>
+</section>
+</main>
+<script>
+const player=document.getElementById('player');
+const source='https://upload.wikimedia.org/wikipedia/commons/8/8d/Morevna_Project_-_Pepper%26Carrot_%28animated_comic%29_-_Episode_6_-_The_Potion_Contest_%28Russian_variant%29.webm';
+player.src=source;
+player.addEventListener('playing',()=>document.getElementById('state').textContent='Видео воспроизводится в этом браузере.');
+player.addEventListener('error',()=>document.getElementById('state').textContent='Источник сейчас не открылся. Открой ссылку «Источник видео» в программе.');
+player.play().catch(()=>document.getElementById('state').textContent='Браузер остановил автозапуск. Нажми Play на плеере или кнопку со звуком.');
+document.getElementById('start').onclick=()=>{player.muted=false;player.play().catch(()=>document.getElementById('state').textContent='Нажми Play на самом плеере.')};
+document.getElementById('restart').onclick=()=>{player.currentTime=0;player.play().catch(()=>document.getElementById('state').textContent='Нажми Play на самом плеере.')};
+</script>
+</body>
+</html>
