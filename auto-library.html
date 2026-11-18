@@ -18,7 +18,7 @@
 <script>
 (()=>{
 const $=id=>document.getElementById(id),api='https://commons.wikimedia.org/w/api.php';
-const allowed=/^(CC0|CC BY|CC BY-SA|Public domain)/i;
+const allowed=/^(CC0|CC BY(?:-SA)?(?:\\s|$)|Public domain)/i;
 let found=[];
 function clean(v){const d=document.createElement('div');d.innerHTML=v||'';return d.textContent.trim()}
 function readList(){try{return JSON.parse(localStorage.getItem('multikTvRightsPlaylist')||'[]')}catch{return[]}}
