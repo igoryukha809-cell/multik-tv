@@ -37,12 +37,12 @@ footer{font-size:13px;color:#9eacd3}
 <body>
 <header><div class="top"><div class="brand">🌈 МУЛЬТИК ТВ</div><a href="index.html">← На главную</a></div>
 <h1>МУЛЬТИК ТВ — автоматический браузерный эфир</h1>
-<span class="tag">БЕСПЛАТНО · РАБОТАЕТ В ОТКРЫТОЙ ВКЛАДКЕ</span></header>
+<span class="tag">БЕСПЛАТНО · АВТОЗАПУСК В ОТКРЫТОЙ ВКЛАДКЕ</span></header>
 <main>
 <section class="screen">
 <div class="stage" id="stage">
 <div class="stars" id="stars">✦　　✧　　 ✦　　✧　　✦</div>
-<div class="art" id="art"><div class="rainbow">🌈</div><h2>МУЛЬТИК ТВ</h2><p>Добро пожаловать в волшебный мир приключений!</p><p>Нажми «Запустить автоматический эфир» — и браузер начнёт показ.</p></div>
+<div class="art" id="art"><div class="rainbow">🌈</div><h2>МУЛЬТИК ТВ</h2><p>Добро пожаловать в волшебный мир приключений!</p><p>Автоматический показ запускается при открытии этой страницы. Звук можно включить кнопкой.</p></div>
 <video id="video" controls playsinline preload="metadata" hidden></video>
 </div>
 <div class="below"><span id="now">Сейчас в эфире: заставка МУЛЬТИК ТВ</span><span id="clock">--:--:--</span></div>
@@ -62,7 +62,7 @@ footer{font-size:13px;color:#9eacd3}
 <button id="stop" class="secondary">■ Остановить</button>
 <button id="full" class="secondary">⛶ На весь экран</button>
 </div>
-<p class="status" id="status" role="status" aria-live="polite">Ожидание запуска. Автовоспроизведение начнётся после нажатия кнопки.</p>
+<p class="status" id="status" role="status" aria-live="polite">Автозапуск начнётся после загрузки страницы; звук выключен до нажатия кнопки.</p>
 <ol id="queue"><li class="meta">Встроенная русскоязычная подборка и выбранные локальные файлы.</li></ol>
 <p class="meta">Выбранные файлы остаются на устройстве и не загружаются в интернет. После закрытия вкладки их нужно выбрать заново.</p>
 </section>
@@ -157,6 +157,8 @@ $('full').onclick=()=>{const el=$('stage');if(el.requestFullscreen)el.requestFul
 video.addEventListener('loadedmetadata',()=>{if(video.duration&&Number.isFinite(video.duration))status('Видео загружено. Длительность: '+Math.round(video.duration/60)+' мин.')});
 window.addEventListener('beforeunload',()=>{clearTimer();objectUrls.forEach(u=>URL.revokeObjectURL(u))});
 renderQueue();
+// Start a muted local browser session automatically. Browsers generally permit muted autoplay.
+start('licensed');
 })();
 </script>
 </body>
