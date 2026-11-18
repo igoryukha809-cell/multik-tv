@@ -14,6 +14,7 @@ services:
     depends_on: [video]
     environment:
       PORT: "8080"
+      API_WRITE_TOKEN: ${API_WRITE_TOKEN:-}
       HLS_DIR: /hls
       DATA_DIR: /data
       LEARNING_FILE: /data/learning.json
