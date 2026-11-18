@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#24104f">
+<title>Видеостудия — МУЛЬТИК ТВ</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+main{max-width:1000px;margin:auto;padding:16px}.panel{background:#fff;color:#30215b;border-radius:20px;padding:18px;margin:14px 0;box-shadow:0 6px 18px #35136b22}
+h1{font-size:clamp(26px,6vw,42px);margin:0 0 8px}p{line-height:1.55}.muted{color:#665d7c}
+canvas,video{display:block;width:100%;aspect-ratio:16/9;background:#170b32;border-radius:14px}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}button,a.btn{border:0;border-radius:12px;padding:12px 15px;background:#7132a8;color:#fff;font-weight:800;text-decoration:none;cursor:pointer}button.secondary{background:#eee8f6;color:#30215b}button:disabled{opacity:.45}
+.status{background:#f1eafa;padding:12px;border-radius:12px;margin-top:12px;font-weight:700}
+label{display:grid;gap:6px;margin:10px 0;font-weight:700}input{padding:10px;border:1px solid #cfc3df;border-radius:10px;font:inherit}
+</style></head>
+<body>
+<header><div class="logo">🌈 МУЛЬТИК ТВ</div><p>Собственная видеостудия канала</p></header>
+<main>
+<section class="panel">
+<h1>🎬 Готовая анимированная заставка</h1>
+<p class="muted">Оригинальная 20-секундная анимация канала: космический фон, цветные планеты, движущаяся радуга, появление логотипа и финальная эфирная плашка. Видео создаётся прямо в браузере, без платного генератора.</p>
+<canvas id="screen" width="1280" height="720" aria-label="Предпросмотр анимированной заставки МУЛЬТИК ТВ"></canvas>
+<div class="actions"><button id="play">▶ Запустить заставку</button><button id="record">● Записать видео WebM</button><button id="stop" class="secondary" disabled>■ Остановить</button></div>
+<div class="status" id="status" role="status">Нажми «Запустить заставку» для просмотра или «Записать видео» для создания файла.</div>
+</section>
+<section class="panel">
+<h2>Текст заставки</h2>
+<label>Главная надпись<input id="headline" maxlength="48" value="МУЛЬТИК ТВ"></label>
+<label>Слоган<input id="tagline" maxlength="70" value="ВОЛШЕБНЫЙ МИР НАЧИНАЕТСЯ ЗДЕСЬ!"></label>
+<p class="muted">Запись сохраняется в формате WebM на устройство. Для настоящего интернет-эфира нужен отдельный потоковый сервер; эта страница создаёт видеоролик, но сама не раздаёт сигнал зрителям.</p>
+</section>
+<div class="actions"><a class="btn" href="weather-broadcast.html">Погодная студия</a><a class="btn" href="live.html">Проверить прямой эфир</a><a class="btn" href="index.html">На главную</a></div>
+</main>
+<footer>© МУЛЬТИК ТВ · Собственная анимация</footer>
+<script>
+const $=id=>document.getElementById(id),canvas=$("screen"),ctx=canvas.getContext("2d");
+let raf=0,stream=null,recorder=null,chunks=[],started=0,playing=false;
+const W=canvas.width,H=canvas.height,duration=20000;
+const stars=Array.from({length:100},(_,i)=>({x:(i*197%W),y:(i*83%H),r:1+(i%4)*.65,p:i*.7}));
+const planets=[{x:170,y:185,r:58,c:"#ffcf58"},{x:1090,y:170,r:82,c:"#ff79b8"},{x:1010,y:535,r:43,c:"#54dfcf"},{x:245,y:560,r:32,c:"#a58bff"}];
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function text(s,x,y,size,color="#fff",weight="800",align="center"){ctx.fillStyle=color;ctx.font=weight+" "+size+"px Arial,sans-serif";ctx.textAlign=align;ctx.fillText(s,x,y)}
+function draw(now){
+ if(!playing)return;const t=((now-started)%duration)/1000,p=t/20;
+ const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,"#160b3c");g.addColorStop(.5,"#492080");g.addColorStop(1,"#b53e8b");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ stars.forEach(s=>{ctx.globalAlpha=.35+.6*(.5+.5*Math.sin(t*2+s.p));ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill()});ctx.globalAlpha=1;
+ planets.forEach((b,i)=>{const x=b.x+Math.sin(t*.55+i)*25,y=b.y+Math.cos(t*.7+i)*18;ctx.shadowColor=b.c;ctx.shadowBlur=24;ctx.fillStyle=b.c;ctx.beginPath();ctx.arc(x,y,b.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.globalAlpha=.3;ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(x-b.r*.28,y-b.r*.3,b.r*.25,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1});
+ // rainbow arcs
+ ctx.save();ctx.translate(W/2,H/2+50);ctx.rotate(Math.sin(t*.25)*.06);
+ ["#ff5b72","#ffb84d","#ffe66d","#55d98c","#51c8ee","#9a83ff"].forEach((c,i)=>{ctx.strokeStyle=c;ctx.lineWidth=18;ctx.beginPath();ctx.arc(0,0,250-i*19,Math.PI,Math.PI*2);ctx.stroke()});ctx.restore();
+ const reveal=Math.min(1,Math.max(0,(t-2)/2));const bounce=1+Math.sin(t*2.3)*.018;
+ ctx.save();ctx.translate(W/2,H/2-12);ctx.scale(reveal*bounce,reveal*bounce);
+ ctx.shadowColor="#ffca59";ctx.shadowBlur=35;rr(-440,-92,880,184,38);ctx.fillStyle="rgba(24,8,55,.82)";ctx.fill();ctx.shadowBlur=0;
+ text($("headline").value||"МУЛЬТИК ТВ",0,26,86,"#fff","900");ctx.restore();
+ const a=Math.min(1,Math.max(0,(t-5)/1.4));ctx.globalAlpha=a;text($("tagline").value||"ВОЛШЕБНЫЙ МИР НАЧИНАЕТСЯ ЗДЕСЬ!",W/2,495,31,"#ffe27a","800");ctx.globalAlpha=1;
+ if(t>10){const pulse=.5+.5*Math.sin(t*3);ctx.globalAlpha=.7+pulse*.3;rr(330,555,620,62,30);ctx.fillStyle="#fff";ctx.fill();text("СМОТРИМ ВМЕСТЕ!",W/2,597,27,"#54217c","900");ctx.globalAlpha=1}
+ ctx.fillStyle="rgba(15,5,35,.65)";ctx.fillRect(0,675,W,45);text("МУЛЬТИК ТВ  •  ТВОЙ МИР МУЛЬТФИЛЬМОВ",W/2,705,20,"#fff","700");
+ raf=requestAnimationFrame(draw)
+}
+function start(){if(playing)return;playing=true;started=performance.now();draw(started);$("play").textContent="↻ Перезапустить заставку";$("status").textContent="Анимация воспроизводится по кругу."}
+$("play").onclick=()=>{if(playing){started=performance.now();return}start()};
+$("record").onclick=()=>{if(!canvas.captureStream||!window.MediaRecorder){$("status").textContent="Запись WebM не поддерживается этим браузером.";return}
+ if(!playing)start();if(recorder&&recorder.state!=="inactive")return;
+ stream=canvas.captureStream(25);chunks=[];let opts={};if(MediaRecorder.isTypeSupported("video/webm;codecs=vp9"))opts.mimeType="video/webm;codecs=vp9";else if(MediaRecorder.isTypeSupported("video/webm"))opts.mimeType="video/webm";
+ try{recorder=new MediaRecorder(stream,opts)}catch(e){$("status").textContent="Не удалось начать запись в этом браузере.";return}
+ recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+ recorder.onstop=()=>{const blob=new Blob(chunks,{type:"video/webm"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="multik-tv-intro.webm";a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);if(stream)stream.getTracks().forEach(x=>x.stop());stream=null;$("status").textContent="Готово! Видеоролик сохранён как multik-tv-intro.webm."};
+ recorder.start(1000);$("stop").disabled=false;$("record").disabled=true;$("status").textContent="Запись идёт. Нажми «Остановить» после нужной длительности.";
+};
+$("stop").onclick=()=>{if(recorder&&recorder.state!=="inactive")recorder.stop();$("stop").disabled=true;$("record").disabled=false};
+start();
+</script></body></html>
