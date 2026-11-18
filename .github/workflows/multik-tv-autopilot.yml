@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Checkout site
         uses: actions/checkout@v4
-      - name: Generate automated service heartbeat
+      - name: Generate Russian-language program guide
         run: |
           mkdir -p data
           python3 - <<'PY'
@@ -26,12 +26,23 @@ jobs:
             "updated_at": now.isoformat(),
             "automation": "GitHub Actions scheduled task",
             "status": "ok",
-            "notice": "Это автоматическое обновление расписания сайта, а не видеотрансляция 24/7.",
+            "notice": "Автоматическое обновление программы сайта, не видеотрансляция 24/7.",
             "streaming": False,
             "items": [
-              {"title":"Pepper & Carrot — Эпизод 6 (русская версия)","credit":"Morevna Project","license":"CC BY-SA 4.0","source":"https://commons.wikimedia.org/wiki/File:Morevna_Project_-_Pepper%26Carrot_(animated_comic)_-_Episode_6_-_The_Potion_Contest_(Russian_variant).webm"},
-              {"title":"Elephants Dream","credit":"Blender Foundation / Orange Open Movie Team","license":"CC BY-SA 2.5","source":"https://orange.blender.org/"},
-              {"title":"Caminandes — Llama Drama","credit":"Pablo Vazquez, Beorn Leonard, Francesco Siddi","license":"CC BY 3.0","source":"https://www.blender.org/about/projects/"},
+              {
+                "title": "Pepper & Carrot — Эпизод 6 (русская версия)",
+                "credit": "Morevna Project",
+                "license": "CC BY-SA 4.0",
+                "language": "Русский",
+                "source": "https://commons.wikimedia.org/wiki/File:Morevna_Project_-_Pepper%26Carrot_(animated_comic)_-_Episode_6_-_The_Potion_Contest_(Russian_variant).webm"
+              },
+              {
+                "title": "Удивительное предложение (Amazing Sentence)",
+                "credit": "Konstantin Dmitriev и команда юных авторов",
+                "license": "CC BY 3.0",
+                "language": "Русский и английский",
+                "source": "https://invisiblenetwork.ai/watch/archive/ia/AmazingSentence"
+              }
             ]
           }
           pathlib.Path("data/autopilot.json").write_text(json.dumps(data, ensure_ascii=False, indent=2)+"\n")
@@ -44,6 +55,6 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add data/autopilot.json
-            git commit -m "Refresh Multik TV automated program guide"
+            git commit -m "Refresh Russian-language Multik TV guide"
             git push
           fi
