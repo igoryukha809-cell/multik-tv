@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#7132a8">
+<title>Видеостудия — МУЛЬТИК ТВ</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#21123c;color:#fff;font-family:Arial,sans-serif}header{text-align:center;padding:18px}.wrap{max-width:1180px;margin:auto;padding:12px}.panel{background:#fff;color:#30215b;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 24px #0003}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}label{display:block;font-weight:700;margin:8px 0}input,button,select{font:inherit;padding:10px;border-radius:9px;border:1px solid #c9bddb;max-width:100%}input[type=text],input[type=url]{width:100%}button{background:#7132a8;color:white;border:0;font-weight:700;cursor:pointer;margin:4px 3px 4px 0}button.secondary{background:#eee;color:#30215b}button:disabled{opacity:.45;cursor:not-allowed}canvas{width:100%;display:block;background:#100c22;border-radius:14px;aspect-ratio:16/9}.asset{padding:9px;background:#f2edfa;border-radius:10px;margin:6px 0;display:flex;justify-content:space-between;gap:8px;align-items:center}.asset small{display:block;color:#67577b}.asset button{padding:6px 9px}.muted{color:#685b78;font-size:13px;line-height:1.5}.status{font-weight:700;margin:8px 0}.yt{position:relative;padding-top:56.25%;background:#100c22;border-radius:12px;overflow:hidden}.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.timeline{min-height:44px;background:#f2edfa;padding:8px;border-radius:10px;color:#30215b}.back{color:#fff}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+</style></head>
+<body>
+<header><div class="logo">🌈 МУЛЬТИК ТВ</div><p>Собственная видеостудия</p></header>
+<main class="wrap">
+<div class="panel"><h1>🎬 Видеоредактор</h1><p>Монтируй свои видео и изображения прямо в браузере. Исходные файлы остаются на твоём устройстве.</p><div class="muted">Это лёгкий браузерный редактор: он не загружает материалы на сервер и не является профессиональной заменой настольному монтажу.</div></div>
+<div class="grid">
+<section class="panel"><h2>1. Добавить материалы</h2>
+<label>Видео и изображения</label><input id="files" type="file" accept="video/*,image/*" multiple>
+<label>Музыка или звук</label><input id="audioFile" type="file" accept="audio/*">
+<p class="muted">Поддерживаемые форматы зависят от браузера. Для экспорта лучше использовать Chrome и короткие исходные ролики.</p>
+<div id="assets"></div></section>
+<section class="panel"><h2>2. Оформление</h2>
+<label>Текст на экране</label><input id="overlay" type="text" value="МУЛЬТИК ТВ" maxlength="80">
+<label>Подзаголовок</label><input id="subtitle" type="text" value="Мир начинается с волшебства!" maxlength="100">
+<label>Цвет текста</label><input id="textColor" type="color" value="#ffffff">
+<label>Размер текста</label><input id="fontSize" type="range" min="24" max="84" value="52">
+<label>Длительность изображения (сек.)</label><input id="imageDuration" type="number" min="1" max="60" value="5">
+<button id="apply" class="secondary">Обновить оформление</button>
+</section></div>
+<section class="panel"><h2>3. Предпросмотр и монтаж</h2>
+<canvas id="stage" width="1280" height="720"></canvas>
+<div class="row"><button id="play">▶ Просмотр монтажа</button><button id="stop" class="secondary">■ Стоп</button><button id="export">⬇ Экспорт WebM</button></div>
+<div class="status" id="status">Добавь свои видео или изображения, чтобы начать.</div>
+<div class="timeline" id="timeline">Таймлайн пока пуст.</div>
+</section>
+<section class="panel"><h2>4. YouTube — просмотр по ссылке</h2>
+<p class="muted">Вставь ссылку на ролик, чтобы посмотреть его в редакторе и использовать как визуальный референс. YouTube-видео нельзя напрямую включить в экспорт этого локального редактора или скачивать отсюда.</p>
+<label>Ссылка на YouTube</label><input id="ytUrl" type="url" placeholder="https://www.youtube.com/watch?v=...">
+<button id="ytLoad">Открыть предпросмотр</button><div id="ytStatus" class="status"></div><div id="ytPlayer"></div>
+</section>
+<div class="panel"><a class="back" href="index.html">← Вернуться на главную МУЛЬТИК ТВ</a></div>
+</main>
+<script>
+const $=id=>document.getElementById(id), canvas=$('stage'),ctx=canvas.getContext('2d');
+let items=[],audioUrl='',audioEl=null,playing=false,raf=0,startedAt=0,recorder=null,chunks=[];
+const W=canvas.width,H=canvas.height;
+function fitText(text,max){if(!text)return;let s=text;while(ctx.measureText(s).width>max&&s.length>1)s=s.slice(0,-2)+'…';return s}
+function drawBackground(){let g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'#27104f');g.addColorStop(.5,'#7132a8');g.addColorStop(1,'#ff8e9e');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);for(let i=0;i<90;i++){let x=(i*173)%W,y=(i*97)%H;ctx.fillStyle='rgba(255,255,255,.65)';ctx.beginPath();ctx.arc(x,y,1.5+(i%3),0,Math.PI*2);ctx.fill()}}
+function drawFrame(item,localTime=0){drawBackground();if(item){if(item.kind==='image'&&item.el){let r=Math.max(W/item.el.width,H/item.el.height),w=item.el.width*r,h=item.el.height*r;ctx.drawImage(item.el,(W-w)/2,(H-h)/2,w,h)}else if(item.kind==='video'&&item.el&&item.el.readyState>=2){let r=Math.max(W/item.el.videoWidth,H/item.el.videoHeight),w=item.el.videoWidth*r,h=item.el.videoHeight*r;ctx.drawImage(item.el,(W-w)/2,(H-h)/2,w,h)}}ctx.fillStyle='rgba(12,7,28,.34)';ctx.fillRect(0,H-190,W,190);let title=$('overlay').value,sub=$('subtitle').value;ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#17092c';ctx.shadowBlur=14;ctx.fillStyle=$('textColor').value;ctx.font='900 '+$('fontSize').value+'px Arial';ctx.fillText(fitText(title,W-100)||'',W/2,H-115);ctx.font='600 30px Arial';ctx.fillText(fitText(sub,W-120)||'',W/2,H-55);ctx.shadowBlur=0}
+function duration(){return items.reduce((a,x)=>a+x.duration,0)}
+function renderList(){ $('assets').innerHTML='';items.forEach((it,i)=>{let d=document.createElement('div');d.className='asset';let t=document.createElement('div');t.innerHTML='<strong></strong><small></small>';t.querySelector('strong').textContent=(i+1)+'. '+it.name;t.querySelector('small').textContent=(it.kind==='video'?'Видео':'Изображение')+' · '+it.duration.toFixed(1)+' сек.';let b=document.createElement('button');b.textContent='Удалить';b.onclick=()=>{if(it.url)URL.revokeObjectURL(it.url);items.splice(i,1);renderList();drawFrame(items[0])};d.append(t,b);$('assets').append(d)});$('timeline').textContent=items.length?items.map((x,i)=>(i+1)+'. '+x.name+' ('+x.duration.toFixed(1)+'с)').join('  |  ')+' · Всего '+duration().toFixed(1)+' сек.':'Таймлайн пока пуст.'}
+$('files').onchange=async e=>{for(const f of e.target.files){let url=URL.createObjectURL(f);if(f.type.startsWith('image/')){let im=new Image();im.src=url;await im.decode();items.push({name:f.name,url,el:im,kind:'image',duration:Math.max(1,Math.min(60,Number($('imageDuration').value)||5))})}else if(f.type.startsWith('video/')){let v=document.createElement('video');v.src=url;v.muted=true;v.playsInline=true;await new Promise((res,rej)=>{v.onloadedmetadata=res;v.onerror=rej});items.push({name:f.name,url,el:v,kind:'video',duration:Number.isFinite(v.duration)?v.duration:5})}}renderList();drawFrame(items[0]);$('status').textContent='Материалы добавлены. Нажми «Просмотр монтажа».';e.target.value=''};
+$('imageDuration').onchange=()=>{items.filter(x=>x.kind==='image').forEach(x=>x.duration=Math.max(1,Math.min(60,Number($('imageDuration').value)||5)));renderList()};
+$('apply').onclick=()=>drawFrame(items[0]);
+function locate(t){for(let i=0;i<items.length;i++){if(t<items[i].duration)return {item:items[i],index:i,local:t};t-=items[i].duration}return null}
+function stop(){playing=false;cancelAnimationFrame(raf);items.forEach(x=>{if(x.kind==='video'){x.el.pause();try{x.el.currentTime=0}catch(e){}}});if(audioEl){audioEl.pause();audioEl.currentTime=0}}
+function tick(){if(!playing)return;let t=(performance.now()-startedAt)/1000,at=locate(t);if(!at){stop();drawFrame(items[items.length-1]);$('status').textContent='Просмотр завершён.';return}items.forEach((x,i)=>{if(x.kind==='video'&&i!==at.index)x.el.pause()});if(at.item.kind==='video'){if(Math.abs(at.item.el.currentTime-at.local)>.5)at.item.el.currentTime=at.local;at.item.el.play().catch(()=>{})}drawFrame(at.item,at.local);$('status').textContent='Сцена '+(at.index+1)+' из '+items.length+' · '+t.toFixed(1)+' / '+duration().toFixed(1)+' сек.';raf=requestAnimationFrame(tick)}
+$('play').onclick=()=>{if(!items.length){$('status').textContent='Сначала добавь видео или изображения.';return}stop();playing=true;startedAt=performance.now();if(audioEl)audioEl.play().catch(()=>{});tick()};
+$('stop').onclick=()=>{stop();drawFrame(items[0]);$('status').textContent='Воспроизведение остановлено.'};
+$('audioFile').onchange=e=>{let f=e.target.files[0];if(!f)return;if(audioUrl)URL.revokeObjectURL(audioUrl);audioUrl=URL.createObjectURL(f);if(audioEl)audioEl.remove();audioEl=new Audio(audioUrl);audioEl.loop=true;audioEl.volume=.9;$('status').textContent='Звуковая дорожка добавлена.'};
+$('export').onclick=()=>{if(!items.length){$('status').textContent='Добавь материалы перед экспортом.';return}if(!window.MediaRecorder||!canvas.captureStream){$('status').textContent='Этот браузер не поддерживает экспорт WebM. Попробуй Chrome.';return}stop();let stream=canvas.captureStream(30);if(audioEl&&audioEl.captureStream){let as=audioEl.captureStream();as.getAudioTracks().forEach(t=>stream.addTrack(t))}let mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(x=>MediaRecorder.isTypeSupported(x));if(!mime){$('status').textContent='Браузер не поддерживает подходящий формат WebM.';return}chunks=[];recorder=new MediaRecorder(stream,{mimeType:mime});recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onstop=()=>{let blob=new Blob(chunks,{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='multik-tv-montage.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);$('status').textContent='Экспорт завершён. Видео сохранено на устройство.'};recorder.start();let total=duration(),start=performance.now();function exportTick(){let t=(performance.now()-start)/1000,at=locate(t);if(!at||t>=total){drawFrame(items[items.length-1]);recorder.stop();items.forEach(x=>{if(x.kind==='video')x.el.pause()});if(audioEl)audioEl.pause();return}if(at.item.kind==='video'){if(Math.abs(at.item.el.currentTime-at.local)>.4)at.item.el.currentTime=at.local;at.item.el.play().catch(()=>{})}drawFrame(at.item);if(audioEl&&audioEl.paused)audioEl.play().catch(()=>{});$('status').textContent='Экспорт: '+Math.min(100,Math.round(t/total*100))+'%';requestAnimationFrame(exportTick)}exportTick()};
+function ytId(s){try{let u=new URL(s);if(u.hostname==='youtu.be')return u.pathname.slice(1);if(u.hostname.endsWith('youtube.com'))return u.searchParams.get('v')||u.pathname.split('/').filter(Boolean).pop()}catch(e){}return null}
+$('ytLoad').onclick=()=>{let id=ytId($('ytUrl').value.trim());if(!id||! /^[a-zA-Z0-9_-]{11}$/.test(id)){$('ytStatus').textContent='Не удалось распознать ссылку. Проверь адрес YouTube.';$('ytPlayer').innerHTML='';return}$('ytStatus').textContent='Предпросмотр YouTube. Для просмотра может потребоваться вход или разрешение автора.';$('ytPlayer').innerHTML='<div class="yt"><iframe src="https://www.youtube-nocookie.com/embed/'+id+'" title="YouTube preview" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>'};
+drawFrame(null);
+</script></body></html>
