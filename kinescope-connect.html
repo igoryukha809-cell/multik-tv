@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#7132a8"><title>Kinescope — подключение МУЛЬТИК ТВ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#17133c,#51277c,#102c50);color:#fff;font:16px system-ui;min-height:100vh}main{max-width:900px;margin:auto;padding:22px}header{text-align:center;padding:20px 0}h1{font-size:clamp(30px,6vw,46px);margin:0}.card{background:#fff;color:#28204d;padding:20px;border-radius:18px;margin:14px 0;line-height:1.6}.muted{color:#665e83;font-size:14px}a{color:#6734a4}button{border:0;background:#6338a8;color:white;padding:12px 16px;border-radius:10px;font-weight:800}textarea{width:100%;min-height:110px;border:1px solid #b8afd0;border-radius:10px;padding:12px;font:13px monospace}#player{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;background:#080b18}#preview{display:none}.warn{background:#fff1c9;color:#694500;padding:13px;border-radius:12px}
+</style></head><body><main>
+<header><div>🌈 МУЛЬТИК ТВ</div><h1>Подключение Kinescope</h1><p>Подготовка плеера и тестового эфира</p></header>
+<section class="card"><h2>1. Создайте бесплатный аккаунт</h2><p>Аккаунт и согласие с условиями сервиса должен оформлять взрослый владелец проекта.</p><p><a href="https://kinescope.ru/" target="_blank" rel="noopener">Открыть Kinescope ↗</a></p><p>Бесплатный тариф: до 100 минут загруженного видео, 200 ГБ трафика в месяц, одна HD-трансляция до 20 минут и до 20 зрителей. Для теста карты привязывать не нужно.</p></section>
+<section class="card"><h2>2. Создайте тестовое событие</h2><ol><li>Войдите в Kinescope.</li><li>Откройте раздел Live и создайте событие «МУЛЬТИК ТВ — тест».</li><li>Скопируйте RTMP URL и Stream Key для отправителя сигнала. Ключ храните в секрете.</li><li>Для теста без OBS понадобится отдельный серверный отправитель FFmpeg. Kinescope сам не превращает видеотеку в автоматический 24/7 канал.</li></ol><p><a href="https://docs.kinescope.com/live-streams/live-stream-guide/connecting-the-stream/" target="_blank" rel="noopener">Официальная инструкция подключения потока ↗</a></p></section>
+<section class="card"><h2>3. Подготовьте встраивание плеера</h2><p>В Kinescope откройте событие и найдите «Поделиться» → «Встроить» (Embed). Скопируйте именно iframe-код плеера и вставьте ниже. Не вставляйте сюда RTMP URL, Stream Key, пароль или API-токен.</p><textarea id="embed" placeholder='<iframe src="https://kinescope.io/embed/..." ...></iframe>'></textarea><p><button id="show">Проверить плеер</button></p><div id="preview"><iframe id="player" title="Плеер Kinescope" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div><p id="msg" class="muted">Предпросмотр появится после проверки кода.</p><p><a href="https://docs.kinescope.com/player-docs/embedding/" target="_blank" rel="noopener">Официальная инструкция по встраиванию ↗</a></p></section>
+<section class="card"><h2>4. Что пока не запущено</h2><div class="warn"><b>Круглосуточный эфир 24/7 пока не работает.</b> Бесплатный тариф Kinescope ограничивает одну HD-трансляцию 20 минутами. Для непрерывного эфира нужен постоянно работающий сервер-отправитель и тариф, допускающий длительную трансляцию.</div><p>Этот сайт размещён на GitHub Pages и не может сам запускать FFmpeg в облаке. Нельзя обещать, что телефон можно выключить, пока отдельный сервер не создан и не проверен.</p></section>
+<p><a href="index.html">← На главную</a> · <a href="tv.html">Открыть локальный эфир</a></p>
+</main><script>
+const box=document.querySelector("#embed"),frame=document.querySelector("#player"),preview=document.querySelector("#preview"),msg=document.querySelector("#msg");
+document.querySelector("#show").addEventListener("click",()=>{
+ const raw=box.value.trim();
+ const match=raw.match(/<iframe\\b[^>]*\\bsrc\\s*=\\s*["']([^"']+)["'][^>]*>/i);
+ if(!match){msg.textContent="Не найден iframe-код. Скопируйте код встраивания из Kinescope.";preview.style.display="none";return;}
+ try{const url=new URL(match[1]);if(url.protocol!=="https:"||!(url.hostname==="kinescope.io"||url.hostname.endsWith(".kinescope.io"))){throw Error("domain");}
+ frame.src=url.href;preview.style.display="block";msg.textContent="Плеер загружен в предпросмотр. Это ещё не означает, что эфир запущен.";
+ }catch(e){msg.textContent="Разрешён только HTTPS-плеер с домена kinescope.io.";preview.style.display="none";}
+});
+</script></body></html>
