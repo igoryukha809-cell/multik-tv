@@ -1,5 +1,8 @@
 {
   "channelName": "МУЛЬТИК ТВ",
   "status": "offline",
-  "streamUrl": null
+  "streamUrl": null,
+  "testSignalUrl": "https://igoryukha809-cell.github.io/multik-tv/test-signal.html",
+  "testSignal": true,
+  "note": "Это анимированная тестовая заставка для проверки отображения платформы, а не реальная видеотрансляция."
 }
