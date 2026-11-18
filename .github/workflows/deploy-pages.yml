@@ -34,3 +34,25 @@ jobs:
       - name: Deploy site
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify published pages and broadcast status
+        env:
+          SITE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          for page in index.html channel.html live.html online-catalog.html; do
+            echo "Checking $page"
+            curl --fail --silent --show-error --retry 5 --retry-delay 3 "$SITE_URL$page" -o /dev/null
+          done
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 "$SITE_URL/broadcast/status.json" -o /tmp/broadcast-status.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          status = json.loads(Path("/tmp/broadcast-status.json").read_text(encoding="utf-8"))
+          required = {"channel", "state", "checkedAt", "itemsChecked", "errors", "streaming"}
+          missing = required - status.keys()
+          if missing:
+              raise SystemExit(f"Broadcast status missing fields: {sorted(missing)}")
+          if status["streaming"] is True:
+              raise SystemExit("Static deployment must not claim a live stream without a verified streaming monitor.")
+          print(f"Broadcast status verified: {status['state']}; streaming={status['streaming']}")
+          PY
