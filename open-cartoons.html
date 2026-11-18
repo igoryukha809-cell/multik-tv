@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>МУЛЬТИК ТВ — Открытая мультотека</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#11152d;color:#fff;font:16px system-ui}header{padding:24px 18px;background:linear-gradient(120deg,#532b83,#1d6282)}main{max-width:1050px;margin:auto;padding:20px 16px 50px}h1{margin:0;font-size:clamp(25px,5vw,40px)}p{color:#c9d2ed;line-height:1.5}.layout{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}.panel{background:#202747;border:1px solid #ffffff20;border-radius:18px;padding:16px}.screen{aspect-ratio:16/9;background:#050711;border-radius:12px;overflow:hidden}.screen iframe{width:100%;height:100%;border:0}.cards{display:grid;gap:10px}.item{padding:12px;background:#ffffff0c;border-radius:12px}.item b{display:block}.item small{display:block;color:#bdc9e6;margin:5px 0 10px}.item button{background:#69e3fa;color:#10152d;border:0;border-radius:9px;padding:9px 12px;font-weight:800}.item button:focus{outline:2px solid white}.credit{font-size:13px;color:#aebbdc}a{color:#7de8ff}@media(max-width:750px){.layout{grid-template-columns:1fr}}
+</style></head><body>
+<header><main><div style="font-weight:900;letter-spacing:.15em;color:#b8f5ff">ДЕТСКИЙ ТЕЛЕКАНАЛ</div><h1>МУЛЬТИК ТВ · Открытая мультотека</h1><p>Подборка мультфильмов с открытыми лицензиями и официальными страницами авторов.</p></main></header>
+<main><div class="layout">
+<section class="panel"><h2 id="title">Выбери мультфильм из программы</h2><div class="screen"><iframe id="frame" src="https://www.youtube-nocookie.com/embed/YE7VzlLtp-4?rel=0" title="МУЛЬТИК ТВ" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><p id="info">Big Buck Bunny — Blender Foundation. CC BY 3.0. Для полного показа нужно сохранить финальные титры.</p><p class="credit">Видео воспроизводится с официальной страницы YouTube автора/правообладателя. Встроенный плеер может показывать рекламу или быть недоступен в отдельных регионах.</p></section>
+<aside class="panel"><h2>Программа выпусков</h2><div class="cards" id="list"></div></aside>
+</div>
+<section class="panel" style="margin-top:16px"><h2>Правила показа</h2><p>В этой библиотеке собраны фильмы, для которых каталог указывает открытые лицензии. Условия различаются: CC BY требует указать автора и лицензию; CC BY-SA также требует сохранять аналогичную лицензию для производных работ. Не удаляйте титры. Не используйте фильмы, если лицензия конкретного файла не подтверждена.</p><p class="credit">Каталог и сведения о лицензиях: <a href="https://www.thestudio.io/osvideo/" target="_blank" rel="noopener">OS Video — Open Source Video</a>. Условия Big Buck Bunny: <a href="https://peach.blender.org/about/" target="_blank" rel="noopener">официальная страница Blender Foundation</a>.</p></section>
+</main>
+<script>
+const shows=[
+{t:"Big Buck Bunny",d:"2008 · 9:56 · CC BY 3.0 · Blender Foundation",id:"YE7VzlLtp-4",c:"© copyright 2008, Blender Foundation / www.bigbuckbunny.org. При показе всего фильма сохраните полный финальный блок титров."},
+{t:"Caminandes: Llama Drama",d:"2013 · 1:30 · CC BY 3.0 · Blender Institute",id:"JOhiWY7XmoY",c:"Caminandes: Llama Drama — Blender Institute. CC BY 3.0. Укажите автора и лицензию."},
+{t:"Caminandes: Gran Dillama",d:"2013 · 2:26 · CC BY-SA 3.0 · Blender Institute",id:"Z4C82eyhwgU",c:"Caminandes: Gran Dillama — Blender Institute. CC BY-SA 3.0. Для адаптаций действует условие ShareAlike."},
+{t:"Caminandes 3: Llamigos",d:"2016 · 2:30 · CC BY 3.0 · Blender Studio",id:"SkVqJ1SGeL0",c:"Caminandes 3: Llamigos — Blender Studio. CC BY 3.0."},
+{t:"Spring",d:"2019 · 7:44 · CC BY 3.0 · Blender Studio",id:"WhWc3b3KhnY",c:"Spring — Blender Studio. CC BY 3.0."}
+];
+const list=document.getElementById('list');
+shows.forEach((s,i)=>{const div=document.createElement('div');div.className='item';const b=document.createElement('b');b.textContent=(i+1)+'. '+s.t;const sm=document.createElement('small');sm.textContent=s.d;const btn=document.createElement('button');btn.textContent='Смотреть';btn.onclick=()=>{document.getElementById('frame').src='https://www.youtube-nocookie.com/embed/'+s.id+'?autoplay=1&rel=0';document.getElementById('title').textContent=s.t;document.getElementById('info').textContent=s.c};div.append(b,sm,btn);list.append(div)});
+</script></body></html>
