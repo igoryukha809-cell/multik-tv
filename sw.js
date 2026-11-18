@@ -6,6 +6,7 @@ const CORE = [
   './icon.svg',
   './styles.css',
   './tv.html',
+  './station.html',
   './channel.html',
   './cloud.html',
   './online-catalog.html',
