@@ -37,6 +37,13 @@ jobs:
                 "source": "https://commons.wikimedia.org/wiki/File:Morevna_Project_-_Pepper%26Carrot_(animated_comic)_-_Episode_6_-_The_Potion_Contest_(Russian_variant).webm"
               },
               {
+                "title": "Моревна — Эпизод 4 (русская версия)",
+                "credit": "Morevna Project; режиссёры Konstantin Dmitriev и Nikolai Mamashev",
+                "license": "CC BY-SA 4.0",
+                "language": "Русский",
+                "source": "https://morevnaproject.org/anime/episode-4/"
+              },
+              {
                 "title": "Удивительное предложение (Amazing Sentence)",
                 "credit": "Konstantin Dmitriev и команда юных авторов",
                 "license": "CC BY 3.0",
