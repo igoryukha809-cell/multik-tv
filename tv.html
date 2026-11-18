@@ -1,20 +1,163 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#10152b"><meta name="description" content="МУЛЬТИК ТВ — бесплатный браузерный канал на GitHub Pages, без сторонних видеосервисов."><title>МУЛЬТИК ТВ — бесплатный эфир</title>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10152b">
+<meta name="description" content="МУЛЬТИК ТВ — бесплатный браузерный показ русскоязычной анимации и собственных видеофайлов.">
+<title>МУЛЬТИК ТВ — автоматический браузерный эфир</title>
 <style>
-:root{color-scheme:dark;font-family:system-ui,Arial,sans-serif;background:#0b1023;color:#f7f8ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#443477,#0b1023 65%);min-height:100vh}header,main,footer{max-width:1100px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.brand{font-weight:950;letter-spacing:.12em;color:#ffe17a}a{color:#ffe17a}h1{font-size:clamp(30px,6vw,48px);margin:18px 0 8px}.tag{display:inline-block;padding:7px 12px;border-radius:30px;background:#174b3c;color:#baffdc;font-weight:800;font-size:12px}.screen{background:#050713;border:1px solid #52608d;border-radius:20px;overflow:hidden;box-shadow:0 18px 55px #0008}.stage{aspect-ratio:16/9;min-height:240px;position:relative;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#39246e,#124d68 55%,#17203d)}video{position:absolute;width:100%;height:100%;inset:0;object-fit:contain;background:#000}.art{text-align:center;padding:20px;position:relative;z-index:1}.rainbow{font-size:clamp(58px,12vw,120px);filter:drop-shadow(0 8px 12px #0007);animation:float 3s ease-in-out infinite}.art h2{font-size:clamp(25px,5vw,48px);margin:0;color:#ffe17a;text-shadow:0 3px 15px #0008}.art p{font-size:clamp(14px,2vw,19px);max-width:620px;margin:12px auto;color:#fff}.stars{position:absolute;inset:0;font-size:24px;color:#fff6;letter-spacing:25px;animation:twinkle 2s infinite alternate}@keyframes float{50%{transform:translateY(-14px) rotate(4deg)}}@keyframes twinkle{to{opacity:.35;transform:scale(1.08)}}.below{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:13px 17px;background:#171e39;color:#e2e8ff}.layout{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-top:16px}@media(max-width:760px){.layout{grid-template-columns:1fr}}.panel{background:#171f3b;border:1px solid #39466f;border-radius:16px;padding:18px;margin-bottom:14px}h2{margin:0 0 12px;font-size:20px}p{color:#c7d1ee;line-height:1.55}.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}button,.filebtn{border:0;border-radius:10px;padding:11px 15px;background:#ffe17a;color:#1b2033;font-weight:850;cursor:pointer}.secondary{background:#344166;color:#fff}.filebtn input{display:none}.status{color:#baffdc;font-weight:700}ol{padding-left:24px}li{padding:7px 0;color:#e3e9ff}.meta{font-size:13px;color:#aab8df}.schedule{display:grid;gap:8px}.slot{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #39466f;padding:9px 0}footer{font-size:13px;color:#9eacd3}
-</style></head><body>
-<header><div class="top"><div class="brand">🌈 МУЛЬТИК ТВ</div><a href="index.html">← На главную</a></div><h1>МУЛЬТИК ТВ — онлайн-канал</h1><span class="tag">БЕСПЛАТНЫЙ АВТОНОМНЫЙ РЕЖИМ · ЗАПУСКАЕТСЯ САМ</span></header>
-<main><section class="screen"><div class="stage" id="stage"><div class="stars">✦　　✧　　 ✦　　✧　　✦</div><div class="art" id="art"><div class="rainbow">🌈</div><h2>МУЛЬТИК ТВ</h2><p>Добро пожаловать в волшебный мир приключений!</p><p>Эфирная заставка уже запущена. Добро пожаловать на МУЛЬТИК ТВ!</p></div></div><div class="below"><span id="now">Сейчас в эфире: заставка МУЛЬТИК ТВ</span><span id="clock">--:--:--</span></div></section>
-<div class="layout"><div><section class="panel"><h2>📺 Управление эфиром</h2><p>Этот канал работает прямо в браузере. Можно запустить встроенную оригинальную заставку или выбрать видеофайлы со своего устройства — они будут идти по очереди.</p><label class="filebtn">＋ Добавить свои видео <input id="files" type="file" accept="video/*" multiple></label><div class="buttons"><button id="start">▶ Запустить заставку</button><button id="licensed" class="secondary">▶ Смотреть мультфильм с открытой лицензией</button><button id="play" class="secondary">▶ Воспроизвести список</button><button id="pause" class="secondary">Ⅱ Пауза</button><button id="full" class="secondary">⛶ На весь экран</button></div><p class="status" id="status">Онлайн-страница запущена. Идёт автоматическая эфирная заставка.</p><ol id="queue"><li class="meta">Пока воспроизводится встроенная заставка.</li></ol><p class="meta">Выбранные файлы остаются на устройстве и не загружаются в интернет. После перезагрузки страницы их нужно выбрать заново.</p></section>
-<section class="panel"><h2>✨ Что это за эфир?</h2><p>Это бесплатный автономный онлайн-канал: сайт открывается по одной ссылке, а оригинальная анимированная заставка и эфирные объявления переключаются автоматически в браузере каждого зрителя.</p><p><b>Важно:</b> это не единая круглосуточная интернет-трансляция. Если закрыть страницу или выключить устройство, воспроизведение остановится. GitHub Pages не запускает постоянный видеосервер.</p></section></div>
-<aside><section class="panel"><h2>🗓️ Программа передач</h2><div class="schedule"><div class="slot"><span>Заставка МУЛЬТИК ТВ</span><b>Сейчас</b></div><div class="slot"><span>Ваши видеофайлы</span><b>По очереди</b></div><div class="slot"><span>Заставка между роликами</span><b>Автоматически</b></div></div><p class="meta">В эфирной подборке — независимая анимация с открытой лицензией. Авторство и лицензия указаны под плеером.</p><p class="meta"><b>Сейчас доступно:</b> «Конкурс зельеваров» (Pepper&amp;Carrot, русская версия), Morevna Project. Лицензия CC BY-SA 4.0. <a href="https://commons.wikimedia.org/wiki/File:Morevna_Project_-_Pepper%26Carrot_(animated_comic)_-_Episode_6_-_The_Potion_Contest_(Russian_variant).webm" target="_blank" rel="noopener">Источник и условия лицензии</a>.</p></section><section class="panel"><h2>🔐 Права на показ</h2><p>Добавляй собственные видео или материалы, для которых есть разрешение на публичный показ. Наличие файла или ссылки не означает, что его можно транслировать всем зрителям.</p><a href="online-catalog.html">Каталог официальных источников →</a></section></aside></div></main><footer>МУЛЬТИК ТВ · Бесплатно · Без регистрации · Без сторонних видеосервисов</footer>
+:root{color-scheme:dark;font-family:system-ui,Arial,sans-serif;background:#0b1023;color:#f7f8ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#443477,#0b1023 65%);min-height:100vh}
+header,main,footer{max-width:1100px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-weight:950;letter-spacing:.12em;color:#ffe17a}a{color:#ffe17a}
+h1{font-size:clamp(30px,6vw,48px);margin:18px 0 8px}
+.tag{display:inline-block;padding:7px 12px;border-radius:30px;background:#174b3c;color:#baffdc;font-weight:800;font-size:12px}
+.screen{background:#050713;border:1px solid #52608d;border-radius:20px;overflow:hidden;box-shadow:0 18px 55px #0008}
+.stage{aspect-ratio:16/9;min-height:240px;position:relative;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#39246e,#124d68 55%,#17203d)}
+video{position:absolute;width:100%;height:100%;inset:0;object-fit:contain;background:#000;z-index:2}
+.art{text-align:center;padding:20px;position:relative;z-index:1}
+.rainbow{font-size:clamp(58px,12vw,120px);filter:drop-shadow(0 8px 12px #0007);animation:float 3s ease-in-out infinite}
+.art h2{font-size:clamp(25px,5vw,48px);margin:0;color:#ffe17a;text-shadow:0 3px 15px #0008}
+.art p{font-size:clamp(14px,2vw,19px);max-width:620px;margin:12px auto;color:#fff}
+.stars{position:absolute;inset:0;font-size:24px;color:#fff6;letter-spacing:25px;animation:twinkle 2s infinite alternate}
+@keyframes float{50%{transform:translateY(-14px) rotate(4deg)}}@keyframes twinkle{to{opacity:.35;transform:scale(1.08)}}
+.below{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:13px 17px;background:#171e39;color:#e2e8ff}
+.layout{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-top:16px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}}
+.panel{background:#171f3b;border:1px solid #39466f;border-radius:16px;padding:18px;margin-bottom:14px}
+h2{margin:0 0 12px;font-size:20px}p{color:#c7d1ee;line-height:1.55}
+.buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+button,.filebtn{border:0;border-radius:10px;padding:11px 15px;background:#ffe17a;color:#1b2033;font-weight:850;cursor:pointer}
+.secondary{background:#344166;color:#fff}.filebtn input{display:none}
+.status{color:#baffdc;font-weight:700}.meta{font-size:13px;color:#aab8df}
+ol{padding-left:24px}li{padding:7px 0;color:#e3e9ff}
+footer{font-size:13px;color:#9eacd3}
+</style>
+</head>
+<body>
+<header><div class="top"><div class="brand">🌈 МУЛЬТИК ТВ</div><a href="index.html">← На главную</a></div>
+<h1>МУЛЬТИК ТВ — автоматический браузерный эфир</h1>
+<span class="tag">БЕСПЛАТНО · РАБОТАЕТ В ОТКРЫТОЙ ВКЛАДКЕ</span></header>
+<main>
+<section class="screen">
+<div class="stage" id="stage">
+<div class="stars" id="stars">✦　　✧　　 ✦　　✧　　✦</div>
+<div class="art" id="art"><div class="rainbow">🌈</div><h2>МУЛЬТИК ТВ</h2><p>Добро пожаловать в волшебный мир приключений!</p><p>Нажми «Запустить автоматический эфир» — и браузер начнёт показ.</p></div>
+<video id="video" controls playsinline preload="metadata" hidden></video>
+</div>
+<div class="below"><span id="now">Сейчас в эфире: заставка МУЛЬТИК ТВ</span><span id="clock">--:--:--</span></div>
+</section>
+<div class="layout">
+<div>
+<section class="panel">
+<h2>📺 Управление эфиром</h2>
+<p>После запуска видео и заставка будут чередоваться автоматически. Для автоматического режима используется русская версия независимого мультфильма Pepper &amp; Carrot с лицензией CC BY-SA 4.0. Можно вместо него выбрать свои видеофайлы.</p>
+<label class="filebtn">＋ Добавить свои видео <input id="files" type="file" accept="video/*" multiple></label>
+<div class="buttons">
+<button id="start">▶ Запустить автоматический эфир</button>
+<button id="sound" class="secondary">🔊 Включить звук</button>
+<button id="licensed" class="secondary">▶ Один мультфильм</button>
+<button id="play" class="secondary">▶ Мои видео по очереди</button>
+<button id="pause" class="secondary">Ⅱ Пауза</button>
+<button id="stop" class="secondary">■ Остановить</button>
+<button id="full" class="secondary">⛶ На весь экран</button>
+</div>
+<p class="status" id="status" role="status" aria-live="polite">Ожидание запуска. Автовоспроизведение начнётся после нажатия кнопки.</p>
+<ol id="queue"><li class="meta">Встроенная русскоязычная подборка и выбранные локальные файлы.</li></ol>
+<p class="meta">Выбранные файлы остаются на устройстве и не загружаются в интернет. После закрытия вкладки их нужно выбрать заново.</p>
+</section>
+<section class="panel">
+<h2>✨ Как работает этот бесплатный эфир</h2>
+<p>Вкладка автоматически переключает заставку и видео на текущем устройстве. Чтобы показ продолжался, оставь страницу открытой, не переводи устройство в сон и не закрывай браузер. На другом устройстве зритель запускает свой экземпляр страницы.</p>
+<p><b>Это не единая круглосуточная интернет-трансляция.</b> GitHub Pages публикует статические HTML/CSS/JavaScript-файлы и не запускает постоянный видеосервер. Общий поток для всех зрителей пока не создан.</p>
+</section>
+</div>
+<aside>
+<section class="panel">
+<h2>🗓️ Программа</h2>
+<div class="schedule"><p>1. Заставка МУЛЬТИК ТВ</p><p>2. Pepper &amp; Carrot — «Конкурс зельеваров», русская версия</p><p>3. Заставка между повторами</p><p>4. Повтор программы</p></div>
+<p class="meta"><b>Автор:</b> Morevna Project. <b>Лицензия:</b> CC BY-SA 4.0. <a href="https://commons.wikimedia.org/wiki/File:Morevna_Project_-_Pepper%26Carrot_(animated_comic)_-_Episode_6_-_The_Potion_Contest_(Russian_variant).webm" target="_blank" rel="noopener">Источник, авторство и лицензия ↗</a>.</p>
+</section>
+<section class="panel">
+<h2>🔐 Права на показ</h2>
+<p>Автоматическая подборка использует указанную открытую лицензию и сохраняет ссылку на автора и источник. Для своих файлов добавляй только материалы, на которые у тебя есть разрешение на публичный показ.</p>
+<a href="online-catalog.html">Каталог мультфильмов →</a><br><br>
+<a href="rights-and-content.html">Памятка о правах →</a>
+</section>
+<section class="panel">
+<h2>📡 Состояние проекта</h2>
+<p>Сайт доступен бесплатно. Проверка расписания выполняется автоматически через GitHub Actions. Публичная видеотрансляция 24/7 пока не запущена.</p>
+<a href="channel.html">Проверить статус канала →</a>
+</section>
+</aside>
+</div>
+</main>
+<footer>МУЛЬТИК ТВ · Бесплатный браузерный показ · Не является общей синхронной трансляцией</footer>
 <script>
-(()=>{const $=id=>document.getElementById(id);let files=[],index=0,video=null,objectUrls=[];function clock(){$('clock').textContent=new Date().toLocaleTimeString('ru-RU')}clock();setInterval(clock,1000);
-function showBumper(message='Добро пожаловать в волшебный мир приключений!'){if(video){video.pause();video.remove();video=null;}$('art').style.display='block';$('art').innerHTML='<div class="rainbow">🌈</div><h2>МУЛЬТИК ТВ</h2><p>'+message+'</p><p>✨ Радужка, Бублик, Пик и Звёздочка ждут тебя! ✨</p>';$('now').textContent='Сейчас в эфире: заставка МУЛЬТИК ТВ';}
-function render(){const q=$('queue');q.innerHTML='';if(!files.length){q.innerHTML='<li class="meta">Список видео пока пуст.</li>';return;}files.forEach((f,i)=>{const li=document.createElement('li');li.textContent=(i===index?'▶ ':'')+f.name+' · '+Math.round(f.size/1048576*10)/10+' МБ';q.append(li);});}
-function play(i){if(!files.length){$('status').textContent='Сначала добавь видеофайлы со своего устройства.';return;}index=(i+files.length)%files.length;if(video){video.pause();video.remove();}const url=URL.createObjectURL(files[index]);objectUrls.push(url);$('art').style.display='none';video=document.createElement('video');video.controls=true;video.autoplay=true;video.playsInline=true;video.src=url;$('stage').append(video);$('now').textContent='Сейчас в эфире: '+files[index].name;$('status').textContent='Воспроизводится видео '+(index+1)+' из '+files.length;video.onended=()=>play(index+1);video.onerror=()=>{$('status').textContent='Не удалось воспроизвести файл: '+files[index].name;play(index+1)};video.play().catch(()=>$('status').textContent='Нажми кнопку воспроизведения на видео.');render();}
-$('files').onchange=e=>{files=Array.from(e.target.files||[]);index=0;render();$('status').textContent=files.length?'Добавлено видео: '+files.length+'. Нажми «Воспроизвести список».':'Файлы не выбраны.';};
-$('start').onclick=()=>{showBumper();$('status').textContent='Идёт встроенная анимированная заставка.';};
-$('licensed').onclick=()=>{if(video){video.pause();video.remove();video=null;}$('art').style.display='none';video=document.createElement('video');video.controls=true;video.playsInline=true;video.autoplay=true;video.src='https://upload.wikimedia.org/wikipedia/commons/8/8d/Morevna_Project_-_Pepper%26Carrot_%28animated_comic%29_-_Episode_6_-_The_Potion_Contest_%28Russian_variant%29.webm';$('stage').append(video);$('now').textContent='Сейчас в эфире: Конкурс зельеваров — Pepper&Carrot';$('status').textContent='Открытая лицензия CC BY-SA 4.0 · Morevna Project · Музыка: Gregoire Lourme · Иллюстрации: David Revoy.';video.play().catch(()=>$('status').textContent='Нажми ▶ на видеоплеере, чтобы начать просмотр.');};$('play').onclick=()=>play(index);$('pause').onclick=()=>{if(video)video.pause();else $('status').textContent='Заставка остановлена кнопкой паузы браузера.';};
-$('full').onclick=()=>{const el=$('stage');if(el.requestFullscreen)el.requestFullscreen().catch(()=>{});};const эфирныеСообщения=['Добро пожаловать! Впереди волшебные приключения!','Улыбайся, мечтай и открывай новое вместе с МУЛЬТИК ТВ!','Скоро в эфире — весёлые истории и добрые открытия!','МУЛЬТИК ТВ — территория фантазии!','Оставайся с нами: впереди ещё много интересного!'];let номерСообщения=0;showBumper(эфирныеСообщения[0]);$('status').textContent='Автоматическая заставка работает. Страница открыта — эфирный экран активен.';$('start').onclick=()=>{showBumper(эфирныеСообщения[номерСообщения%эфирныеСообщения.length]);$('status').textContent='Идёт автоматическая эфирная заставка.';};setInterval(()=>{if(!video){номерСообщения++;showBumper(эфирныеСообщения[номерСообщения%эфирныеСообщения.length]);}},12000);render();})();
-</script></body></html>
+(()=>{
+const $=id=>document.getElementById(id);
+const source='https://upload.wikimedia.org/wikipedia/commons/8/8d/Morevna_Project_-_Pepper%26Carrot_%28animated_comic%29_-_Episode_6_-_The_Potion_Contest_%28Russian_variant%29.webm';
+const credit='Morevna Project · Pepper & Carrot — «Конкурс зельеваров» · CC BY-SA 4.0';
+const messages=[
+'Добро пожаловать в волшебный мир приключений!',
+'Улыбайся, мечтай и открывай новое вместе с МУЛЬТИК ТВ!',
+'Впереди добрые истории и весёлые открытия!',
+'МУЛЬТИК ТВ — территория фантазии!'
+];
+let running=false,mode='licensed',files=[],index=0,bumperTimer=null,objectUrls=[],soundOn=false;
+const video=$('video');
+function clock(){$('clock').textContent=new Date().toLocaleTimeString('ru-RU')}
+clock();setInterval(clock,1000);
+function status(s){$('status').textContent=s}
+function clearTimer(){if(bumperTimer){clearTimeout(bumperTimer);bumperTimer=null}}
+function showBumper(message){
+ video.pause();video.hidden=true;video.removeAttribute('src');video.load();
+ $('stars').hidden=false;$('art').hidden=false;
+ $('art').innerHTML='<div class="rainbow">🌈</div><h2>МУЛЬТИК ТВ</h2><p>'+message+'</p><p>✨ Радужка, Бублик, Пик и Звёздочка ждут тебя! ✨</p>';
+ $('now').textContent='Сейчас в эфире: заставка МУЛЬТИК ТВ';
+}
+function currentSource(){
+ if(mode==='licensed')return {url:source,title:'Pepper & Carrot — «Конкурс зельеваров»'};
+ if(!files.length)return null;
+ const f=files[index%files.length];
+ return {url:URL.createObjectURL(f),title:f.name,local:true};
+}
+function playCurrent(){
+ if(!running)return;
+ const item=currentSource();
+ if(!item){showBumper('Добавь свои видео или выбери мультфильм из открытой подборки.');status('Нет видео для воспроизведения.');running=false;return}
+ $('art').hidden=true;$('stars').hidden=true;video.hidden=false;
+ video.controls=true;video.playsInline=true;video.muted=!soundOn;video.src=item.url;
+ $('now').textContent='Сейчас в эфире: '+item.title;
+ status('Воспроизводится: '+item.title+(soundOn?'':' · звук выключен'));
+ video.onended=()=>{if(item.local){index=(index+1)%files.length;renderQueue()}showBumper(messages[Math.floor(Math.random()*messages.length)]);bumperTimer=setTimeout(playCurrent,7000)};
+ video.onerror=()=>{status('Источник не открылся. Проверь соединение или выбери локальный файл.');showBumper('Источник временно недоступен.');running=false};
+ video.play().catch(()=>{status('Браузер остановил автозапуск. Нажми Play на видеоплеере.');});
+}
+function renderQueue(){
+ const q=$('queue');q.replaceChildren();
+ if(mode==='licensed'){const li=document.createElement('li');li.textContent='Pepper & Carrot — русская версия · CC BY-SA 4.0';q.append(li);return}
+ if(!files.length){const li=document.createElement('li');li.textContent='Пока нет выбранных файлов.';q.append(li);return}
+ files.forEach((f,i)=>{const li=document.createElement('li');li.textContent=(i===index?'▶ ':'')+f.name;q.append(li)});
+}
+function start(nextMode){
+ clearTimer();running=true;mode=nextMode;index=0;renderQueue();soundOn=false;$('sound').textContent='🔊 Включить звук';
+ showBumper('Сейчас начнётся программа. Приятного просмотра!');
+ status('Автоматический показ запущен в этой вкладке.');
+ bumperTimer=setTimeout(playCurrent,2500);
+}
+$('files').addEventListener('change',e=>{files=Array.from(e.target.files||[]);mode='local';index=0;renderQueue();status('Выбрано файлов: '+files.length+'. Нажми «Мои видео по очереди».')});
+$('start').onclick=()=>start('licensed');
+$('licensed').onclick=()=>{clearTimer();running=true;mode='licensed';index=0;soundOn=false;renderQueue();playCurrent()};
+$('play').onclick=()=>{if(!files.length){status('Сначала добавь видеофайлы со своего устройства.');return}start('local')};
+$('sound').onclick=()=>{soundOn=!soundOn;video.muted=!soundOn;$('sound').textContent=soundOn?'🔇 Выключить звук':'🔊 Включить звук';if(soundOn&&video.paused)video.play().catch(()=>{});status(soundOn?'Звук включён.':'Звук выключен.')};
+$('pause').onclick=()=>{if(!video.hidden&&!video.paused){video.pause();status('Показ поставлен на паузу.')}else if(running){video.play().catch(()=>{});status('Продолжаем показ.')}};
+$('stop').onclick=()=>{clearTimer();running=false;showBumper('Показ остановлен. Нажми кнопку запуска, чтобы продолжить.');status('Автоматический показ остановлен.')};
+$('full').onclick=()=>{const el=$('stage');if(el.requestFullscreen)el.requestFullscreen().catch(()=>{})};
+video.addEventListener('loadedmetadata',()=>{if(video.duration&&Number.isFinite(video.duration))status('Видео загружено. Длительность: '+Math.round(video.duration/60)+' мин.')});
+window.addEventListener('beforeunload',()=>{clearTimer();objectUrls.forEach(u=>URL.revokeObjectURL(u))});
+renderQueue();
+})();
+</script>
+</body>
+</html>
