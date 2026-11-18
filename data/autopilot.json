@@ -1,29 +1,25 @@
 {
   "service": "МУЛЬТИК ТВ",
   "mode": "program-guide-only",
-  "updated_at": "2026-11-18T06:03:39.826Z",
+  "updated_at": "2026-11-18T06:18:31.090Z",
   "automation": "GitHub Actions scheduled task",
   "status": "ok",
-  "notice": "Автоматическое обновление расписания сайта, не видеотрансляция 24/7.",
+  "notice": "Обновляется автоматически. Это программа сайта, не видеотрансляция 24/7.",
   "streaming": false,
   "items": [
     {
       "title": "Pepper & Carrot — Эпизод 6 (русская версия)",
       "credit": "Morevna Project",
       "license": "CC BY-SA 4.0",
+      "language": "Русский",
       "source": "https://commons.wikimedia.org/wiki/File:Morevna_Project_-_Pepper%26Carrot_(animated_comic)_-_Episode_6_-_The_Potion_Contest_(Russian_variant).webm"
     },
     {
-      "title": "Elephants Dream",
-      "credit": "Blender Foundation / Orange Open Movie Team",
-      "license": "CC BY-SA 2.5",
-      "source": "https://orange.blender.org/"
-    },
-    {
-      "title": "Caminandes — Llama Drama",
-      "credit": "Pablo Vazquez, Beorn Leonard, Francesco Siddi",
+      "title": "Удивительное предложение (Amazing Sentence)",
+      "credit": "Konstantin Dmitriev и команда юных авторов",
       "license": "CC BY 3.0",
-      "source": "https://www.blender.org/about/projects/"
+      "language": "Русский и английский",
+      "source": "https://invisiblenetwork.ai/watch/archive/ia/AmazingSentence"
     }
   ]
 }
