@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>МУЛЬТИК ТВ — Моя эфирная студия</title>
+<style>
+:root{color-scheme:dark;--bg:#101329;--panel:#1b2040;--pink:#ff5c9a;--cyan:#63e7ff;--muted:#aeb5d4}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0,#33346c 0,#101329 45%);color:#fff;font:16px system-ui, sans-serif}
+header{padding:22px max(18px,calc((100% - 1100px)/2));display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{width:54px;height:54px;border-radius:17px;background:linear-gradient(135deg,#ff5c9a,#ffc857,#63e7ff);display:grid;place-items:center;color:#17172d;font-size:27px;font-weight:900}
+h1{font-size:clamp(24px,5vw,38px);margin:0}header p{margin:3px 0;color:var(--muted)}
+main{max-width:1100px;margin:auto;padding:0 18px 50px}.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px}
+.card{background:#1b2040eF;border:1px solid #ffffff18;border-radius:22px;padding:18px;box-shadow:0 15px 50px #0003}
+h2{font-size:19px;margin:0 0 14px}.screen{background:#070914;border-radius:16px;aspect-ratio:16/9;display:grid;place-items:center;overflow:hidden;position:relative}
+video{width:100%;height:100%;object-fit:contain;background:#05060d}.placeholder{text-align:center;padding:24px;color:var(--muted)}.placeholder strong{display:block;font-size:25px;color:#fff;margin-bottom:8px}
+.status{display:inline-flex;align-items:center;gap:8px;color:#ff9bbd;font-weight:700;font-size:13px;letter-spacing:.08em}.dot{width:9px;height:9px;border-radius:50%;background:#ff5c9a;box-shadow:0 0 12px #ff5c9a}
+.now{margin:14px 0 0;color:var(--muted)}.now b{color:white}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+button,.upload{border:0;border-radius:12px;padding:12px 16px;background:linear-gradient(120deg,#ff5c9a,#ff9f6e);color:#171329;font-weight:800;cursor:pointer}
+button.secondary{background:#30385f;color:#fff}.upload input{display:none}
+.list{list-style:none;padding:0;margin:0;max-height:340px;overflow:auto}.list li{padding:12px;border-radius:12px;background:#ffffff08;margin-bottom:8px;display:flex;gap:10px;align-items:center}.list li.active{outline:1px solid var(--cyan);background:#63e7ff12}.num{color:var(--cyan);font-weight:800}.filename{overflow-wrap:anywhere;flex:1}.small{font-size:13px;color:var(--muted);line-height:1.5}
+.schedule{display:grid;gap:9px}.slot{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;background:#ffffff08;border-radius:11px}.slot time{color:var(--cyan);font-weight:800}
+footer{max-width:1100px;margin:auto;padding:0 18px 35px;color:var(--muted);font-size:13px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="logo">М</div><div><h1>МУЛЬТИК ТВ</h1><p>Твоя собственная эфирная студия</p></div></header>
+<main>
+<div class="grid">
+<section class="card">
+<div class="status"><span class="dot"></span> ЛОКАЛЬНЫЙ АВТОЭФИР</div>
+<div class="screen" style="margin-top:12px" id="screen">
+<div class="placeholder" id="placeholder"><strong>Добро пожаловать в МУЛЬТИК ТВ!</strong>Добавь свои видео — студия соберёт очередь и будет переключать выпуски автоматически.</div>
+<video id="player" controls playsinline hidden></video>
+</div>
+<div class="now" id="now">Сейчас в эфире: <b>заставка канала</b></div>
+<div class="actions">
+<label class="upload">＋ Добавить видео<input id="files" type="file" accept="video/*" multiple></label>
+<button id="play">▶ Запустить эфир</button><button class="secondary" id="clear">Очистить очередь</button>
+</div>
+<p class="small">Видео остаются в памяти браузера на этом устройстве. Для воспроизведения следующего ролика страница должна быть открыта. Не загружай чужие мультфильмы без разрешения правообладателя.</p>
+</section>
+<aside class="card">
+<h2>Эфирная очередь</h2><ul class="list" id="queue"><li class="small">Пока нет выпусков. Добавь видеофайлы.</li></ul>
+</aside>
+<section class="card">
+<h2>Программа канала</h2><div class="schedule">
+<div class="slot"><time>08:00</time><span>Утренний мультблок</span></div>
+<div class="slot"><time>12:00</time><span>Весёлый перерыв</span></div>
+<div class="slot"><time>16:00</time><span>Большая мультпремьера</span></div>
+<div class="slot"><time>19:00</time><span>Вечерняя сказка</span></div>
+<div class="slot"><time>21:00</time><span>Спокойной ночи</span></div>
+</div><p class="small">Это примерная сетка передач, а не расписание публичной интернет-трансляции.</p>
+</section>
+<section class="card">
+<h2>Пульт режиссёра</h2><p class="small">Добавляй собственные видео, меняй порядок и запускай последовательный показ. Очередь хранится в этой вкладке до её закрытия.</p>
+<div class="actions"><button class="secondary" id="prev">← Предыдущий</button><button class="secondary" id="next">Следующий →</button></div>
+<p class="small" id="count">В очереди: 0 видео</p>
+</section>
+</div>
+</main>
+<footer>МУЛЬТИК ТВ · Независимая авторская веб-студия. Эта страница не является облачным сервером и не создаёт вещание при закрытом браузере.</footer>
+<script>
+const input=document.getElementById('files'),player=document.getElementById('player'),queueEl=document.getElementById('queue'),placeholder=document.getElementById('placeholder'),now=document.getElementById('now'),count=document.getElementById('count');
+let items=[],index=0,urls=[];
+function render(){queueEl.innerHTML='';if(!items.length){queueEl.innerHTML='<li class="small">Пока нет выпусков. Добавь видеофайлы.</li>'}items.forEach((f,i)=>{const li=document.createElement('li');if(i===index)li.className='active';const n=document.createElement('span');n.className='num';n.textContent=String(i+1).padStart(2,'0');const name=document.createElement('span');name.className='filename';name.textContent=f.name;li.append(n,name);queueEl.append(li)});count.textContent='В очереди: '+items.length+' видео'}
+function load(i,autoplay=false){if(!items.length)return;index=(i+items.length)%items.length;const old=player.src;if(old)URL.revokeObjectURL(old);const url=URL.createObjectURL(items[index]);urls.push(url);player.src=url;player.hidden=false;placeholder.hidden=true;now.innerHTML='Сейчас в эфире: <b></b>';now.querySelector('b').textContent=items[index].name;render();if(autoplay)player.play().catch(()=>{})}
+input.addEventListener('change',()=>{items.push(...Array.from(input.files||[]));input.value='';render();if(items.length===1)load(0)});
+document.getElementById('play').onclick=()=>{if(!items.length){input.click();return}if(!player.src)load(index);player.play().catch(()=>{})};
+player.addEventListener('ended',()=>load(index+1,true));
+document.getElementById('next').onclick=()=>load(index+1,true);
+document.getElementById('prev').onclick=()=>load(index-1,true);
+document.getElementById('clear').onclick=()=>{player.pause();player.removeAttribute('src');player.load();items=[];index=0;player.hidden=true;placeholder.hidden=false;now.innerHTML='Сейчас в эфире: <b>заставка канала</b>';urls.forEach(URL.revokeObjectURL);urls=[];render()};
+render();
+</script>
+</body></html>
