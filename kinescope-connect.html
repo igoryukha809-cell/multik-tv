@@ -13,7 +13,7 @@
 const box=document.querySelector("#embed"),frame=document.querySelector("#player"),preview=document.querySelector("#preview"),msg=document.querySelector("#msg");
 document.querySelector("#show").addEventListener("click",()=>{
  const raw=box.value.trim();
- const match=raw.match(/<iframe\\b[^>]*\\bsrc\\s*=\\s*["']([^"']+)["'][^>]*>/i);
+ const match=raw.match(/<iframe\b[^>]*\bsrc\s*=\s*["']([^"']+)["'][^>]*>/i);
  if(!match){msg.textContent="Не найден iframe-код. Скопируйте код встраивания из Kinescope.";preview.style.display="none";return;}
  try{const url=new URL(match[1]);if(url.protocol!=="https:"||!(url.hostname==="kinescope.io"||url.hostname.endsWith(".kinescope.io"))){throw Error("domain");}
  frame.src=url.href;preview.style.display="block";msg.textContent="Плеер загружен в предпросмотр. Это ещё не означает, что эфир запущен.";
