@@ -1,0 +1,30 @@
+name: Stream configuration check
+
+on:
+  push:
+    paths:
+      - "stream-server/**"
+      - "broadcast.json"
+      - "broadcast/**"
+      - ".github/workflows/stream-config-check.yml"
+  pull_request:
+    paths:
+      - "stream-server/**"
+      - "broadcast.json"
+      - "broadcast/**"
+      - ".github/workflows/stream-config-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate broadcast configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run configuration checks
+        run: bash stream-server/check-config.sh
