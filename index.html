@@ -21,9 +21,37 @@
 .tile span{line-height:1.5;font-size:14px}
 .info{background:#fff;color:#30215b;border-radius:18px;padding:18px;line-height:1.6}
 .info h2{margin-top:0}
+
+/* Короткая экранная заставка МУЛЬТИК ТВ */
+#channel-intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 45%,#8b35bd 0,#43166f 42%,#170c35 100%);color:#fff;transition:opacity .7s ease,visibility .7s ease}
+#channel-intro.is-hidden{opacity:0;visibility:hidden;pointer-events:none}
+#channel-intro .intro-stars{position:absolute;inset:0;background-image:radial-gradient(#fff 1px,transparent 1.5px),radial-gradient(#ffe58a 1px,transparent 1.5px);background-size:73px 73px,113px 113px;background-position:0 0,31px 47px;animation:intro-drift 18s linear infinite;opacity:.7}
+#channel-intro .intro-orbit{position:absolute;width:min(76vw,520px);aspect-ratio:1;border:12px solid transparent;border-top-color:#ffdc67;border-right-color:#62e4d0;border-bottom-color:#ff6f9e;border-left-color:#9a7bff;border-radius:50%;filter:drop-shadow(0 0 22px #fff8);animation:intro-spin 8s linear infinite}
+#channel-intro .intro-core{position:relative;text-align:center;padding:36px 24px;max-width:900px;animation:intro-pop 1s cubic-bezier(.2,.8,.2,1) both}
+#channel-intro .intro-logo{font-size:clamp(35px,8vw,86px);font-weight:1000;letter-spacing:.02em;line-height:1.08;color:#fff;text-shadow:0 5px 0 #55207e,0 0 28px #ffe27c;animation:intro-glow 2s ease-in-out infinite alternate}
+#channel-intro .intro-tag{font-size:clamp(13px,2.8vw,24px);font-weight:800;letter-spacing:.16em;margin-top:20px;color:#fff0a8}
+#channel-intro .intro-skip{position:absolute;right:18px;bottom:18px;border:1px solid #ffffff99;border-radius:999px;padding:11px 18px;background:#ffffff20;color:#fff;font-weight:800;cursor:pointer;backdrop-filter:blur(8px)}
+#channel-intro .intro-skip:focus-visible{outline:3px solid #ffe58a;outline-offset:3px}
+@keyframes intro-spin{to{transform:rotate(360deg)}}
+@keyframes intro-drift{to{background-position:73px 73px,-82px 160px}}
+@keyframes intro-pop{from{opacity:0;transform:scale(.72)}to{opacity:1;transform:scale(1)}}
+@keyframes intro-glow{to{text-shadow:0 5px 0 #55207e,0 0 42px #ffe27c,0 0 70px #ff8ac4}}
+@media(prefers-reduced-motion:reduce){#channel-intro *,#channel-intro *:before{animation:none!important;transition:none!important}}
+
 </style>
 </head>
 <body>
+
+<div id="channel-intro" role="dialog" aria-label="Заставка канала МУЛЬТИК ТВ">
+  <div class="intro-stars" aria-hidden="true"></div>
+  <div class="intro-orbit" aria-hidden="true"></div>
+  <div class="intro-core">
+    <div class="intro-logo">🌈 МУЛЬТИК ТВ</div>
+    <div class="intro-tag">МИР НАЧИНАЕТСЯ С ВОЛШЕБСТВА!</div>
+  </div>
+  <button class="intro-skip" id="intro-skip" type="button">Пропустить ✕</button>
+</div>
+
 <header>
 <div class="logo">🌈 МУЛЬТИК ТВ</div>
 <p>Волшебный мир любимых мультфильмов!</p>
@@ -92,6 +120,25 @@
 </main>
 <footer>© МУЛЬТИК ТВ · Бесплатные инструменты канала</footer>
 <script>
+
+const channelIntro = document.getElementById("channel-intro");
+const skipIntro = () => {
+  if (!channelIntro) return;
+  channelIntro.classList.add("is-hidden");
+  try { sessionStorage.setItem("multikTvIntroSeen", "1"); } catch (_) {}
+  window.setTimeout(() => channelIntro.remove(), 800);
+};
+if (channelIntro) {
+  document.getElementById("intro-skip").addEventListener("click", skipIntro);
+  let alreadySeen = false;
+  try { alreadySeen = sessionStorage.getItem("multikTvIntroSeen") === "1"; } catch (_) {}
+  if (alreadySeen || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    skipIntro();
+  } else {
+    window.setTimeout(skipIntro, 7000);
+  }
+}
+
 if ("serviceWorker" in navigator && location.protocol === "https:") {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
 }
