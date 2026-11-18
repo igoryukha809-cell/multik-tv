@@ -22,4 +22,6 @@ function explain(s){const errors=Array.isArray(s.errors)?s.errors:[];const lines
 async function check(){if(busy)return;busy=true;$('state').textContent='Проверяю…';try{const r=await fetch('broadcast/status.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('Файл статуса недоступен (HTTP '+r.status+').');const s=await r.json();const names={not_configured:'Эфир не настроен',playlist_has_errors:'Найдены ошибки',playlist_ready_server_required:'Плейлист готов; нужен сервер'};$('state').textContent=names[s.state]||'Статус: '+(s.state||'неизвестно');$('summary').textContent=s.message||'Проверка завершена.';$('log').textContent=explain(s);$('stamp').textContent='Проверено: '+new Date().toLocaleString()+(s.checkedAt?' · Проверка GitHub: '+s.checkedAt+' UTC':'');}catch(e){$('state').textContent='Не удалось проверить';$('summary').textContent=e.message;$('log').textContent='Проверь публикацию сайта и доступность broadcast/status.json. Это не означает, что эфир работает.';}finally{busy=false;}}
 $('check').addEventListener('click',check);$('auto').addEventListener('click',()=>{enabled=!enabled;$('auto').textContent='Автопроверка: '+(enabled?'ВКЛ':'ВЫКЛ');});check();setInterval(()=>{if(enabled)check();},60000);
 })();
-</script></body></html>
+</script>
+<script type="module" src="./admin-guard.js"></script>
+</body></html>
