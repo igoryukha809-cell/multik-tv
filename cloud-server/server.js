@@ -1,129 +1,23 @@
-// МУЛЬТИК ТВ — minimal zero-dependency Node.js server.
-// Serves a read-only channel status/playlist API and static HLS output.
-// FFmpeg/SRS remain responsible for producing the actual live stream.
 'use strict';
-
-const http = require('node:http');
-const fs = require('node:fs');
-const path = require('node:path');
-
-const PORT = Number(process.env.PORT || 8080);
-const ROOT = path.resolve(__dirname);
-const HLS_DIR = path.resolve(process.env.HLS_DIR || path.join(ROOT, 'hls'));
-
-function send(res, status, body, type = 'application/json; charset=utf-8') {
-  res.writeHead(status, {
-    'Content-Type': type,
-    'Cache-Control': 'no-store',
-    'X-Content-Type-Options': 'nosniff',
-    'Access-Control-Allow-Origin': '*'
-  });
-  res.end(res.req && res.req.method === 'HEAD' ? undefined : body);
-}
-
-function safeFile(base, requestPath) {
-  let decoded;
-  try { decoded = decodeURIComponent(requestPath); } catch { return null; }
-  const candidate = path.resolve(base, '.' + decoded);
-  return candidate.startsWith(base + path.sep) ? candidate : null;
-}
-
-const server = http.createServer(async (req, res) => {
-  let url;
-  try { url = new URL(req.url, 'http://localhost'); } catch {
-    return send(res, 400, JSON.stringify({ error: 'Bad request URL' }));
-  }
-
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
-    return send(res, 405, JSON.stringify({ error: 'Method not allowed' }));
-  }
-
-  if (url.pathname === '/health') {
-    return send(res, 200, JSON.stringify({
-      service: 'МУЛЬТИК ТВ Cloud',
-      status: 'online',
-      stream: fs.existsSync(path.join(HLS_DIR, 'live.m3u8')) ? 'playlist-found' : 'waiting-for-stream',
-      note: 'Online means this Node process is running; it does not guarantee a live video signal.'
-    }));
-  }
-
-  if (url.pathname === '/api/channel') {
-    const playlist = path.join(HLS_DIR, 'live.m3u8');
-    const exists = fs.existsSync(playlist);
-    return send(res, 200, JSON.stringify({
-      channel: 'МУЛЬТИК ТВ',
-      server: 'online',
-      broadcast: exists ? 'playlist-found' : 'offline',
-      playlist: exists ? '/hls/live.m3u8' : null,
-      updatedAt: new Date().toISOString()
-    }));
-  }
-
-  if (req.method === 'GET' && url.pathname === '/api/discovery') {
-    const query = (url.searchParams.get('q') || 'русские мультфильмы общественное достояние').trim().slice(0, 100);
-    if (!query) return send(res, 400, JSON.stringify({ error: 'Укажите поисковый запрос q' }));
-    try {
-      const params = new URLSearchParams({
-        q: 'mediatype:movies AND (' + query.replace(/[+{}\\[\\]^"~*?:\\\\]/g, ' ') + ')',
-        fl: 'identifier,title,description,year,creator,licenseurl,rights',
-        rows: '20', page: '1', output: 'json'
-      });
-      const response = await fetch('https://archive.org/advancedsearch.php?' + params.toString(), {
-        headers: { 'User-Agent': 'MultikTV-Catalog/1.0 (metadata discovery)' },
-        signal: AbortSignal.timeout(10000)
-      });
-      if (!response.ok) throw new Error('Каталог временно недоступен');
-      const payload = await response.json();
-      const docs = payload.response && Array.isArray(payload.response.docs) ? payload.response.docs : [];
-      return send(res, 200, JSON.stringify({
-        source: 'Internet Archive metadata search',
-        results: docs.map(item => ({
-          title: item.title || item.identifier,
-          year: item.year || null,
-          creator: item.creator || null,
-          identifier: item.identifier,
-          page: 'https://archive.org/details/' + encodeURIComponent(item.identifier),
-          rights: item.rights || null,
-          license: item.licenseurl || null,
-          requiresRightsReview: true,
-          note: 'Метаданные не доказывают право на публичную трансляцию. Проверьте лицензию и условия конкретного материала.'
-        }))
-      }));
-    } catch (error) {
-      return send(res, 502, JSON.stringify({ error: 'Не удалось выполнить поиск в каталоге', detail: error.message }));
-    }
-  }
-
-  if (url.pathname.startsWith('/hls/')) {
-    const file = safeFile(HLS_DIR, url.pathname.slice(4));
-    if (!file) return send(res, 400, JSON.stringify({ error: 'Invalid path' }));
-    fs.stat(file, (err, stat) => {
-      if (err || !stat.isFile()) return send(res, 404, JSON.stringify({ error: 'Stream not found' }));
-      const ext = path.extname(file).toLowerCase();
-      const type = ext === '.m3u8' ? 'application/vnd.apple.mpegurl'
-        : ext === '.ts' ? 'video/mp2t'
-        : ext === '.m4s' ? 'video/iso.segment'
-        : 'application/octet-stream';
-      res.writeHead(200, {
-        'Content-Type': type,
-        'Cache-Control': ext === '.m3u8' ? 'no-store' : 'public, max-age=30',
-        'Access-Control-Allow-Origin': '*',
-        'X-Content-Type-Options': 'nosniff'
-      });
-      if (req.method === 'HEAD') return res.end();
-      fs.createReadStream(file).pipe(res);
-    });
-    return;
-  }
-
-  send(res, 200, JSON.stringify({
-    name: 'МУЛЬТИК ТВ Cloud',
-    endpoints: ['/health', '/api/channel', '/api/discovery?q=cartoons', '/hls/live.m3u8'],
-    message: 'Server is ready. Add a valid HLS output to the hls directory to serve a stream.'
-  }));
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
+const PORT=Number(process.env.PORT||8080),HLS=path.resolve(process.env.HLS_DIR||'/hls'),DATA=path.resolve(process.env.DATA_DIR||'/data');
+const director=require('./director');
+const learning=require('./learning');
+const MAX=32768;
+function send(res,status,data,type='application/json; charset=utf-8'){res.writeHead(status,{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':'*'});res.end(typeof data==='string'?data:JSON.stringify(data));}
+function safeFile(base,p){let d;try{d=decodeURIComponent(p)}catch{return null}const f=path.resolve(base,'.'+d);return f.startsWith(base+path.sep)?f:null}
+function body(req){return new Promise((resolve,reject)=>{let s='';req.on('data',c=>{s+=c;if(s.length>MAX){reject(Error('Request too large'));req.destroy();}});req.on('end',()=>{try{resolve(JSON.parse(s||'{}'))}catch{reject(Error('Invalid JSON'))}});req.on('error',reject)})}
+const server=http.createServer(async(req,res)=>{let u;try{u=new URL(req.url,'http://localhost')}catch{return send(res,400,{error:'Bad URL'})}
+if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,HEAD,OPTIONS','Access-Control-Allow-Headers':'Content-Type'});return res.end()}
+if(!['GET','HEAD','POST'].includes(req.method))return send(res,405,{error:'Method not allowed'});
+if(req.method==='GET'&&u.pathname==='/health')return send(res,200,{service:'МУЛЬТИК ТВ',status:'online',director:director.status().status});
+if(req.method==='GET'&&u.pathname==='/api/channel'){const playlist='/live/multiktv.m3u8',exists=fs.existsSync(path.join(HLS,playlist));return send(res,200,{channel:'МУЛЬТИК ТВ',server:'online',broadcast:exists?'signal-detected':'offline',playlist:exists?'/hls'+playlist:null,director:director.status(),updatedAt:new Date().toISOString()})}
+if(req.method==='GET'&&u.pathname==='/api/director')return send(res,200,director.status());
+if(req.method==='GET'&&u.pathname==='/api/learning')return send(res,200,learning.summary());
+if(req.method==='POST'&&u.pathname==='/api/learning/event'){try{return send(res,201,{saved:true,result:learning.record(await body(req))})}catch(e){return send(res,400,{error:e.message})}}
+if(req.method==='POST'&&u.pathname==='/api/learning/recommend'){try{return send(res,200,{recommendations:learning.recommend((await body(req)).items)})}catch(e){return send(res,400,{error:e.message})}}
+if(req.method==='GET'&&u.pathname==='/api/discovery'){const q=(u.searchParams.get('q')||'cartoons').trim().slice(0,80);try{const p=new URLSearchParams({q:'mediatype:movies AND '+q.replace(/[^\\p{L}\\p{N} _-]/gu,' '),fl:'identifier,title,year,creator,licenseurl,rights',rows:'20',output:'json'});const r=await fetch('https://archive.org/advancedsearch.php?'+p,{signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Source unavailable');const j=await r.json();return send(res,200,{source:'Internet Archive',results:(j.response?.docs||[]).map(x=>({title:x.title||x.identifier,year:x.year||null,creator:x.creator||null,page:'https://archive.org/details/'+encodeURIComponent(x.identifier),license:x.licenseurl||null,rights:x.rights||null,requiresManualRightsCheck:true}))})}catch(e){return send(res,502,{error:'Search failed',detail:e.message})}}
+if(req.method==='GET'&&u.pathname.startsWith('/hls/')){const f=safeFile(HLS,u.pathname.slice(4));if(!f)return send(res,400,{error:'Invalid path'});return fs.stat(f,(e,s)=>{if(e||!s.isFile())return send(res,404,{error:'Stream not found'});const ext=path.extname(f).toLowerCase(),type=ext==='.m3u8'?'application/vnd.apple.mpegurl':ext==='.ts'?'video/mp2t':ext==='.m4s'?'video/iso.segment':'application/octet-stream';res.writeHead(200,{'Content-Type':type,'Cache-Control':ext==='.m3u8'?'no-store':'public,max-age=30','Access-Control-Allow-Origin':'*'});if(req.method==='HEAD')return res.end();fs.createReadStream(f).pipe(res)})}
+return send(res,404,{error:'Not found'});
 });
-
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`МУЛЬТИК ТВ Cloud listening on port ${PORT}`);
-  console.log(`HLS directory: ${HLS_DIR}`);
-});
+server.listen(PORT,'0.0.0.0',()=>console.log('МУЛЬТИК ТВ API listening on '+PORT));
