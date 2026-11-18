@@ -13,9 +13,10 @@
 <main class="wrap">
 <section class="panel"><h1>✨ Создай заставку одним нажатием</h1><p>Студия сама нарисует волшебный космический мир, анимированный логотип и сочинит оригинальную музыкальную тему. Загружать картинки и музыку не нужно.</p>
 <div class="grid">
+<div><label for="style">Стиль заставки</label><select id="style"><option value="logo" selected>Логотипная — яркое вращение</option><option value="world">Волшебный космический мир</option></select></div>
 <div><label for="brand">Название канала</label><input id="brand" type="text" maxlength="28" value="МУЛЬТИК ТВ"></div>
 <div><label for="slogan">Слоган</label><input id="slogan" type="text" maxlength="60" value="МИР НАЧИНАЕТСЯ С ВОЛШЕБСТВА!"></div>
-<div><label for="length">Длительность</label><select id="length"><option value="12">12 секунд</option><option value="18" selected>18 секунд</option><option value="24">24 секунды</option></select></div>
+<div><label for="length">Длительность</label><select id="length"><option value="10" selected>10 секунд</option><option value="12">12 секунд</option><option value="18">18 секунд</option><option value="24">24 секунды</option></select></div>
 </div>
 <div class="grid">
 <div><label for="voiceText">Текст диктора</label><input id="voiceText" type="text" maxlength="180" value="Вы смотрите канал МУЛЬТИК ТВ! Мир ярких мультфильмов начинается здесь!"></div>
@@ -36,6 +37,20 @@ let raf=0,rec=null,chunks=[],lastBlob=null,playing=false,ac=null,master=null,sta
 const stars=Array.from({length:130},(_,i)=>({x:(i*197)%W,y:(i*113)%H,r:1+(i%3),p:i*.71}));
 function rounded(x,y,w,h,r){g.beginPath();g.roundRect(x,y,w,h,r)}
 function draw(t=0,final=false){
+ if($('style').value==='logo'){
+  const bg=g.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#24105b');bg.addColorStop(.48,'#8128a8');bg.addColorStop(1,'#ff6f9e');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  const cx=W/2,cy=H/2;
+  const glow=g.createRadialGradient(cx,cy,20,cx,cy,520);glow.addColorStop(0,'rgba(255,255,255,.32)');glow.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=glow;g.fillRect(0,0,W,H);
+  for(let i=0;i<12;i++){g.save();g.translate(cx,cy);g.rotate(i*Math.PI/6+t*.12);g.fillStyle=i%2?'rgba(255,255,255,.055)':'rgba(255,221,111,.09)';g.beginPath();g.moveTo(0,0);g.lineTo(-42,-520);g.lineTo(42,-520);g.closePath();g.fill();g.restore()}
+  const rainbow=['#ff526f','#ff9d45','#ffe45e','#65e49c','#55c9ff','#aa78ff'];
+  g.save();g.translate(cx,cy);g.rotate(t*.42);rainbow.forEach((col,i)=>{g.strokeStyle=col;g.lineWidth=20;g.globalAlpha=.95;g.beginPath();g.arc(0,0,245,i*Math.PI/3+.08,(i+1)*Math.PI/3-.08);g.stroke()});g.restore();g.globalAlpha=1;
+  for(let i=0;i<36;i++){const a=i*2.399+t*.25,r=300+(i%4)*25,x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;g.fillStyle='#fff';g.globalAlpha=.45+.45*(.5+.5*Math.sin(t*3+i));g.beginPath();g.arc(x,y,2+i%3,0,Math.PI*2);g.fill()}g.globalAlpha=1;
+  const scale=1+.035*Math.sin(t*2.2);g.save();g.translate(cx,cy);g.rotate(Math.sin(t*1.15)*.10);g.scale(scale,scale);
+  g.shadowColor='rgba(20,0,50,.65)';g.shadowBlur=32;g.fillStyle='rgba(28,10,68,.72)';rounded(-440,-112,880,224,62);g.fill();g.lineWidth=7;g.strokeStyle='rgba(255,255,255,.95)';g.stroke();
+  g.shadowColor='#ffdf76';g.shadowBlur=25;g.textAlign='center';g.textBaseline='middle';g.font='900 104px Arial';g.lineWidth=5;g.strokeStyle='#512178';g.strokeText($('brand').value||'МУЛЬТИК ТВ',0,5);g.fillStyle='#fff';g.fillText($('brand').value||'МУЛЬТИК ТВ',0,5);g.restore();g.shadowBlur=0;
+  if(final){g.fillStyle='rgba(255,255,255,.85)';g.font='bold 20px Arial';g.textAlign='center';g.fillText('МУЛЬТИК ТВ',cx,H-42)}
+  return;
+ }
  const grad=g.createLinearGradient(0,0,W,H);grad.addColorStop(0,'#160d3c');grad.addColorStop(.48,'#54248c');grad.addColorStop(1,'#f18eb3');g.fillStyle=grad;g.fillRect(0,0,W,H);
  stars.forEach(s=>{let y=(s.y+t*(9+s.r*3))%H;g.globalAlpha=.35+.65*(.5+.5*Math.sin(t*2+s.p));g.fillStyle='#fff';g.beginPath();g.arc(s.x,y,s.r,0,Math.PI*2);g.fill()});g.globalAlpha=1;
  const colors=['#ff5d80','#ffad55','#ffe66b','#6ce6a1','#63c9ff','#b18aff'];
