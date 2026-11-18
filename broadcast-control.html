@@ -1,0 +1,33 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Облачный эфир — МУЛЬТИК ТВ</title>
+<style>*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#17133c,#51277c,#102c50);color:#fff;font:16px system-ui}main{max-width:850px;margin:auto;padding:22px}.card{background:white;color:#29204c;border-radius:18px;padding:20px;margin:14px 0}button{border:0;border-radius:10px;padding:13px 18px;font-weight:700;background:#6338a8;color:white;margin:4px}button.stop{background:#a72d45}.muted{color:#6d6680;font-size:14px}.status{padding:12px;background:#f0edf8;border-radius:10px;white-space:pre-wrap}a{color:#ffd978}.warn{background:#fff1ca;color:#654600;padding:12px;border-radius:10px}</style></head><body><main>
+<h1>☁️ Облачный эфир МУЛЬТИК ТВ</h1><p>Управление серверным вещанием без OBS.</p>
+<div class="card"><h2>Состояние</h2><div id="status" class="status">Проверяем права администратора…</div><p><button id="refresh">Обновить статус</button></p></div>
+<div class="card"><h2>Управление эфиром</h2><p class="muted">Запуск доступен, когда сервер настроен, добавлены видео с подтверждёнными правами на публичный показ и сохранён плейлист.</p><button id="start" disabled>Запустить эфир</button><button class="stop" id="stop" disabled>Остановить эфир</button><p id="result" class="muted"></p></div>
+<div class="card"><h2>Подключение сервера</h2><div class="warn">Сервер ещё не подключён. Адрес API и секретный RTMP URL настраиваются в облачных переменных, а не в этом браузере. Не вставляй ключ потока в HTML, репозиторий или чат.</div><p class="muted">После подключения Railway и Supabase эта панель сможет управлять сервером через защищённый API.</p></div>
+<p><a href="admin.html">← В админ-панель</a></p></main>
+<script type="module">
+import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import {SUPABASE_URL,SUPABASE_ANON_KEY} from "./admin-config.js";
+const statusEl=document.querySelector("#status"),result=document.querySelector("#result"),start=document.querySelector("#start"),stop=document.querySelector("#stop"),refresh=document.querySelector("#refresh");
+const API_BASE="https://YOUR-RAILWAY-SERVICE.up.railway.app";
+let token=null;
+async function init(){
+ if(SUPABASE_URL.includes("YOUR_PROJECT")||SUPABASE_ANON_KEY.includes("YOUR_SUPABASE")){statusEl.textContent="Supabase не настроен. Владелец проекта должен подключить авторизацию и назначить администратора.";return;}
+ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {data:{session}}=await sb.auth.getSession();
+ if(!session){statusEl.textContent="Войдите в учётную запись администратора через login.html.";return;}
+ const {data,error}=await sb.from("admin_users").select("user_id").eq("user_id",session.user.id).maybeSingle();
+ if(error||!data){statusEl.textContent="У этой учётной записи нет прав администратора.";return;}
+ token=session.access_token;
+ if(API_BASE.includes("YOUR-RAILWAY")){statusEl.textContent="Права администратора подтверждены. Облачный сервер ещё не развёрнут и не подключён.";return;}
+ start.disabled=stop.disabled=refresh.disabled=false;await load();
+}
+async function request(path,method="GET",body){
+ const r=await fetch(API_BASE+path,{method,headers:{Authorization:"Bearer "+token,...(body?{"Content-Type":"application/json"}:{})},body:body?JSON.stringify(body):undefined});
+ const j=await r.json().catch(()=>({error:"Invalid server response"}));if(!r.ok)throw Error(j.error||"HTTP "+r.status);return j;
+}
+async function load(){try{const j=await request("/api/admin/status");statusEl.textContent="Статус: "+(j.director?.status||"неизвестно")+"\nФайлов: "+j.media.length+"\nЭлементов плейлиста: "+(j.playlist?.items?.length||0)+"\nRTMP настроен: "+(j.rtmpConfigured?"да":"нет");}catch(e){statusEl.textContent="Не удалось связаться с сервером: "+e.message;}}
+refresh.onclick=load;
+start.onclick=async()=>{try{result.textContent="Отправляем команду…";await request("/api/admin/broadcast/start","POST",{});result.textContent="Команда запуска принята. Проверь статус через несколько секунд.";await load();}catch(e){result.textContent="Запуск не выполнен: "+e.message;}};
+stop.onclick=async()=>{try{result.textContent="Останавливаем…";await request("/api/admin/broadcast/stop","POST",{});result.textContent="Команда остановки принята.";await load();}catch(e){result.textContent="Остановка не выполнена: "+e.message;}};
+init().catch(e=>statusEl.textContent="Ошибка проверки входа: "+e.message);
+</script></body></html>
