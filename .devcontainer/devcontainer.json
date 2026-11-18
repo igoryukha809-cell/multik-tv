@@ -1,0 +1,12 @@
+{
+  "name": "МУЛЬТИК ТВ — облачная студия",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.autoSave": "afterDelay",
+        "editor.formatOnSave": true
+      }
+    }
+  },
+  "shutdownAction": "stopContainer"
+}
