@@ -19,6 +19,8 @@
 Из каталога `cloud-server`:
 ```sh
 docker compose config
+# После размещения видео и schedule.json выполните предэфирную проверку:
+docker compose run --rm --entrypoint node api preflight.js
 docker compose up -d --build
 docker compose ps
 ```
