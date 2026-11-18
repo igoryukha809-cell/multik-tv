@@ -17,7 +17,11 @@
 <div><label for="slogan">Слоган</label><input id="slogan" type="text" maxlength="60" value="МИР НАЧИНАЕТСЯ С ВОЛШЕБСТВА!"></div>
 <div><label for="length">Длительность</label><select id="length"><option value="12">12 секунд</option><option value="18" selected>18 секунд</option><option value="24">24 секунды</option></select></div>
 </div>
-<p class="muted">Музыка генерируется прямо в браузере с помощью синтезированных нот. Видео и звук записываются вместе в WebM. Работает в актуальном Chrome; во время создания не закрывай страницу.</p>
+<div class="grid">
+<div><label for="voiceText">Текст диктора</label><input id="voiceText" type="text" maxlength="180" value="Вы смотрите канал МУЛЬТИК ТВ! Мир ярких мультфильмов начинается здесь!"></div>
+<div><label>Голос диктора</label><button id="voiceTest" type="button" class="secondary">🔊 Прослушать озвучку</button><p class="muted">Используется русский голос, доступный в браузере.</p></div>
+</div>
+<p class="muted">Музыка и голос создаются в браузере. Чтобы записать голос в итоговый WebM, браузер попросит разрешить захват звука этой вкладки: выбери эту вкладку и включи «Поделиться аудио». Если браузер не поддерживает захват звука вкладки, запись с озвучкой не начнётся.</p>
 </section>
 <section class="panel"><h2>Предпросмотр</h2><canvas id="screen" width="1280" height="720"></canvas>
 <div class="row"><button id="make">🌟 Создать заставку и музыку</button><button id="preview" class="secondary" disabled>▶ Повторить просмотр</button><button id="save" disabled>⬇ Сохранить видео со звуком</button></div>
@@ -28,7 +32,7 @@
 </main>
 <script>
 const $=id=>document.getElementById(id),c=$('screen'),g=c.getContext('2d'),W=c.width,H=c.height;
-let raf=0,rec=null,chunks=[],lastBlob=null,playing=false,ac=null,master=null,started=0,dur=18,notesTimer=null;
+let raf=0,rec=null,chunks=[],lastBlob=null,playing=false,ac=null,master=null,started=0,dur=18,notesTimer=null,tabCapture=null,voiceTimer=null;
 const stars=Array.from({length:130},(_,i)=>({x:(i*197)%W,y:(i*113)%H,r:1+(i%3),p:i*.71}));
 function rounded(x,y,w,h,r){g.beginPath();g.roundRect(x,y,w,h,r)}
 function draw(t=0,final=false){
@@ -57,10 +61,12 @@ function musicStart(){
  for(let i=0;i<Math.ceil(dur/step);i++){let when=ac.currentTime+i*step;let f=melody[i%melody.length];tone(f,when,step*.8,'sine',.09);tone(f*2,when,step*.45,'triangle',.025);if(i%4===0){let chord=chords[Math.floor(i/4)%4];chord.forEach(n=>tone(n,when,beat*1.8,'sine',.025));tone(chord[0]/2,when,beat*.9,'triangle',.055)}}
  return dest.stream;
 }
-function stop(){playing=false;cancelAnimationFrame(raf);if(rec&&rec.state!=='inactive')rec.stop();if(ac){ac.close();ac=null}}
+function speakIntro(){const text=$('voiceText').value.trim();if(!text||!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='ru-RU';u.rate=.94;u.pitch=1.04;u.volume=1;const voices=speechSynthesis.getVoices();u.voice=voices.find(v=>/^ru(-|_)/i.test(v.lang))||null;speechSynthesis.speak(u)}
+function stop(){playing=false;cancelAnimationFrame(raf);clearTimeout(voiceTimer);if('speechSynthesis' in window)speechSynthesis.cancel();if(rec&&rec.state!=='inactive')rec.stop();if(tabCapture){tabCapture.getTracks().forEach(t=>t.stop());tabCapture=null}if(ac){ac.close();ac=null}}
 function animate(){if(!playing)return;let t=(performance.now()-started)/1000;if(t>=dur){draw(dur,true);playing=false;if(rec&&rec.state==='recording')rec.stop();if(ac){ac.close();ac=null}$('status').textContent='Готово! Заставка и оригинальная музыка созданы.';return}draw(t);$('status').textContent='Создание заставки: '+Math.floor(t/dur*100)+'%';raf=requestAnimationFrame(animate)}
-function start(recording){if(playing)return;dur=Number($('length').value);playing=true;started=performance.now();if(recording){chunks=[];let stream=c.captureStream(30),audio=musicStart();audio.getAudioTracks().forEach(x=>stream.addTrack(x));let mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(x=>MediaRecorder.isTypeSupported(x));if(!mime){$('status').textContent='Этот браузер не поддерживает запись WebM. Открой страницу в Chrome.';playing=false;return}rec=new MediaRecorder(stream,{mimeType:mime});rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};rec.onstop=()=>{lastBlob=new Blob(chunks,{type:mime});$('save').disabled=false;$('preview').disabled=false};rec.start()}animate()}
-$('make').onclick=()=>{if(!window.MediaRecorder||!c.captureStream){$('status').textContent='Для создания файла открой сайт в актуальном Chrome.';return}$('make').disabled=true;$('save').disabled=true;$('preview').disabled=true;start(true);let check=setInterval(()=>{if(!playing){clearInterval(check);$('make').disabled=false}},250)};
+async function start(recording){if(playing)return;dur=Number($('length').value);if(recording){if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)throw new Error('Этот браузер не умеет записывать звук вкладки. Попробуй актуальный Chrome на компьютере.');$('status').textContent='В окне доступа выбери эту вкладку и включи «Поделиться аудио».';tabCapture=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});if(!tabCapture.getAudioTracks().length){tabCapture.getTracks().forEach(t=>t.stop());tabCapture=null;throw new Error('Звук вкладки не был разрешён. Повтори и включи «Поделиться аудио».')}tabCapture.getVideoTracks().forEach(t=>t.stop())}playing=true;started=performance.now();if(recording){chunks=[];let stream=c.captureStream(30);tabCapture.getAudioTracks().forEach(x=>stream.addTrack(x));musicStart();let mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(x=>MediaRecorder.isTypeSupported(x));if(!mime){playing=false;tabCapture.getTracks().forEach(t=>t.stop());tabCapture=null;throw new Error('Этот браузер не поддерживает запись WebM. Открой страницу в актуальном Chrome.')}rec=new MediaRecorder(stream,{mimeType:mime});rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};rec.onstop=()=>{if(tabCapture){tabCapture.getTracks().forEach(t=>t.stop());tabCapture=null}lastBlob=new Blob(chunks,{type:mime});$('save').disabled=false;$('preview').disabled=false};rec.start();voiceTimer=setTimeout(speakIntro,2200)}animate()}
+$('voiceTest').onclick=()=>{if(!('speechSynthesis' in window)){$('status').textContent='В этом браузере нет синтеза речи.';return}speakIntro()};
+$('make').onclick=async()=>{if(!window.MediaRecorder||!c.captureStream){$('status').textContent='Для создания файла открой сайт в актуальном Chrome.';return}$('make').disabled=true;$('save').disabled=true;$('preview').disabled=true;try{await start(true);let check=setInterval(()=>{if(!playing){clearInterval(check);$('make').disabled=false}},250)}catch(e){$('status').textContent=e.message||'Не удалось начать запись.';$('make').disabled=false}};
 $('preview').onclick=()=>{if(lastBlob){let url=URL.createObjectURL(lastBlob),v=document.createElement('video');v.controls=true;v.src=url;v.style='width:100%;margin-top:12px;border-radius:12px';let old=document.getElementById('resultVideo');if(old)old.remove();v.id='resultVideo';$('note').after(v);v.play().catch(()=>{})}};
 $('save').onclick=()=>{if(!lastBlob)return;let url=URL.createObjectURL(lastBlob),a=document.createElement('a');a.href=url;a.download='multik-tv-zastavka.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);$('status').textContent='Видео со звуком сохранено на устройство.'};
 draw(0);
