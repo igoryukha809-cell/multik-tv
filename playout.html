@@ -4,68 +4,194 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#25134d">
-<meta name="description" content="Бесплатный браузерный видеопульт МУЛЬТИК ТВ.">
-<title>МУЛЬТИК ТВ — Автоэфир</title>
+<meta name="description" content="Бесплатная локальная телестанция МУЛЬТИК ТВ с видеотекой, очередью и ежедневным расписанием.">
+<title>МУЛЬТИК ТВ — автоэфир и расписание</title>
 <link rel="stylesheet" href="styles.css">
 <style>
-main{max-width:1000px;margin:auto;padding:14px}.panel{background:#fff;color:#25134d;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 6px 18px #180c3b33}
+main{max-width:1050px;margin:auto;padding:14px}.panel{background:#fff;color:#25134d;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 6px 18px #180c3b33}
 .muted{color:#625a78;line-height:1.5}.status{padding:12px;border-radius:12px;background:#fff3d8;color:#704900;font-weight:700}
-video{width:100%;max-height:58vh;background:#100b20;border-radius:14px}button,.action{border:0;border-radius:10px;background:#6336a5;color:white;padding:11px 15px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;margin:6px 5px 0 0}button.secondary{background:#5c5670}button.danger{background:#a52e48}button:disabled{opacity:.5;cursor:not-allowed}
-input{max-width:100%;font:inherit}ul{padding-left:22px}.item{display:flex;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid #e7e2ef;padding:10px 0}.item span{overflow-wrap:anywhere}.item small{display:block;color:#625a78}.item button{flex-shrink:0}
+video{width:100%;max-height:58vh;background:#100b20;border-radius:14px}button,.action{border:0;border-radius:10px;background:#6336a5;color:white;padding:11px 15px;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;margin:6px 5px 0 0}
+button.secondary{background:#5c5670}button.danger{background:#a52e48}button:disabled{opacity:.5;cursor:not-allowed}
+input,select{max-width:100%;font:inherit;padding:9px;border:1px solid #cfc5dc;border-radius:9px}ul{padding-left:22px}.item{display:flex;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid #e7e2ef;padding:10px 0}.item span{overflow-wrap:anywhere}.item button{flex-shrink:0}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:10px 0}.small{font-size:13px;color:#625a78}
 @media(max-width:560px){.item{align-items:flex-start;flex-direction:column}.item button{margin-left:0}}
 </style>
 </head>
 <body>
-<header><div class="logo">🌈 МУЛЬТИК ТВ</div><p>Бесплатный видеопульт · Автоэфир</p></header>
+<header><div class="logo">🌈 МУЛЬТИК ТВ</div><p>Бесплатная локальная телестанция · видеотека · ежедневное расписание</p></header>
 <main>
 <section class="panel">
 <h1>📺 Автоэфир</h1>
-<p class="muted">Добавляй видеофайлы, собирай очередь и запускай последовательное воспроизведение. Файлы остаются в хранилище этого браузера на этом устройстве. Страница не загружает их в интернет и не создаёт общий канал для других зрителей.</p>
-<div id="status" class="status" role="status" aria-live="polite">Загружаем видеотеку…</div>
+<p class="muted">Добавь свои видеофайлы один раз: они сохраняются в хранилище этого браузера. Собери очередь или настрой ежедневный запуск выбранных передач по времени. Страница должна оставаться открытой на устройстве.</p>
+<div id="status" class="status" role="status" aria-live="polite">Открываем видеотеку…</div>
 </section>
 <section class="panel">
 <h2>Экран эфира</h2>
 <video id="player" controls playsinline preload="metadata"></video>
 <p id="now" class="muted">Ничего не воспроизводится.</p>
+<div class="row">
 <button id="play">▶ Запустить очередь</button>
 <button id="pause" class="secondary">Пауза</button>
 <button id="next" class="secondary">Следующее видео</button>
+<button id="stop" class="danger">■ Остановить</button>
+<label class="small"><input id="repeat" type="checkbox" checked> Повторять очередь</label>
+</div>
+<p id="wake" class="small">Защита от сна экрана: проверяем поддержку браузера…</p>
 </section>
 <section class="panel">
 <h2>Моя видеотека</h2>
 <label for="files">Добавить видеофайлы</label><br>
 <input id="files" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.ogv,.mov" multiple>
-<p class="muted">Поддержка форматов зависит от браузера. Не добавляй видео, если у тебя нет прав на его публичный показ.</p>
-<button id="clear" class="danger">Очистить видеотеку</button>
+<p class="muted">Файлы сохраняются в IndexedDB на этом устройстве. Если очистить данные сайта или хранилище браузера, файлы могут удалиться. Не добавляй материалы, на которые у тебя нет прав.</p>
+<div class="row"><button id="clear" class="danger">Очистить видеотеку</button><span id="count" class="small">0 видео</span></div>
 <div id="list"><p class="muted">Пока нет файлов.</p></div>
 </section>
 <section class="panel">
-<h2>Как открыть для зрителей</h2>
-<p>Этот бесплатный режим работает только в открытом браузере на текущем устройстве. Чтобы зрители смотрели единый интернет-эфир независимо от твоего устройства, нужен постоянно работающий сервер и исходящий видеотрафик. GitHub Pages хранит сайт, но не передаёт видео 24/7.</p>
-<a class="action" href="stream.html">Открыть интернет-плеер</a>
-<a class="action" href="cloud.html">Проверка внешнего сервера</a>
+<h2>🗓️ Ежедневное расписание</h2>
+<p class="muted">Выбери сохранённый ролик и местное время. В назначенное время браузер попробует включить выбранное видео. Если устройство спит, браузер закрыт или вкладка выгружена, запуск может не произойти.</p>
+<div class="row">
+<label for="schedule-time">Время</label><input id="schedule-time" type="time" value="08:00">
+<label for="schedule-video">Передача</label><select id="schedule-video"><option value="">Сначала добавь видео</option></select>
+<button id="add-schedule">＋ Добавить</button>
+</div>
+<div id="schedule-list"></div>
+<div class="row">
+<button id="schedule-on">▶ Включить расписание</button>
+<button id="schedule-off" class="secondary">Приостановить</button>
+</div>
+<p id="schedule-state" class="status">Расписание выключено.</p>
+</section>
+<section class="panel">
+<h2>Что работает бесплатно</h2>
+<ul>
+<li>Постоянная видеотека на этом устройстве, пока браузер не удалит её данные.</li>
+<li>Автоматический переход к следующему видео и повтор очереди.</li>
+<li>Ежедневные запуски по локальному времени, пока страница активна.</li>
+<li>Попытка удерживать экран включённым в поддерживаемых браузерах.</li>
+</ul>
+<p><b>Важно:</b> это локальная телестанция. Зрители на других устройствах не получают единый поток. Для настоящего интернет-эфира 24/7 по-прежнему нужен отдельный видеосервер и разрешённые источники контента. GitHub Pages — бесплатный хостинг сайта, а не видеосервер.</p>
+<a class="action" href="channel.html">Статус канала</a>
+<a class="action" href="online-catalog.html">Каталог мультфильмов</a>
 <a class="action" href="index.html">На главную</a>
 </section>
 </main>
 <script>
-(()=>{
-const DB='multik-tv-playout-v1',STORE='videos';
+(()=> {
+const DB='multik-tv-playout-v1', STORE='videos', SCHEDULE_KEY='multik-tv-playout-schedule-v2', FIRED_KEY='multik-tv-playout-fired-v2';
 const $=id=>document.getElementById(id);
-let db,items=[],index=0,url=null;
-const say=(msg)=>$('status').textContent=msg;
-function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB,1);req.onupgradeneeded=()=>req.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
-function tx(mode,fn){return new Promise((resolve,reject)=>{const t=db.transaction(STORE,mode),s=t.objectStore(STORE);let result;try{result=fn(s)}catch(e){reject(e);return}t.oncomplete=()=>resolve(result);t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error)})}
-async function refresh(){items=await new Promise((resolve,reject)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});render()}
-function render(){const root=$('list');root.replaceChildren();if(!items.length){root.innerHTML='<p class="muted">Пока нет файлов. Выбери видео выше.</p>';return}items.forEach((it,i)=>{const row=document.createElement('div');row.className='item';const info=document.createElement('span');info.textContent=(i+1)+'. '+it.name;const meta=document.createElement('small');meta.textContent=(it.size/1048576).toFixed(1)+' МБ';info.append(meta);const b=document.createElement('button');b.textContent='Удалить';b.className='danger';b.onclick=async()=>{await tx('readwrite',s=>s.delete(it.id));if(index>=items.length-1)index=Math.max(0,items.length-2);await refresh();say('Видео удалено из этой видеотеки.')};row.append(info,b);root.append(row)})}
-async function load(i){if(!items.length)return;index=(i+items.length)%items.length;const it=items[index];if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(it.blob);$('player').src=url;$('now').textContent='Сейчас: '+it.name+' · '+(index+1)+' из '+items.length;say('Готово к воспроизведению. Для запуска нажми Play.')}
-async function add(files){for(const f of files){if(!f.type.startsWith('video/')&&!/\.(mp4|webm|ogv|mov)$/i.test(f.name))continue;await tx('readwrite',s=>s.add({name:f.name,size:f.size,type:f.type,blob:f}))}await refresh();say('Файлы добавлены в хранилище этого браузера.')}
-$('files').addEventListener('change',async e=>{try{await add([...e.target.files])}catch(err){say('Не удалось сохранить файлы. Возможно, не хватает места в браузере.')}e.target.value=''});
-$('play').onclick=async()=>{if(!items.length){say('Сначала добавь хотя бы один видеофайл.');return}if(!$('player').src)await load(index);$('player').play().catch(()=>say('Нажми Play на видеоплеере, если браузер заблокировал автозапуск.'))};
-$('pause').onclick=()=>$('player').pause();
-$('next').onclick=async()=>{if(!items.length)return;await load(index+1);$('player').play().catch(()=>{})};
-$('player').addEventListener('ended',async()=>{if(items.length){await load(index+1);$('player').play().catch(()=>{})}});
-$('clear').onclick=async()=>{if(!confirm('Удалить все видео из локальной видеотеки этого браузера?'))return;$('player').pause();$('player').removeAttribute('src');$('player').load();if(url)URL.revokeObjectURL(url);url=null;await tx('readwrite',s=>s.clear());index=0;await refresh();say('Видеотека очищена.')};
-openDB().then(async d=>{db=d;await refresh();say(items.length?'Видеотека готова: '+items.length+' видео.':'Сервис готов. Добавь видеофайлы, чтобы собрать очередь.')}).catch(()=>say('Браузер не разрешил открыть локальное хранилище. Проверь настройки браузера.'));
+let db,items=[],index=0,objectUrl=null,wakeLock=null,schedule=[],scheduleOn=false;
+let fired=new Set();
+const say=message=>$('status').textContent=message;
+const scheduleSay=message=>$('schedule-state').textContent=message;
+function openDB(){return new Promise((resolve,reject)=>{
+ const request=indexedDB.open(DB,1);
+ request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains(STORE))request.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});};
+ request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+});}
+function transaction(mode,action){return new Promise((resolve,reject)=>{
+ const tx=db.transaction(STORE,mode),store=tx.objectStore(STORE);let result;
+ try{result=action(store);}catch(error){reject(error);return;}
+ tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);
+});}
+function getAll(){return new Promise((resolve,reject)=>{
+ const request=db.transaction(STORE,'readonly').objectStore(STORE).getAll();
+ request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+});}
+function saveSchedule(){localStorage.setItem(SCHEDULE_KEY,JSON.stringify(schedule));}
+function loadSchedule(){try{const value=JSON.parse(localStorage.getItem(SCHEDULE_KEY)||'[]');schedule=Array.isArray(value)?value:[];}catch{schedule=[];}}
+function loadFired(){try{fired=new Set(JSON.parse(localStorage.getItem(FIRED_KEY)||'[]'));}catch{fired=new Set();}}
+function saveFired(){const today=new Date().toISOString().slice(0,10);const keep=[...fired].filter(key=>key.slice(0,10)>=today);fired=new Set(keep);localStorage.setItem(FIRED_KEY,JSON.stringify(keep));}
+function render(){
+ const root=$('list');root.replaceChildren();
+ $('count').textContent=items.length+' видео';
+ if(!items.length){root.innerHTML='<p class="muted">Пока нет файлов. Выбери видео выше.</p>';}
+ items.forEach((item,i)=>{
+  const row=document.createElement('div');row.className='item';
+  const info=document.createElement('span');info.textContent=(i+1)+'. '+item.name;
+  const meta=document.createElement('small');meta.className='small';meta.textContent=' · '+(item.size/1048576).toFixed(1)+' МБ';info.append(meta);
+  const controls=document.createElement('div');
+  const play=document.createElement('button');play.textContent='▶ Включить';play.onclick=()=>playItem(i,true);
+  const remove=document.createElement('button');remove.textContent='Удалить';remove.className='danger';remove.onclick=()=>removeItem(item.id);
+  controls.append(play,remove);row.append(info,controls);root.append(row);
+ });
+ const select=$('schedule-video');const previous=select.value;select.replaceChildren();
+ if(!items.length){const option=document.createElement('option');option.value='';option.textContent='Сначала добавь видео';select.append(option);}
+ items.forEach(item=>{const option=document.createElement('option');option.value=String(item.id);option.textContent=item.name;select.append(option);});
+ if(items.some(item=>String(item.id)===previous))select.value=previous;
+ renderSchedule();
+}
+function renderSchedule(){
+ const root=$('schedule-list');root.replaceChildren();
+ if(!schedule.length){const p=document.createElement('p');p.className='muted';p.textContent='Пока нет пунктов расписания.';root.append(p);return;}
+ schedule.forEach((entry,i)=>{
+  const row=document.createElement('div');row.className='item';
+  const label=document.createElement('span');label.textContent=entry.time+' — '+entry.name;
+  const remove=document.createElement('button');remove.className='danger';remove.textContent='Удалить';remove.onclick=()=>{schedule.splice(i,1);saveSchedule();renderSchedule();};
+  row.append(label,remove);root.append(row);
+ });
+}
+async function refresh(){items=await getAll();render();}
+async function acquireWakeLock(){
+ if(!('wakeLock' in navigator)){ $('wake').textContent='Этот браузер не поддерживает блокировку сна экрана. Не давай устройству уснуть.';return;}
+ try{wakeLock=await navigator.wakeLock.request('screen');$('wake').textContent='Экран удерживается включённым, пока браузер это разрешает.';wakeLock.addEventListener('release',()=>{$('wake').textContent='Защита экрана отпущена браузером.';});}
+ catch{$('wake').textContent='Браузер не разрешил удерживать экран. Отключи автоблокировку экрана вручную.';}
+}
+async function releaseWakeLock(){if(wakeLock){try{await wakeLock.release();}catch{}wakeLock=null;}}
+async function playItem(i,fromUser=false){
+ if(!items.length)return;
+ index=(i+items.length)%items.length;const item=items[index];
+ if(objectUrl)URL.revokeObjectURL(objectUrl);
+ objectUrl=URL.createObjectURL(item.blob);$('player').src=objectUrl;$('now').textContent='Сейчас: '+item.name+' · '+(index+1)+' из '+items.length;
+ try{await $('player').play();say('Воспроизводится: '+item.name);await acquireWakeLock();}
+ catch{say('Видео готово. Нажми Play на самом плеере, если браузер заблокировал запуск.');if(fromUser)await acquireWakeLock();}
+}
+async function removeItem(id){
+ const current=items[index];if(current&&current.id===id){$('player').pause();$('player').removeAttribute('src');$('player').load();if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=null;await releaseWakeLock();}
+ await transaction('readwrite',store=>store.delete(id));await refresh();say('Видео удалено из видеотеки.');
+}
+async function addFiles(files){
+ let added=0;
+ for(const file of files){
+  if(!file.type.startsWith('video/')&&!/\.(mp4|webm|ogv|mov)$/i.test(file.name))continue;
+  await transaction('readwrite',store=>store.add({name:file.name,size:file.size,type:file.type,blob:file}));added++;
+ }
+ await refresh();say(added?'Добавлено файлов: '+added+'. Они сохранены в этом браузере.':'Подходящие видеофайлы не выбраны.');
+}
+function next(){if(!items.length)return;const nextIndex=index+1;if(nextIndex<items.length)playItem(nextIndex);else if($('repeat').checked)playItem(0);else{say('Очередь завершена.');releaseWakeLock();}}
+function checkSchedule(){
+ if(!scheduleOn)return;
+ const now=new Date(),time=now.toTimeString().slice(0,5),day=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+ for(const entry of schedule){
+  const key=day+'|'+entry.time+'|'+entry.id;
+  if(entry.time===time&&!fired.has(key)){
+   fired.add(key);saveFired();
+   const target=items.findIndex(item=>item.id===entry.id);
+   if(target>=0){playItem(target);scheduleSay('По расписанию запущено: '+entry.name+' в '+time+'.');}
+   else scheduleSay('Время '+time+': файл «'+entry.name+'» не найден в видеотеке.');
+  }
+ }
+}
+$('files').addEventListener('change',async event=>{try{await addFiles([...event.target.files]);}catch(error){say('Не удалось сохранить видео. Возможно, в браузере недостаточно места.');}event.target.value='';});
+$('play').onclick=()=>{if(!items.length){say('Сначала добавь видеофайлы.');return;}playItem(index,true);};
+$('pause').onclick=()=>{$('player').pause();say('Пауза.');};
+$('next').onclick=next;
+$('stop').onclick=async()=>{$('player').pause();$('player').removeAttribute('src');$('player').load();if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=null;await releaseWakeLock();$('now').textContent='Воспроизведение остановлено.';say('Эфир остановлен на этом устройстве.');};
+$('player').addEventListener('ended',next);
+$('player').addEventListener('play',acquireWakeLock);
+$('clear').onclick=async()=>{if(!confirm('Удалить все видео из локальной видеотеки этого браузера?'))return;$('player').pause();$('player').removeAttribute('src');$('player').load();if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=null;await releaseWakeLock();await transaction('readwrite',store=>store.clear());index=0;await refresh();say('Видеотека очищена.');};
+$('add-schedule').onclick=()=>{
+ const time=$('schedule-time').value,id=Number($('schedule-video').value),item=items.find(x=>x.id===id);
+ if(!time||!item){scheduleSay('Сначала добавь видео и выбери передачу.');return;}
+ if(schedule.some(x=>x.time===time&&x.id===id)){scheduleSay('Эта передача уже стоит на это время.');return;}
+ schedule.push({time,id,name:item.name});schedule.sort((a,b)=>a.time.localeCompare(b.time));saveSchedule();renderSchedule();scheduleSay('Пункт расписания добавлен на каждый день.');
+};
+$('schedule-on').onclick=()=>{scheduleOn=true;scheduleSay('Расписание включено. Оставь страницу открытой и не допускай сна устройства.');checkSchedule();};
+$('schedule-off').onclick=()=>{scheduleOn=false;scheduleSay('Расписание приостановлено.');};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!$('player').paused)acquireWakeLock();});
+window.addEventListener('beforeunload',()=>{if(objectUrl)URL.revokeObjectURL(objectUrl);});
+loadSchedule();loadFired();
+openDB().then(async database=>{db=database;await refresh();say(items.length?'Видеотека загружена: '+items.length+' видео.':'Сервис готов. Добавь видеофайлы, чтобы собрать очередь.');}).catch(()=>say('Не удалось открыть хранилище браузера. Проверь настройки или доступное место.'));
+setInterval(checkSchedule,1000);
 })();
 </script>
 </body>
