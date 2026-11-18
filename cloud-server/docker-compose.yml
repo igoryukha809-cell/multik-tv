@@ -1,44 +1,48 @@
 services:
   video:
     image: ossrs/srs:5
-    container_name: multik-tv-cloud-video
-    init: true
     restart: unless-stopped
     command: ["./objs/srs", "-c", "conf/srs.conf"]
-    ports:
-      - "1935:1935"
+    ports: ["1935:1935"]
     volumes:
       - ./srs.conf:/usr/local/srs/conf/srs.conf:ro
       - hls-data:/usr/local/srs/objs/nginx/html
     networks: [broadcast]
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  control:
+  api:
     build: .
-    container_name: multik-tv-cloud-control
-    init: true
     restart: unless-stopped
     depends_on: [video]
     environment:
       PORT: "8080"
       HLS_DIR: /hls
-    ports:
-      - "8080:8080"
+      DATA_DIR: /data
+      LEARNING_FILE: /data/learning.json
+      MEDIA_DIR: /media
+      SCHEDULE_FILE: /data/schedule.json
+      RTMP_TARGET: rtmp://video/live/multiktv
+    ports: ["8080:8080"]
     volumes:
       - hls-data:/hls:ro
+      - media-data:/media:ro
+      - schedule-data:/data
     networks: [broadcast]
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-
+  director:
+    build: .
+    restart: unless-stopped
+    depends_on: [video]
+    command: ["node","director.js"]
+    environment:
+      MEDIA_DIR: /media
+      DATA_DIR: /data
+      SCHEDULE_FILE: /data/schedule.json
+      RTMP_TARGET: rtmp://video/live/multiktv
+    volumes:
+      - media-data:/media:ro
+      - schedule-data:/data
+    networks: [broadcast]
 volumes:
   hls-data:
-
+  media-data:
+  schedule-data:
 networks:
   broadcast:
