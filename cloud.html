@@ -56,7 +56,7 @@ li{margin:8px 0;overflow-wrap:anywhere}.queue button{padding:6px 9px}.tag{font-s
 <section class="panel">
 <h2>Как это работает бесплатно</h2>
 <ul><li>Страница размещена на GitHub Pages бесплатно.</li><li>Видеофайлы хранятся в локальной базе браузера на устройстве.</li><li>Плейлист воспроизводится по очереди, с повтором при включённой настройке.</li><li>Для автоматического старта по времени страница должна быть открыта.</li></ul>
-<p><strong>Важно:</strong> это работающий локальный эфир в открытом браузере, а не единый интернет-канал 24/7. GitHub Pages не передаёт видео зрителям и не хранит твои видеофайлы. Чтобы все зрители смотрели один общий поток круглосуточно, нужен постоянно работающий видеосервер и достаточный трафик. Бесплатная веб-страница не может заменить сервер. Не загружай и не транслируй чужие мультфильмы без разрешения правообладателя.</p>
+<p><strong>Важно:</strong> это работающий локальный эфир в открытом браузере, а не единый интернет-канал 24/7. GitHub Pages не передаёт видео зрителям и не хранит твои видеофайлы. Чтобы все зрители смотрели один общий поток круглосуточно, нужен постоянно работающий видеосервер и достаточный трафик. Бесплатная веб-страница не может заменить сервер. В подборку автоматически добавлены несколько произведений с открытыми лицензиями. Атрибуция и ссылки на лицензии указаны в карточках ниже. Не добавляй другие чужие мультфильмы без разрешения правообладателя.</p>
 <a class="action" href="index.html">На главную</a><a class="action" href="tv.html">Обычный плеер</a>
 </section>
 </main>
@@ -82,5 +82,10 @@ $('clear').onclick=async()=>{if(!confirm('Удалить все видео из 
 $('schedule').onclick=()=>{localStorage.setItem('multiktv-start', $('starttime').value);$('schedstate').textContent='Сохранено: запуск ежедневно в '+$('starttime').value+' (пока эта страница открыта).'};
 const saved=localStorage.getItem('multiktv-start');if(saved){$('starttime').value=saved;$('schedstate').textContent='Сохранено: запуск ежедневно в '+saved+'.'}
 setInterval(()=>{const t=localStorage.getItem('multiktv-start');if(t&&items.length&&!video.src){const now=new Date(),target=t.split(':').map(Number);if(now.getHours()===target[0]&&now.getMinutes()===target[1]&&now.getSeconds()<20)playAt(0)}},10000);
-openDB().then(async x=>{db=x;await refresh()}).catch(()=>say('Браузер не разрешил локальное хранилище. Попробуй открыть страницу в обычном режиме браузера.'));
+const FREE_LIBRARY=[
+{name:'Pepper & Carrot — Эпизод 6 (русская версия)',url:'https://upload.wikimedia.org/wikipedia/commons/8/8d/Morevna_Project_-_Pepper%26Carrot_%28animated_comic%29_-_Episode_6_-_The_Potion_Contest_%28Russian_variant%29.webm',credit:'Morevna Project; CC BY-SA 4.0',license:'https://creativecommons.org/licenses/by-sa/4.0/'},
+{name:'Elephants Dream — короткометражный мультфильм',url:'https://commons.wikimedia.org/wiki/Special:Redirect/file/Elephants_Dream%28HQ%29.webm',credit:'Blender Foundation / Orange Open Movie Team; CC BY-SA 2.5',license:'https://creativecommons.org/licenses/by-sa/2.5/'},
+{name:'Caminandes — Llama Drama',url:'https://commons.wikimedia.org/wiki/Special:Redirect/file/Caminandes-_Llama_Drama_-_Short_Movie.ogv',credit:'Pablo Vazquez, Beorn Leonard, Francesco Siddi; music: Jan Morgenstern; CC BY 3.0',license:'https://creativecommons.org/licenses/by/3.0/'}
+];
+openDB().then(async x=>{db=x;let existing=await all();if(!existing.length){for(const v of FREE_LIBRARY)await write({...v,source:'curated-open-license'});}await refresh();}).catch(()=>say('Браузер не разрешил локальное хранилище. Попробуй открыть страницу в обычном режиме браузера.'));
 </script></body></html>
