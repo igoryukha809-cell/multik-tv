@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#10152b">
 <meta name="description" content="МУЛЬТИК ТВ — бесплатный браузерный показ русскоязычной анимации и собственных видеофайлов.">
-<title>МУЛЬТИК ТВ — автоматический браузерный эфир</title>
+<title>МУЛЬТИК ТВ — прямой эфир</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,Arial,sans-serif;background:#0b1023;color:#f7f8ff}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#443477,#0b1023 65%);min-height:100vh}
@@ -32,13 +32,35 @@ button,.filebtn{border:0;border-radius:10px;padding:11px 15px;background:#ffe17a
 .status{color:#baffdc;font-weight:700}.meta{font-size:13px;color:#aab8df}
 ol{padding-left:24px}li{padding:7px 0;color:#e3e9ff}
 footer{font-size:13px;color:#9eacd3}
+
+.live-player{position:relative;padding-top:56.25%;width:100%;background:#000}
+.live-player iframe{position:absolute;width:100%;height:100%;top:0;left:0;border:0}
+.live-note{margin:12px 0 0;padding:12px 14px;border-radius:12px;background:#20294a;color:#dbe5ff;font-size:14px;line-height:1.5}
+
 </style>
 </head>
 <body>
 <header><div class="top"><div class="brand">🌈 МУЛЬТИК ТВ</div><div><a href="video-studio.html">🎬 Создать заставку</a> · <a href="index.html">← На главную</a></div></div>
-<h1>МУЛЬТИК ТВ — автоматический браузерный эфир</h1>
-<span class="tag">БЕСПЛАТНО · АВТОЗАПУСК В ОТКРЫТОЙ ВКЛАДКЕ</span></header>
+<h1>МУЛЬТИК ТВ — прямой эфир</h1>
+<span class="tag">🔴 ОНЛАЙН-ТРАНСЛЯЦИЯ</span></header>
 <main>
+
+<section class="panel" id="live-broadcast">
+<h2>🔴 Прямой эфир МУЛЬТИК ТВ</h2>
+<div class="screen">
+  <div class="live-player">
+    <iframe
+      src="https://kinescope.io/embed/0cGaBsxQyyGHNevtvjRBfC"
+      title="Прямой эфир МУЛЬТИК ТВ"
+      allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;"
+      frameborder="0"
+      allowfullscreen
+      loading="eager"></iframe>
+  </div>
+</div>
+<p class="live-note">Это общий плеер трансляции Kinescope. Если эфир не начался автоматически, нажми ▶ в плеере. Для просмотра со звуком может потребоваться разрешить звук вручную.</p>
+</section>
+
 <section class="screen">
 <div class="stage" id="stage">
 <div class="stars" id="stars">✦　　✧　　 ✦　　✧　　✦</div>
