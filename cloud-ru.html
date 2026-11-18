@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17152f">
+<title>МУЛЬТИК ТВ Cloud — панель управления</title>
+<style>
+:root{color-scheme:dark;--bg:#111126;--panel:#1c1b39;--line:#343254;--muted:#b9b6d2;--accent:#a78bfa;--green:#86efac}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#111126,#211943);color:#fff;font:16px system-ui,Arial}
+header{padding:24px max(18px,calc((100% - 1050px)/2));border-bottom:1px solid var(--line);background:#17152fee}
+main{max-width:1050px;margin:auto;padding:20px}.brand{font-weight:850;letter-spacing:.04em;font-size:20px}h1{font-size:clamp(30px,6vw,48px);margin:28px 0 8px}h2{font-size:20px;margin-top:0}.muted{color:var(--muted);line-height:1.55}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 12px 35px #09081755}.tag{color:#d8b4fe;font-size:12px;font-weight:800;letter-spacing:.1em}.status{padding:12px;border-radius:12px;background:#30264d;color:#e9ddff}.notice{border-left:4px solid #fbbf24;padding:12px 14px;background:#382e24;border-radius:8px;color:#ffedc2}label{display:block;font-weight:650;margin:12px 0 6px}input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #575274;background:#111126;color:#fff;font:inherit}button,a.btn{display:inline-block;border:0;border-radius:10px;background:var(--accent);color:#17122a;padding:11px 15px;font-weight:800;font:inherit;text-decoration:none;cursor:pointer;margin:8px 6px 0 0}button.secondary,a.secondary{background:#343052;color:#fff}.tile{padding:14px;border:1px solid var(--line);border-radius:12px}.tile strong{display:block;margin-bottom:6px}.small{font-size:13px;color:var(--muted)}#projectState{overflow-wrap:anywhere}.hidden{display:none}footer{padding:25px;text-align:center;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<header><div class="brand">🌈 МУЛЬТИК ТВ CLOUD</div><div class="small">Панель проекта · Русский интерфейс</div></header>
+<main>
+<div class="tag">ВАША ТВ-ПЛАТФОРМА</div>
+<h1>Облачная студия<br>«МУЛЬТИК ТВ»</h1>
+<p class="muted">Единая панель для подготовки проекта, видеотеки и будущего круглосуточного эфира.</p>
+<div class="status">● Панель доступна · Облачный сервер пока не подключён</div>
+<section class="card">
+<h2>Создать проект</h2>
+<p class="muted">Эта форма сохраняет настройки только в памяти текущего браузера. Она не регистрирует облачный аккаунт и не создаёт платный сервер.</p>
+<label for="country">Страна проекта</label>
+<select id="country"><option value="RU" selected>🇷🇺 Россия</option><option value="BY">🇧🇾 Беларусь</option><option value="KZ">🇰🇿 Казахстан</option><option value="AM">🇦🇲 Армения</option><option value="KG">🇰🇬 Кыргызстан</option><option value="UZ">🇺🇿 Узбекистан</option><option value="OTHER">Другая страна</option></select>
+<label for="project">Название проекта</label><input id="project" value="МУЛЬТИК ТВ" maxlength="60">
+<label for="region">Предпочитаемый регион размещения</label>
+<select id="region"><option>Россия — регион будет выбран у провайдера</option><option>Казахстан</option><option>Европа</option><option>Пока не определён</option></select>
+<button id="create">Сохранить настройки проекта</button>
+<div id="projectState" class="status hidden" aria-live="polite"></div>
+</section>
+<section class="grid">
+<div class="card"><h2>📺 Эфир</h2><p class="muted">Подключение RTMP/HLS, расписание и проверка сигнала.</p><a class="btn" href="live.html">Открыть плеер</a><a class="btn secondary" href="preflight.html">Проверка эфира</a></div>
+<div class="card"><h2>🎞️ Видеотека</h2><p class="muted">Добавляй собственные ролики и мультфильмы, на которые есть права публичного показа.</p><a class="btn" href="cloud.html">Открыть локальную студию</a><a class="btn secondary" href="rights-register.html">Реестр прав</a></div>
+<div class="card"><h2>🖥️ Сервер</h2><p class="muted">Серверная часть подготовлена в проекте, но ещё не развёрнута на хостинге.</p><a class="btn secondary" href="https://github.com/igoryukha809-cell/multik-tv/tree/main/cloud-server" target="_blank" rel="noopener">Файлы сервера</a></div>
+</section>
+<section class="card">
+<h2>Что потребуется для настоящего облака</h2>
+<div class="grid">
+<div class="tile"><strong>1. Провайдер</strong><span class="small">Взрослый владелец выбирает доступного провайдера и проверяет условия, оплату и доступность региона.</span></div>
+<div class="tile"><strong>2. Сервер</strong><span class="small">Linux-машина, постоянное хранилище, Docker и сетевые настройки.</span></div>
+<div class="tile"><strong>3. Защита</strong><span class="small">HTTPS, закрытый API, секреты окружения и ограничение административного доступа.</span></div>
+<div class="tile"><strong>4. Права на видео</strong><span class="small">Для каждого произведения нужны подтверждённые права на публичную трансляцию.</span></div>
+</div>
+<p class="notice">Важно: выбор «Россия» здесь означает страну проекта в интерфейсе, а не гарантирует, что любой облачный провайдер разрешает регистрацию или размещение серверов в России. Нельзя обходить ограничения страны или платёжного профиля.</p>
+</section>
+<p class="muted small">Не вводи сюда пароли, банковские данные, ключи API или документы. Эта панель не запрашивает их и не передаёт данные на сервер.</p>
+</main>
+<footer>МУЛЬТИК ТВ CLOUD · Панель проекта, версия 1</footer>
+<script>
+const $=id=>document.getElementById(id);
+$('create').addEventListener('click',()=>{
+ const data={country:$('country').value,project:$('project').value.trim()||'МУЛЬТИК ТВ',region:$('region').value};
+ try{localStorage.setItem('multiktv-cloud-project',JSON.stringify(data));}catch(e){}
+ const box=$('projectState');box.classList.remove('hidden');
+ box.textContent='Настройки проекта «'+data.project+'» сохранены в этом браузере. Страна: '+$('country').selectedOptions[0].text+'. Это локальная настройка, облачный сервер не создан.';
+});
+try{const saved=JSON.parse(localStorage.getItem('multiktv-cloud-project')||'null');if(saved){$('country').value=saved.country;$('project').value=saved.project;$('region').value=saved.region;}}catch(e){}
+</script>
+</body></html>
