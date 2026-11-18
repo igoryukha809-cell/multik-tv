@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#075b9b">
+<title>Погода в эфире — МУЛЬТИК ТВ</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07335b;color:#fff;font-family:Arial,sans-serif}
+header{height:9vh;min-height:54px;padding:12px 3vw;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#075b9b,#7132a8);font-weight:900;letter-spacing:.06em}
+header small{font-weight:600;letter-spacing:0}
+main{height:83vh;position:relative;background:#9de1ff}
+iframe{width:100%;height:100%;border:0;background:#9de1ff}
+footer{height:8vh;min-height:48px;background:#07335b;display:flex;align-items:center;gap:22px;padding:0 3vw;font-weight:800;white-space:nowrap;overflow:hidden}
+.ticker{overflow:hidden;flex:1}
+.ticker span{display:inline-block;padding-left:100%;animation:scroll 24s linear infinite}
+@keyframes scroll{to{transform:translateX(-100%)}}
+.mark{background:#ffcf48;color:#553900;padding:7px 12px;border-radius:30px}
+@media(max-width:600px){header{font-size:13px}header small{display:none}footer{font-size:12px;gap:8px}}
+</style></head>
+<body>
+<header><div>🌈 МУЛЬТИК ТВ · ПОГОДА С МУЛЬТИКОМ</div><small>Погодная рубрика · Обновление данных каждые 15 минут</small><div class="mark">ЭФИРНАЯ СТУДИЯ</div></header>
+<main><iframe src="weather-service.html?mode=tv" title="Актуальная погода в городах России"></iframe></main>
+<footer><strong>СОВЕТ ОТ МУЛЬТИКА</strong><div class="ticker"><span>Проверь прогноз для своего города • Одевайся по погоде • Во время грозы зайди в помещение • МУЛЬТИК ТВ — добрые новости каждый день!</span></div><strong>📺 МУЛЬТИК ТВ</strong></footer>
+<script>
+const frame=document.querySelector("iframe");
+frame.addEventListener("load",()=>{try{frame.contentWindow.document.body.classList.add("tv")}catch(e){}});
+</script>
+</body></html>
