@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+cd "$(dirname "$0")"
+docker compose down
+echo "MULTIK TV local server stopped."
