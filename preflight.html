@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#7132a8"><title>Предэфирная проверка — МУЛЬТИК ТВ</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+main{max-width:850px;margin:auto;padding:16px}.panel{background:#fff;color:#30215b;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 5px 18px #35136b22}
+h1{font-size:clamp(26px,6vw,40px)}.item{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #e8e1f2}.item:last-child{border:0}
+.item input{width:22px;height:22px;flex:none;margin-top:2px}.item label{line-height:1.45}.muted{color:#655b78;font-size:14px}
+button,.btn{border:0;border-radius:12px;padding:12px 16px;margin:5px 5px 5px 0;background:#7132a8;color:#fff;font-weight:700;text-decoration:none;cursor:pointer}
+.secondary{background:#eee7f6;color:#30215b}textarea{width:100%;min-height:90px;border:1px solid #cfc2df;border-radius:10px;padding:10px;box-sizing:border-box}
+progress{width:100%;height:16px}#status{font-weight:700}
+</style></head>
+<body><header><div class="logo">🌈 МУЛЬТИК ТВ</div><p>Подготовка к эфиру</p></header>
+<main><a class="btn secondary" href="index.html">← На главную</a>
+<h1>✅ Предэфирная проверка</h1>
+<p class="muted">Отметь пункты перед началом выпуска. Прогресс сохраняется в этом браузере на устройстве.</p>
+<section class="panel"><div id="status">0 из 12 проверок выполнено</div><progress id="progress" max="12" value="0"></progress>
+<div id="checks">
+<div class="item"><input type="checkbox" id="c1"><label for="c1"><b>Проверены права на все материалы</b><br><span class="muted">Есть лицензия или разрешение на публичный показ.</span></label></div>
+<div class="item"><input type="checkbox" id="c2"><label for="c2"><b>Подготовлен эфирный лист</b><br><span class="muted">Порядок передач и длительность проверены.</span></label></div>
+<div class="item"><input type="checkbox" id="c3"><label for="c3"><b>Подготовлены файлы</b><br><span class="muted">Видео и аудио открываются и воспроизводятся.</span></label></div>
+<div class="item"><input type="checkbox" id="c4"><label for="c4"><b>Проверена громкость</b><br><span class="muted">Звук слышен, нет неожиданно громких фрагментов.</span></label></div>
+<div class="item"><input type="checkbox" id="c5"><label for="c5"><b>Проверены начало и конец роликов</b></label></div>
+<div class="item"><input type="checkbox" id="c6"><label for="c6"><b>Подготовлены заставки и переходы</b></label></div>
+<div class="item"><input type="checkbox" id="c7"><label for="c7"><b>Проверены титры и субтитры</b></label></div>
+<div class="item"><input type="checkbox" id="c8"><label for="c8"><b>Проверена телепрограмма</b><br><span class="muted">Время и названия передач совпадают с эфирным листом.</span></label></div>
+<div class="item"><input type="checkbox" id="c9"><label for="c9"><b>Проверено устройство воспроизведения</b><br><span class="muted">Питание подключено, браузер не закрывается.</span></label></div>
+<div class="item"><input type="checkbox" id="c10"><label for="c10"><b>Проверено интернет-соединение</b><br><span class="muted">Для локальных файлов интернет может не требоваться.</span></label></div>
+<div class="item"><input type="checkbox" id="c11"><label for="c11"><b>Проверена страница эфира</b><br><span class="muted">Не объявляй онлайн-трансляцию запущенной без рабочего публичного потока.</span></label></div>
+<div class="item"><input type="checkbox" id="c12"><label for="c12"><b>Сделан тестовый просмотр</b><br><span class="muted">Проверены изображение, звук и переключение передач.</span></label></div>
+</div><button id="reset" class="secondary">Сбросить отметки</button><button id="export">Скачать отчёт TXT</button></section>
+<section class="panel"><h2>Заметки выпуска</h2><textarea id="notes" placeholder="Например: выпуск, дата, замечания..."></textarea><p class="muted">Заметки также сохраняются только в этом браузере.</p></section>
+</main><script>
+const ids=[...document.querySelectorAll('#checks input')],notes=document.querySelector('#notes');
+function save(){const done=ids.filter(x=>x.checked).length;document.querySelector('#status').textContent=done+' из 12 проверок выполнено';document.querySelector('#progress').value=done;localStorage.setItem('multik-preflight',JSON.stringify({checks:ids.map(x=>x.checked),notes:notes.value}));}
+try{const s=JSON.parse(localStorage.getItem('multik-preflight')||'{}');ids.forEach((x,i)=>x.checked=!!(s.checks&&s.checks[i]));notes.value=s.notes||'';}catch(e){}
+ids.forEach(x=>x.addEventListener('change',save));notes.addEventListener('input',save);save();
+document.querySelector('#reset').onclick=()=>{if(confirm('Сбросить все отметки и заметки?')){ids.forEach(x=>x.checked=false);notes.value='';save();}};
+document.querySelector('#export').onclick=()=>{const lines=ids.map(x=>(x.checked?'[x] ':'[ ] ')+x.nextElementSibling.innerText.replace(/\n/g,' — '));const report='МУЛЬТИК ТВ — ПРЕДЭФИРНАЯ ПРОВЕРКА\n'+new Date().toLocaleString('ru-RU')+'\n\n'+lines.join('\n')+'\n\nЗаметки:\n'+notes.value;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([report],{type:'text/plain;charset=utf-8'}));a.download='multik-tv-preflight.txt';a.click();URL.revokeObjectURL(a.href);};
+</script></body></html>
