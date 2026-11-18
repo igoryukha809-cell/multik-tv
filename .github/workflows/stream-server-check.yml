@@ -1,0 +1,38 @@
+name: Validate МУЛЬТИК ТВ video server
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "stream-server/**"
+      - ".github/workflows/stream-server-check.yml"
+  pull_request:
+    paths:
+      - "stream-server/**"
+      - ".github/workflows/stream-server-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Docker configuration and playlist image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose configuration
+        working-directory: stream-server
+        run: docker compose config --quiet
+
+      - name: Build FFmpeg playlist image
+        run: docker build --tag multik-tv-playlist:ci stream-server/playlist
+
+      - name: Confirm required server files
+        run: |
+          test -s stream-server/srs.conf
+          test -s stream-server/docker-compose.yml
+          test -x stream-server/playlist/loop.sh
+          echo "Server configuration files are present."
