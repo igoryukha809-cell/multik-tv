@@ -34,5 +34,5 @@ jobs:
         run: |
           test -s stream-server/srs.conf
           test -s stream-server/docker-compose.yml
-          test -x stream-server/playlist/loop.sh
+          test -f stream-server/playlist/loop.sh
           echo "Server configuration files are present."
