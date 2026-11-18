@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#17102f"><title>МУЛЬТИК ТВ — собственная платформа 24/7</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,Arial,sans-serif;background:#100c25;color:#fff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#493078,#100c25 65%)}header,main,footer{max-width:980px;margin:auto;padding:18px}a{color:#ffe17b}.brand{font-weight:950;letter-spacing:.12em;color:#ffe17b}.hero,.panel{background:#201a3c;border:1px solid #514477;border-radius:20px;padding:clamp(17px,4vw,28px);margin:14px 0}.hero{text-align:center;background:linear-gradient(135deg,#39205e,#174c67)}h1{font-size:clamp(30px,6vw,52px);margin:10px 0}.pill{display:inline-block;border-radius:30px;padding:7px 13px;background:#593d42;color:#ffd9b7;font-weight:800;font-size:13px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.tile{display:block;text-decoration:none;color:#fff;background:#17132e;border:1px solid #514477;border-radius:14px;padding:17px}.tile strong{display:block;color:#ffe17b;margin-bottom:7px;font-size:18px}.muted{color:#c6bedf;line-height:1.6}.steps li{margin:9px 0;line-height:1.5}.note{border-left:4px solid #ffe17b;padding:10px 14px;background:#17132e;border-radius:8px;line-height:1.6}code{overflow-wrap:anywhere;color:#ffe17b}footer{color:#c6bedf;font-size:13px}
+</style></head><body>
+<header><div class="brand">🌈 МУЛЬТИК ТВ</div><p class="muted">Собственная платформа автоматического видеовещания</p></header>
+<main>
+<section class="hero"><div class="pill">СЕРВЕР ЕЩЁ НЕ ЗАПУЩЕН</div><h1>МУЛЬТИК ТВ 24/7</h1><p>Наша собственная эфирная система: SRS + FFmpeg + Docker. Она автоматически передаёт разрешённые видео по кругу и формирует HLS-поток для зрителей.</p></section>
+<section class="panel"><h2>Что уже подготовлено</h2><div class="grid">
+<div class="tile"><strong>🎞️ Автоплейлист</strong><span class="muted">FFmpeg последовательно воспроизводит файлы из папки media и переходит к следующему.</span></div>
+<div class="tile"><strong>📡 Видеосервер SRS</strong><span class="muted">Принимает RTMP и формирует HLS-поток для просмотра через интернет.</span></div>
+<div class="tile"><strong>🔁 Автоперезапуск</strong><span class="muted">Контейнеры Docker настроены на перезапуск после сбоя, пока работает сам сервер.</span></div>
+<div class="tile"><strong>🧩 Открытое ПО</strong><span class="muted">В проекте используются бесплатные компоненты с открытым исходным кодом.</span></div>
+</div></section>
+<section class="panel"><h2>Как будет работать эфир</h2><ol class="steps">
+<li>На сервер помещаются собственные мультфильмы или материалы с явным разрешением на публичный показ.</li><li>Docker запускает SRS и FFmpeg.</li><li>FFmpeg отправляет плейлист в SRS по внутреннему RTMP-адресу.</li><li>SRS публикует HLS по адресу <code>http://АДРЕС-СЕРВЕРА:8080/live/multiktv.m3u8</code>.</li><li>Зрители открывают страницу просмотра и подключаются к реальному потоку.</li></ol>
+<p class="note"><strong>Важно:</strong> статус этой страницы не означает, что эфир уже идёт. Сейчас облачный сервер не развёрнут, адрес потока не назначен, поэтому канал остаётся OFFLINE.</p></section>
+<section class="panel"><h2>Следующие шаги</h2><div class="grid">
+<a class="tile" href="stream-server/README.md"><strong>📘 Инструкция сервера</strong><span class="muted">Команды запуска Docker, требования и описание потоковой системы.</span></a>
+<a class="tile" href="live.html"><strong>▶️ Страница зрителя</strong><span class="muted">Открыть плеер канала. Он заработает после подключения настоящего потока.</span></a>
+<a class="tile" href="rights-register.html"><strong>📜 Реестр прав</strong><span class="muted">Записать лицензии и разрешения на каждый мультфильм.</span></a>
+<a class="tile" href="preflight.html"><strong>✅ Проверка перед эфиром</strong><span class="muted">Подготовить видео, программу и технический запуск.</span></a>
+</div></section>
+<section class="panel"><h2>Бесплатность и круглосуточная работа</h2><p class="muted">Код, Docker, SRS и FFmpeg бесплатны. Но сам сервер, постоянное хранение файлов и исходящий интернет-трафик могут стоить денег. Бесплатные облачные тарифы обычно имеют лимиты и не гарантируют 24/7. Для настоящего круглосуточного вещания нужен сервер, который постоянно включён. Настройку аккаунта хостинга, платежей и сетевого доступа должен контролировать родитель или опекун.</p><p class="muted">Не добавляй пароли, ключи трансляции или личные данные в публичный репозиторий. Не открывай порты домашнего роутера самостоятельно.</p></section>
+<p><a href="index.html">← На главную</a></p></main><footer>МУЛЬТИК ТВ · собственная платформа на открытом ПО</footer></body></html>
