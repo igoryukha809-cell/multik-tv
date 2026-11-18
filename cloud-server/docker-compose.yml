@@ -20,7 +20,7 @@ services:
       MEDIA_DIR: /media
       SCHEDULE_FILE: /data/schedule.json
       RTMP_TARGET: rtmp://video/live/multiktv
-    ports: ["8080:8080"]
+    ports: ["127.0.0.1:8080:8080"]
     volumes:
       - hls-data:/hls:ro
       - media-data:/media:ro
