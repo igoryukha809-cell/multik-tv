@@ -1,0 +1,1 @@
+Place only your own video files or videos explicitly licensed for public exhibition in this folder. Supported extensions: MP4, MKV, MOV, WebM. Do not commit copyrighted videos or private material to GitHub.
