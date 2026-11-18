@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: multik-tv-test-stream
+    runtime: docker
+    plan: free
+    region: frankfurt
+    rootDir: stream-server
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /live/multiktv.m3u8
+    envVars:
+      - key: PORT
+        value: "10000"
