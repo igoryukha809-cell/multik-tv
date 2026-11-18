@@ -7,6 +7,7 @@ const CORE = [
   './styles.css',
   './tv.html',
   './station.html',
+  './live.html',
   './channel.html',
   './cloud.html',
   './online-catalog.html',
