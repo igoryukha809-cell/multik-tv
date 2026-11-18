@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Админ-панель — МУЛЬТИК ТВ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#17133c,#50217d,#182b59);color:#fff;font:16px system-ui;min-height:100vh}main{max-width:1050px;margin:auto;padding:24px}header{padding:24px 0;text-align:center}h1{font-size:clamp(30px,6vw,48px);margin:0}.sub{color:#d8d1f1}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.tile{display:block;padding:19px;border-radius:17px;background:#fff;color:#28204b;text-decoration:none;min-height:110px}.tile b{display:block;font-size:18px;margin-bottom:8px}.tile span{font-size:14px;line-height:1.4}.note{background:#fff;color:#30215b;padding:18px;border-radius:16px;margin:18px 0;line-height:1.55}a.back{color:#ffdc79}
+</style></head><body><main><header><h1>🌈 Админ-панель МУЛЬТИК ТВ</h1><p class="sub">Инструменты управления каналом. Просмотр и телепрограмма остаются общедоступными.</p></header>
+<div id="gate" class="note">Проверяем права администратора…</div>
+<div id="tools" class="grid" hidden>
+<a class="tile" href="auto-intro.html"><b>✨ Автозаставка</b><span>Логотипная анимация, музыка и озвучка</span></a>
+<a class="tile" href="video-editor.html"><b>🎞️ Видеостудия</b><span>Монтаж, титры и экспорт</span></a>
+<a class="tile" href="montage-studio.html"><b>🎬 Монтажная студия</b><span>Сборка видеоматериалов</span></a>
+<a class="tile" href="video-studio.html"><b>🎥 Создание видео</b><span>Анимированные ролики</span></a>
+<a class="tile" href="graphics.html"><b>🎨 Экранная графика</b><span>Плашки, объявления и бегущая строка</span></a>
+<a class="tile" href="signal.html"><b>📡 Генератор сигнала</b><span>Тестовый видеосигнал</span></a>
+<a class="tile" href="free-broadcast.html"><b>📺 Пульт эфира</b><span>Локальный плейлист и воспроизведение</span></a>
+<a class="tile" href="playout.html"><b>📡 Автоэфир</b><span>Очередь и автоматическое переключение</span></a>
+<a class="tile" href="engine.html"><b>🎛️ Эфирный движок</b><span>Видеотека и эфирная сетка</span></a>
+<a class="tile" href="station.html"><b>🌈 Телестудия</b><span>Заставка и видеотека</span></a>
+<a class="tile" href="connect-broadcast.html"><b>🔌 Подключение эфира</b><span>Проверка источника и HLS</span></a>
+<a class="tile" href="platform-24-7.html"><b>☁️ Платформа 24/7</b><span>Настройка серверной системы</span></a>
+<a class="tile" href="cloud.html"><b>☁️ Cloud-студия</b><span>Видеотека и локальный показ</span></a>
+<a class="tile" href="cloud-computer.html"><b>💻 Облачный компьютер</b><span>Рабочая среда проекта</span></a>
+<a class="tile" href="autopilot.html"><b>🤖 Автопилот</b><span>Проверка автоматизации</span></a>
+<a class="tile" href="voice-studio.html"><b>🎙️ Студия озвучки</b><span>Текст и подготовка голоса</span></a>
+<a class="tile" href="ai-studio.html"><b>✨ AI-мастерская</b><span>Сценарии и раскадровки</span></a>
+<a class="tile" href="announcer.html"><b>📣 Эфирные анонсы</b><span>Тексты объявлений</span></a>
+<a class="tile" href="teleprompter.html"><b>🎤 Телесуфлёр</b><span>Текст ведущего</span></a>
+<a class="tile" href="subtitles.html"><b>💬 Субтитры</b><span>Редактор и экспорт SRT/VTT</span></a>
+<a class="tile" href="rundown.html"><b>🗒️ Эфирный лист</b><span>Порядок передач и длительность</span></a>
+<a class="tile" href="broadcast-log.html"><b>📝 Журнал эфира</b><span>Фактические выходы и события</span></a>
+<a class="tile" href="preflight.html"><b>✅ Предэфирная проверка</b><span>Контрольный список выпуска</span></a>
+<a class="tile" href="media-check.html"><b>🔎 Проверка файлов</b><span>Технический анализ видео</span></a>
+<a class="tile" href="rights-and-content.html"><b>📜 Права на контент</b><span>Проверка разрешений</span></a>
+<a class="tile" href="rights-register.html"><b>📚 Реестр прав</b><span>Лицензии и правообладатели</span></a>
+<a class="tile" href="online-catalog.html"><b>🌐 Онлайн-каталог</b><span>Официальные источники</span></a>
+<a class="tile" href="weather-service.html"><b>🌦️ Погодный сервис</b><span>Данные для погодных выпусков</span></a>
+<a class="tile" href="weather-show.html"><b>🎙️ Погодная передача</b><span>Подготовка сценария</span></a>
+<a class="tile" href="weather-broadcast.html"><b>🌤️ Погода в эфире</b><span>Экран погодной студии</span></a>
+<a class="tile" href="weather.html"><b>🌤️ Погодный экран</b><span>Сводка городов</span></a>
+<a class="tile" href="wifi.html"><b>📶 Настройки студии</b><span>Памятка по сети</span></a>
+<a class="tile" href="live.html"><b>🔴 Прямой эфир</b><span>Проверка страницы трансляции</span></a>
+<a class="tile" href="channel.html"><b>📡 Статус канала</b><span>Состояние подготовки</span></a>
+<a class="tile" href="plugin.html"><b>🛠️ Помощник эфира</b><span>Настройка локального сервера</span></a>
+<a class="tile" href="server-start.html"><b>🖥️ Запуск сервера</b><span>Инструкция для сервера</span></a>
+<a class="tile" href="self-hosted-cloud.html"><b>☁️ Свой сервер</b><span>Самостоятельное размещение</span></a>
+<a class="tile" href="free-live.html"><b>📡 Бесплатный эфир</b><span>Инструменты трансляции</span></a>
+<a class="tile" href="cloud-ru.html"><b>☁️ Cloud RU</b><span>Облачные инструменты</span></a>
+<a class="tile" href="multik-ai.html"><b>🤖 Мультик AI</b><span>AI-инструменты</span></a>
+<a class="tile" href="multik-bot.html"><b>🤖 Мультик-бот</b><span>Инструменты помощника</span></a>
+<a class="tile" href="my-channel.html"><b>📺 Мой канал</b><span>Управление страницей канала</span></a>
+<a class="tile" href="open-cartoons.html"><b>📚 Открытая анимация</b><span>Подборка открытых материалов</span></a>
+<a class="tile" href="stream.html"><b>▶️ Проверка плеера</b><span>Тест HLS/MP4/WebM</span></a>
+<a class="tile" href="test-signal.html"><b>📶 Тест сигнала</b><span>Проверка видеосигнала</span></a>
+</div>
+<p><a class="back" href="./index.html">← На главную</a></p></main>
+<script type="module">
+import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import {SUPABASE_URL,SUPABASE_ANON_KEY} from "./admin-config.js";
+const gate=document.querySelector("#gate"),tools=document.querySelector("#tools");
+if(SUPABASE_URL.includes("YOUR_PROJECT")||SUPABASE_ANON_KEY.includes("YOUR_SUPABASE"))gate.textContent="Админ-доступ ещё не активирован. Владелец должен подключить Supabase по инструкции admin-setup.md.";
+else{const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {data:{session}}=await sb.auth.getSession();if(!session)gate.innerHTML='Сначала <a href="./login.html">войдите</a> по электронной почте.';else{const {data,error}=await sb.from("admin_users").select("user_id").eq("user_id",session.user.id).maybeSingle();if(error||!data)gate.textContent="У этой учётной записи нет прав администратора.";else{gate.hidden=true;tools.hidden=false;}}}
+</script></body></html>
