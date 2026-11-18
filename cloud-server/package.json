@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "description": "Free, self-hosted control and HLS delivery server for МУЛЬТИК ТВ",
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=20" }
+  "scripts": {
+    "start": "node server.js",
+    "preflight": "node preflight.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }
