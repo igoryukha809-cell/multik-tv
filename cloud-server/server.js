@@ -28,7 +28,7 @@ function safeFile(base, requestPath) {
   return candidate.startsWith(base + path.sep) ? candidate : null;
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   let url;
   try { url = new URL(req.url, 'http://localhost'); } catch {
     return send(res, 400, JSON.stringify({ error: 'Bad request URL' }));
@@ -59,6 +59,41 @@ const server = http.createServer((req, res) => {
     }));
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/discovery') {
+    const query = (url.searchParams.get('q') || 'русские мультфильмы общественное достояние').trim().slice(0, 100);
+    if (!query) return send(res, 400, JSON.stringify({ error: 'Укажите поисковый запрос q' }));
+    try {
+      const params = new URLSearchParams({
+        q: 'mediatype:movies AND (' + query.replace(/[+{}\\[\\]^"~*?:\\\\]/g, ' ') + ')',
+        fl: 'identifier,title,description,year,creator,licenseurl,rights',
+        rows: '20', page: '1', output: 'json'
+      });
+      const response = await fetch('https://archive.org/advancedsearch.php?' + params.toString(), {
+        headers: { 'User-Agent': 'MultikTV-Catalog/1.0 (metadata discovery)' },
+        signal: AbortSignal.timeout(10000)
+      });
+      if (!response.ok) throw new Error('Каталог временно недоступен');
+      const payload = await response.json();
+      const docs = payload.response && Array.isArray(payload.response.docs) ? payload.response.docs : [];
+      return send(res, 200, JSON.stringify({
+        source: 'Internet Archive metadata search',
+        results: docs.map(item => ({
+          title: item.title || item.identifier,
+          year: item.year || null,
+          creator: item.creator || null,
+          identifier: item.identifier,
+          page: 'https://archive.org/details/' + encodeURIComponent(item.identifier),
+          rights: item.rights || null,
+          license: item.licenseurl || null,
+          requiresRightsReview: true,
+          note: 'Метаданные не доказывают право на публичную трансляцию. Проверьте лицензию и условия конкретного материала.'
+        }))
+      }));
+    } catch (error) {
+      return send(res, 502, JSON.stringify({ error: 'Не удалось выполнить поиск в каталоге', detail: error.message }));
+    }
+  }
+
   if (url.pathname.startsWith('/hls/')) {
     const file = safeFile(HLS_DIR, url.pathname.slice(4));
     if (!file) return send(res, 400, JSON.stringify({ error: 'Invalid path' }));
@@ -83,7 +118,7 @@ const server = http.createServer((req, res) => {
 
   send(res, 200, JSON.stringify({
     name: 'МУЛЬТИК ТВ Cloud',
-    endpoints: ['/health', '/api/channel', '/hls/live.m3u8'],
+    endpoints: ['/health', '/api/channel', '/api/discovery?q=cartoons', '/hls/live.m3u8'],
     message: 'Server is ready. Add a valid HLS output to the hls directory to serve a stream.'
   }));
 });
