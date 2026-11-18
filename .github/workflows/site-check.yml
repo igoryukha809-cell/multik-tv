@@ -1,0 +1,29 @@
+name: Multik TV website check
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "43 */6 * * *"
+permissions:
+  contents: read
+jobs:
+  check-public-site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check published pages
+        env:
+          BASE: https://igoryukha809-cell.github.io/multik-tv
+        run: |
+          set -e
+          for page in / /cloud.html /autopilot.html /tv.html /data/autopilot.json; do
+            code=$(curl -L -sS -o /tmp/page -w '%{http_code}' --max-time 30 "$BASE$page")
+            echo "$page -> HTTP $code"
+            test "$code" = "200"
+          done
+          python3 - <<'PY'
+          import json
+          with open('/tmp/page', encoding='utf-8') as f:
+              data=json.load(f)
+          assert data.get('service') == 'МУЛЬТИК ТВ'
+          assert data.get('streaming') is False
+          print('Program guide JSON is valid; streaming is correctly marked as not active.')
+          PY
