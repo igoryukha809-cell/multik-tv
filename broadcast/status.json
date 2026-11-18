@@ -1,12 +1,10 @@
 {
   "channel": "МУЛЬТИК ТВ",
   "state": "not_configured",
-  "checkedAt": "2026-11-18T16:09:18Z",
+  "checkedAt": "2026-11-18T17:00:34Z",
   "activeItem": null,
   "itemsChecked": 0,
-  "sourcesChecked": 0,
-  "sourceChecks": [],
   "errors": [],
-  "message": "Плейлист пуст. Автоматический мониторинг работает, но видеотрансляции нет.",
+  "message": "Плейлист пуст. Автопроверка работает, но видеотрансляции нет.",
   "streaming": false
 }
