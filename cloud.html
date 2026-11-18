@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#25134d"><title>МУЛЬТИК ТВ CLOUD — бесплатная эфирная студия</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css"><link rel="manifest" href="multik-tv-manifest.json">
 <style>
 main{max-width:1050px;margin:auto;padding:14px}.panel{background:#fff;color:#25134d;border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 6px 18px #180c3b33}
 h1{font-size:clamp(27px,6vw,42px);margin:8px 0}.muted{color:#625a78;line-height:1.5}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
@@ -99,4 +99,9 @@ const FREE_LIBRARY=[
 {name:'Caminandes — Llama Drama',url:'https://commons.wikimedia.org/wiki/Special:Redirect/file/Caminandes-_Llama_Drama_-_Short_Movie.ogv',credit:'Pablo Vazquez, Beorn Leonard, Francesco Siddi; music: Jan Morgenstern; CC BY 3.0',license:'https://creativecommons.org/licenses/by/3.0/'}
 ];
 openDB().then(async x=>{db=x;let existing=await all();if(!existing.length){for(const v of FREE_LIBRARY)await write({...v,source:'curated-open-license'});}await refresh();}).catch(()=>say('Браузер не разрешил локальное хранилище. Попробуй открыть страницу в обычном режиме браузера.'));
-</script></body></html>
+</script><script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/multik-tv-sw.js').catch(()=>{}));}
+let installPrompt;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;const b=document.getElementById('installApp');if(b)b.hidden=false;});
+document.addEventListener('click',async e=>{if(e.target&&e.target.id==='installApp'&&installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;e.target.hidden=true;}});
+</script>
+</body></html>
