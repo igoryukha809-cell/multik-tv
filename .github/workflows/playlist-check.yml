@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: multik-tv-playlist-check
+  cancel-in-progress: false
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -15,10 +19,15 @@ jobs:
       - name: Check repository
         uses: actions/checkout@v4
 
-      - name: Validate playlist and write honest status
+      - name: Validate playlist and test public video sources
         run: |
           python - <<'PY'
+          import ipaddress
           import json
+          import socket
+          import urllib.error
+          import urllib.parse
+          import urllib.request
           from datetime import datetime, timezone
           from pathlib import Path
 
@@ -29,28 +38,95 @@ jobs:
           now = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
           errors = []
+          source_checks = []
           for i, item in enumerate(items):
+              label = f"Запись {i + 1}"
               if not isinstance(item, dict):
-                  errors.append(f"Запись {i + 1}: ожидался объект")
+                  errors.append(f"{label}: ожидался объект")
                   continue
+
               for field in ("title", "url", "startAt", "endAt"):
                   if not item.get(field):
-                      errors.append(f"Запись {i + 1}: нет поля {field}")
-              url = str(item.get("url", ""))
-              if not url.startswith("https://"):
-                  errors.append(f"Запись {i + 1}: ссылка должна начинаться с https://")
+                      errors.append(f"{label}: нет поля {field}")
+
               if item.get("rightsConfirmed") is not True:
-                  errors.append(f"Запись {i + 1}: не подтверждены права на публичный показ")
+                  errors.append(f"{label}: не подтверждены права на публичный показ")
+
+              start = end = None
+              try:
+                  start = datetime.fromisoformat(str(item.get("startAt", "")).replace("Z", "+00:00"))
+                  end = datetime.fromisoformat(str(item.get("endAt", "")).replace("Z", "+00:00"))
+                  if start.tzinfo is None or end.tzinfo is None or end <= start:
+                      raise ValueError("неверный временной интервал")
+              except (TypeError, ValueError):
+                  errors.append(f"{label}: startAt/endAt должны быть ISO-датами с часовым поясом, endAt позже startAt")
+
+              raw_url = str(item.get("url", ""))
+              parsed = urllib.parse.urlparse(raw_url)
+              if parsed.scheme != "https" or not parsed.hostname:
+                  errors.append(f"{label}: ссылка должна быть корректным HTTPS URL")
+                  continue
+
+              # Resolve and reject private, loopback, link-local and reserved targets.
+              try:
+                  addresses = {entry[4][0] for entry in socket.getaddrinfo(parsed.hostname, 443, type=socket.SOCK_STREAM)}
+                  if not addresses or any(not ipaddress.ip_address(addr).is_global for addr in addresses):
+                      raise ValueError("адрес не является публичным")
+              except Exception as exc:
+                  errors.append(f"{label}: адрес источника не прошёл сетевую проверку ({exc})")
+                  source_checks.append({"title": item.get("title", label), "reachable": False})
+                  continue
+
+              reachable = False
+              content_type = ""
+              detail = ""
+              for method in ("HEAD", "GET"):
+                  try:
+                      request = urllib.request.Request(
+                          raw_url,
+                          method=method,
+                          headers={"User-Agent": "MultikTV-PlaylistChecker/1.0", "Range": "bytes=0-0"}
+                      )
+                      with urllib.request.urlopen(request, timeout=15) as response:
+                          final = urllib.parse.urlparse(response.geturl())
+                          if final.scheme != "https" or not final.hostname:
+                              raise ValueError("редирект на не-HTTPS адрес")
+                          content_type = response.headers.get("Content-Type", "").split(";")[0].lower()
+                          reachable = response.status in (200, 206)
+                          detail = f"HTTP {response.status}, {content_type or 'тип не указан'}"
+                          if reachable:
+                              break
+                  except Exception as exc:
+                      detail = str(exc)[:240]
+              video_types = (
+                  content_type.startswith("video/")
+                  or content_type in (
+                      "application/octet-stream",
+                      "application/vnd.apple.mpegurl",
+                      "application/x-mpegurl",
+                      "application/mpegurl"
+                  )
+              )
+              if not reachable:
+                  errors.append(f"{label}: источник недоступен ({detail})")
+              elif not video_types:
+                  errors.append(f"{label}: источник ответил, но Content-Type не похож на видео ({detail})")
+                  reachable = False
+              source_checks.append({
+                  "title": item.get("title", label),
+                  "reachable": reachable,
+                  "detail": detail
+              })
 
           if errors:
               state = "playlist_has_errors"
-              message = "Плейлист содержит ошибки. Исправь записи; эфир не запущен."
+              message = "Проверка расписания или видеоссылок обнаружила ошибки. Эфир не запущен."
           elif not items:
               state = "not_configured"
-              message = "Плейлист пуст. Мониторинг работает, но видеотрансляции нет."
+              message = "Плейлист пуст. Автоматический мониторинг работает, но видеотрансляции нет."
           else:
               state = "playlist_ready_server_required"
-              message = "Плейлист прошёл базовую проверку. Это не запускает видеосервер и не означает, что эфир идёт."
+              message = "Плейлист и доступность источников прошли базовую проверку. Видеосервер не запущен; общего эфира пока нет."
 
           status = {
               "channel": playlist.get("channel", "МУЛЬТИК ТВ"),
@@ -58,6 +134,8 @@ jobs:
               "checkedAt": now,
               "activeItem": None,
               "itemsChecked": len(items),
+              "sourcesChecked": len(source_checks),
+              "sourceChecks": source_checks,
               "errors": errors,
               "message": message,
               "streaming": False
