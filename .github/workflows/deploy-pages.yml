@@ -39,7 +39,7 @@ jobs:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           set -euo pipefail
-          for page in index.html channel.html live.html online-catalog.html; do
+          for page in index.html channel.html live.html online-catalog.html video-studio.html tv.html; do
             echo "Checking $page"
             curl --fail --silent --show-error --retry 5 --retry-delay 3 "$SITE_URL$page" -o /dev/null
           done
