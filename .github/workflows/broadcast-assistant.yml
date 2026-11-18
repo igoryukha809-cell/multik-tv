@@ -6,6 +6,7 @@ on:
     paths:
       - "broadcast/playlist.json"
       - "scripts/check_broadcast.py"
+      - "scripts/test_check_broadcast.py"
       - ".github/workflows/broadcast-assistant.yml"
   schedule:
     - cron: "*/15 * * * *"
@@ -15,12 +16,12 @@ permissions:
 
 concurrency:
   group: multik-tv-automation-writes
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   check-playlist:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - name: Get project files
         uses: actions/checkout@v4
@@ -30,6 +31,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+      - name: Test playlist validation
+        run: python -m unittest discover -s scripts -p 'test_*.py' -v
       - name: Check playlist and update channel status
         run: python scripts/check_broadcast.py
       - name: Save status if changed
