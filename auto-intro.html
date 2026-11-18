@@ -85,4 +85,6 @@ $('make').onclick=async()=>{if(!window.MediaRecorder||!c.captureStream){$('statu
 $('preview').onclick=()=>{if(lastBlob){let url=URL.createObjectURL(lastBlob),v=document.createElement('video');v.controls=true;v.src=url;v.style='width:100%;margin-top:12px;border-radius:12px';let old=document.getElementById('resultVideo');if(old)old.remove();v.id='resultVideo';$('note').after(v);v.play().catch(()=>{})}};
 $('save').onclick=()=>{if(!lastBlob)return;let url=URL.createObjectURL(lastBlob),a=document.createElement('a');a.href=url;a.download='multik-tv-zastavka.webm';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);$('status').textContent='Видео со звуком сохранено на устройство.'};
 draw(0);
-</script></body></html>
+</script>
+<script type="module" src="./admin-guard.js"></script>
+</body></html>
