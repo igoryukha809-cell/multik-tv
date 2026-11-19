@@ -80,12 +80,22 @@ app.use((req, res, next) => {
   next();
 });
 
-function auth(req, res, next) {
-  const got = (req.headers.authorization || "").replace(/^Bearer /, "");
-  if (!TOKEN || got.length !== TOKEN.length || !timingSafeEqual(Buffer.from(got), Buffer.from(TOKEN))) {
-    return res.status(401).json({ error: "Неверный пароль загрузчика." });
-  }
-  next();
+function auth(requiredScope = "upload") {
+  return async (req, res, next) => {
+    const got = (req.headers.authorization || "").replace(/^Bearer /, "");
+    if (TOKEN && safeEqual(got, TOKEN)) return next(); // legacy upload token
+    if (!got) return res.status(401).json({ error: "Нужен ключ доступа." });
+    try {
+      const digest = hashAccessKey(got);
+      const keys = await readAccessKeys();
+      const record = keys.find(item => item.hash === digest && !item.revokedAt &&
+        (item.scope === requiredScope || item.scope === "api"));
+      if (!record) return res.status(401).json({ error: "Ключ недействителен или отключён." });
+      record.lastUsedAt = new Date().toISOString();
+      await writeAccessKeys(keys);
+      next();
+    } catch (err) { next(err); }
+  };
 }
 function requireStorage(_req, res, next) {
   if (!configured || !s3) return res.status(503).json({ error: "Backblaze B2 ещё не настроен. Проверьте переменные окружения сервера." });
