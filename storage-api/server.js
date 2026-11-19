@@ -117,6 +117,7 @@ app.get("/health", (_req, res) => res.json({
   ok: true,
   storage: "backblaze-b2",
   configured,
+  accessKeyManager: Boolean(ADMIN_TOKEN),
   bucketConfigured: Boolean(BUCKET),
   credentialsConfigured: Boolean(ACCESS_KEY && SECRET_KEY)
 }));
