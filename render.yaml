@@ -20,7 +20,7 @@ services:
     rootDir: storage-api
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
-    autoDeploy: false
+    autoDeploy: true
     envVars:
       - key: PORT
         value: "10000"
