@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#21194e"><title>Ключи доступа — МУЛЬТИК ТВ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f6fc;color:#252b48;font:15px/1.5 system-ui,Arial,sans-serif}.top{background:linear-gradient(110deg,#44339b,#8954c8,#e46da4);color:#fff;padding:28px 18px}.wrap{max-width:850px;margin:auto;padding:20px}.panel{background:#fff;border:1px solid #e4e6f0;border-radius:18px;padding:20px;margin:16px 0;box-shadow:0 8px 24px #252b4810}h1{margin:0;font-size:clamp(25px,5vw,38px)}h2{margin:0 0 12px;font-size:20px}.muted{color:#737b95}.field{display:grid;gap:6px;margin:12px 0}input,select{width:100%;padding:12px;border:1px solid #d9dceb;border-radius:10px;font:inherit}button{border:0;border-radius:999px;padding:11px 17px;background:#6246c8;color:white;font-weight:800;font:inherit;cursor:pointer}button.secondary{background:#ece9fb;color:#49349c}button.danger{background:#fff0f0;color:#a52d46}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row input{flex:1;min-width:190px}.keyrow{border-top:1px solid #eceef5;padding:13px 0;display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}.pill{display:inline-block;border-radius:99px;padding:3px 9px;background:#eeeafd;color:#4d399e;font-size:12px;font-weight:800}.revoked{opacity:.55}.notice{padding:12px 14px;border-radius:12px;background:#fff7dc;color:#755b19;margin-top:12px}.success{background:#e9f8ef;color:#226b42}.error{background:#fff0f0;color:#9e2c42}small{color:#737b95}a{color:#6045bd}
+</style></head>
+<body>
+<div class="top"><div class="wrap"><h1>🔐 Ключи доступа МУЛЬТИК ТВ</h1><p>Собственный генератор и управление доступами канала</p></div></div>
+<main class="wrap">
+<section class="panel">
+<h2>Вход администратора</h2>
+<p class="muted">Введите ADMIN_API_TOKEN, заданный владельцем сервера в защищённых переменных окружения. Он не сохраняется в браузере.</p>
+<div class="row"><input id="adminToken" type="password" autocomplete="off" placeholder="Ключ администратора"><button id="connect">Подключиться</button></div>
+<div id="status" role="status" class="notice">Для управления ключами требуется доступ администратора.</div>
+</section>
+<section id="manager" class="panel" hidden>
+<h2>Создать ключ</h2>
+<div class="field"><label for="label">Название ключа</label><input id="label" maxlength="60" placeholder="Например, Загрузчик видео"></div>
+<div class="field"><label for="scope">Назначение</label><select id="scope"><option value="upload">Загрузка и удаление видео</option><option value="api">Доступ к API</option></select></div>
+<button id="create">＋ Создать ключ</button>
+<div id="newKey" hidden class="notice success"><b>Ключ создан. Скопируйте его сейчас — повторно показать его нельзя.</b><div class="row" style="margin-top:10px"><input id="keyValue" readonly><button id="copy" class="secondary">Копировать</button></div></div>
+</section>
+<section id="listPanel" class="panel" hidden>
+<div class="row" style="justify-content:space-between"><h2>Выданные ключи</h2><button id="refresh" class="secondary">Обновить</button></div>
+<div id="keys"></div>
+</section>
+<p><a href="./admin.html">← Вернуться в админ-панель</a></p>
+</main>
+<script>
+const API="https://multik-tv-storage-api.onrender.com";
+const $=id=>document.getElementById(id);
+let adminToken="";
+function showStatus(message,kind="notice"){const el=$("status");el.className="notice "+kind;el.textContent=message;}
+async function request(path,options={}){const response=await fetch(API+path,{...options,headers:{"Authorization":"Bearer "+adminToken,"Content-Type":"application/json",...(options.headers||{})}});const data=await response.json().catch(()=>({error:"Сервер вернул неверный ответ."}));if(!response.ok)throw new Error(data.error||"Ошибка запроса.");return data;}
+async function loadKeys(){const data=await request("/api/admin/keys");$("keys").replaceChildren();if(!data.length){$("keys").textContent="Пока ключей нет.";return;}for(const item of data){const row=document.createElement("div");row.className="keyrow"+(item.revokedAt?" revoked":"");const left=document.createElement("div");const name=document.createElement("b");name.textContent=item.label;const meta=document.createElement("div");meta.innerHTML='<small></small>';meta.firstChild.textContent=item.scope+" · создан: "+new Date(item.createdAt).toLocaleString("ru-RU")+(item.lastUsedAt?" · использован: "+new Date(item.lastUsedAt).toLocaleString("ru-RU"):"");left.append(name,document.createElement("br"),meta);const right=document.createElement("div");right.className="row";const badge=document.createElement("span");badge.className="pill";badge.textContent=item.revokedAt?"Отключён":(item.scope==="upload"?"Загрузка":"API");right.append(badge);if(!item.revokedAt){const btn=document.createElement("button");btn.className="danger";btn.textContent="Отключить";btn.addEventListener("click",async()=>{if(!confirm("Отключить этот ключ?"))return;try{await request("/api/admin/keys/"+encodeURIComponent(item.id),{method:"DELETE"});await loadKeys();}catch(e){showStatus(e.message,"error");}});right.append(btn);}row.append(left,right);$("keys").append(row);}}
+$("connect").addEventListener("click",async()=>{adminToken=$("adminToken").value.trim();if(!adminToken){showStatus("Введите ключ администратора.","error");return;}try{await loadKeys();$("manager").hidden=false;$("listPanel").hidden=false;showStatus("Подключение успешно. Секреты ключей не хранятся в браузере.","success");}catch(e){adminToken="";$("manager").hidden=true;$("listPanel").hidden=true;showStatus(e.message,"error");}});
+$("create").addEventListener("click",async()=>{try{const data=await request("/api/admin/keys",{method:"POST",body:JSON.stringify({label:$("label").value,scope:$("scope").value})});$("keyValue").value=data.key;$("newKey").hidden=false;$("label").value="";await loadKeys();}catch(e){showStatus(e.message,"error");}});
+$("copy").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("keyValue").value);$("copy").textContent="Скопировано";}catch{showStatus("Не удалось скопировать. Выделите ключ и скопируйте вручную.","error");}});
+$("refresh").addEventListener("click",async()=>{try{await loadKeys();showStatus("Список обновлён.","success");}catch(e){showStatus(e.message,"error");}});
+</script></body></html>
