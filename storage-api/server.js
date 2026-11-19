@@ -17,7 +17,9 @@ app.use(express.json({ limit: "64kb" }));
 
 const PORT = Number(process.env.PORT || 10000);
 const TOKEN = process.env.UPLOAD_API_TOKEN || "";
-const ADMIN_TOKEN = process.env.ADMIN_API_TOKEN || "";
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+const SUPABASE_URL = (process.env.SUPABASE_URL || "").replace(/\\/$/, "");
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "";
 const DATA_DIR = process.env.DATA_DIR || "./data";
 const ACCESS_KEYS_FILE = process.env.ACCESS_KEYS_FILE || path.join(DATA_DIR, "access-keys.json");
 await fs.mkdir(path.dirname(ACCESS_KEYS_FILE), { recursive: true });
@@ -45,12 +47,23 @@ function safeEqual(a, b) {
   const right = Buffer.from(String(b));
   return left.length === right.length && timingSafeEqual(left, right);
 }
-function adminAuth(req, res, next) {
+async function adminAuth(req, res, next) {
   const supplied = (req.headers.authorization || "").replace(/^Bearer /, "");
-  if (!ADMIN_TOKEN || !safeEqual(supplied, ADMIN_TOKEN)) {
-    return res.status(401).json({ error: "Нет доступа администратора." });
+  if (!supplied || !ADMIN_EMAIL || !SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return res.status(401).json({ error: "Вход по почте ещё не настроен." });
   }
-  next();
+  try {
+    const response = await fetch(SUPABASE_URL + "/auth/v1/user", {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + supplied }
+    });
+    if (!response.ok) return res.status(401).json({ error: "Сессия входа недействительна. Войдите по ссылке из письма." });
+    const user = await response.json();
+    if (!user.email || user.email.toLowerCase() !== ADMIN_EMAIL || !user.email_confirmed_at) {
+      return res.status(403).json({ error: "Эта подтверждённая почта не имеет прав администратора." });
+    }
+    req.adminUser = { id: user.id, email: user.email };
+    next();
+  } catch (err) { next(err); }
 }
 const BUCKET = process.env.B2_BUCKET || process.env.AWS_S3_BUCKET || "";
 const ENDPOINT = process.env.B2_ENDPOINT || process.env.AWS_S3_ENDPOINT || "";
@@ -118,7 +131,7 @@ app.get("/health", (_req, res) => res.json({
   ok: true,
   storage: "backblaze-b2",
   configured,
-  accessKeyManager: Boolean(ADMIN_TOKEN),
+  accessKeyManager: Boolean(ADMIN_EMAIL && SUPABASE_URL && SUPABASE_ANON_KEY),
   bucketConfigured: Boolean(BUCKET),
   credentialsConfigured: Boolean(ACCESS_KEY && SECRET_KEY)
 }));
