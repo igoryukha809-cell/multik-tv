@@ -25,7 +25,8 @@ const ORIGINS = (process.env.ALLOWED_ORIGINS || "https://igoryukha809-cell.githu
 const TMP = path.join(os.tmpdir(), "multik-tv-uploads");
 await fs.mkdir(TMP, { recursive: true });
 
-const REGION = process.env.B2_REGION || "";\nconst configured = Boolean(BUCKET && ENDPOINT && REGION && ACCESS_KEY && SECRET_KEY);
+const REGION = process.env.B2_REGION || "";
+const configured = Boolean(BUCKET && ENDPOINT && REGION && ACCESS_KEY && SECRET_KEY);
 const s3 = configured ? new S3Client({
   endpoint: ENDPOINT,
   region: REGION,
