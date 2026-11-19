@@ -10,10 +10,11 @@
 <div class="top"><div class="wrap"><h1>🔐 Ключи доступа МУЛЬТИК ТВ</h1><p>Собственный генератор и управление доступами канала</p></div></div>
 <main class="wrap">
 <section class="panel">
-<h2>Вход администратора</h2>
-<p class="muted">Введите ADMIN_API_TOKEN, заданный владельцем сервера в защищённых переменных окружения. Он не сохраняется в браузере.</p>
-<div class="row"><input id="adminToken" type="password" autocomplete="off" placeholder="Ключ администратора"><button id="connect">Подключиться</button></div>
-<div id="status" role="status" class="notice">Для управления ключами требуется доступ администратора.</div>
+<h2>Вход по электронной почте</h2>
+<p class="muted">Используется подтверждённая сессия Supabase. Если вы ещё не вошли, получите одноразовую ссылку на почту.</p>
+<div id="status" role="status" class="notice">Проверяем вход…</div>
+<button id="login" class="secondary" hidden>Войти по почте</button>
+<button id="logout" class="secondary" hidden>Выйти</button>
 </section>
 <section id="manager" class="panel" hidden>
 <h2>Создать ключ</h2>
@@ -28,14 +29,20 @@
 </section>
 <p><a href="./admin.html">← Вернуться в админ-панель</a></p>
 </main>
-<script>
+<script type="module">
+import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import {SUPABASE_URL,SUPABASE_ANON_KEY} from "./admin-config.js";
+const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const API="https://multik-tv-storage-api.onrender.com";
 const $=id=>document.getElementById(id);
 let adminToken="";
+async function connectSession(){const {data:{session}}=await supabase.auth.getSession();if(!session){showStatus("Сначала войдите по подтверждённой ссылке из письма.");$("login").hidden=false;return;}adminToken=session.access_token;try{await loadKeys();$("manager").hidden=false;$("listPanel").hidden=false;$("logout").hidden=false;$("login").hidden=true;showStatus("Вход выполнен. Проверка администратора пройдена.","success");}catch(e){adminToken="";$("manager").hidden=true;$("listPanel").hidden=true;showStatus(e.message,"error");}}
+$("login").addEventListener("click",()=>location.href="./login.html");
+$("logout").addEventListener("click",async()=>{await supabase.auth.signOut();location.reload();});
 function showStatus(message,kind="notice"){const el=$("status");el.className="notice "+kind;el.textContent=message;}
 async function request(path,options={}){const response=await fetch(API+path,{...options,headers:{"Authorization":"Bearer "+adminToken,"Content-Type":"application/json",...(options.headers||{})}});const data=await response.json().catch(()=>({error:"Сервер вернул неверный ответ."}));if(!response.ok)throw new Error(data.error||"Ошибка запроса.");return data;}
 async function loadKeys(){const data=await request("/api/admin/keys");$("keys").replaceChildren();if(!data.length){$("keys").textContent="Пока ключей нет.";return;}for(const item of data){const row=document.createElement("div");row.className="keyrow"+(item.revokedAt?" revoked":"");const left=document.createElement("div");const name=document.createElement("b");name.textContent=item.label;const meta=document.createElement("div");meta.innerHTML='<small></small>';meta.firstChild.textContent=item.scope+" · создан: "+new Date(item.createdAt).toLocaleString("ru-RU")+(item.lastUsedAt?" · использован: "+new Date(item.lastUsedAt).toLocaleString("ru-RU"):"");left.append(name,document.createElement("br"),meta);const right=document.createElement("div");right.className="row";const badge=document.createElement("span");badge.className="pill";badge.textContent=item.revokedAt?"Отключён":(item.scope==="upload"?"Загрузка":"API");right.append(badge);if(!item.revokedAt){const btn=document.createElement("button");btn.className="danger";btn.textContent="Отключить";btn.addEventListener("click",async()=>{if(!confirm("Отключить этот ключ?"))return;try{await request("/api/admin/keys/"+encodeURIComponent(item.id),{method:"DELETE"});await loadKeys();}catch(e){showStatus(e.message,"error");}});right.append(btn);}row.append(left,right);$("keys").append(row);}}
-$("connect").addEventListener("click",async()=>{adminToken=$("adminToken").value.trim();if(!adminToken){showStatus("Введите ключ администратора.","error");return;}try{await loadKeys();$("manager").hidden=false;$("listPanel").hidden=false;showStatus("Подключение успешно. Секреты ключей не хранятся в браузере.","success");}catch(e){adminToken="";$("manager").hidden=true;$("listPanel").hidden=true;showStatus(e.message,"error");}});
+connectSession();
 $("create").addEventListener("click",async()=>{try{const data=await request("/api/admin/keys",{method:"POST",body:JSON.stringify({label:$("label").value,scope:$("scope").value})});$("keyValue").value=data.key;$("newKey").hidden=false;$("label").value="";await loadKeys();}catch(e){showStatus(e.message,"error");}});
 $("copy").addEventListener("click",async()=>{try{await navigator.clipboard.writeText($("keyValue").value);$("copy").textContent="Скопировано";}catch{showStatus("Не удалось скопировать. Выделите ключ и скопируйте вручную.","error");}});
 $("refresh").addEventListener("click",async()=>{try{await loadKeys();showStatus("Список обновлён.","success");}catch(e){showStatus(e.message,"error");}});
