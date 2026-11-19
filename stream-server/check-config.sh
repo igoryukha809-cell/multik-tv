@@ -26,9 +26,18 @@ with Path("broadcast/status.json").open(encoding="utf-8") as f:
 
 if not isinstance(playlist.get("items"), list):
     raise SystemExit("Ошибка: broadcast/playlist.json items должен быть списком")
-if not playlist["items"] and (broadcast.get("status") != "offline" or status.get("streaming") is not False):
-    raise SystemExit("Ошибка: пустой плейлист не должен отмечаться как работающий эфир")
-print("OK: статус эфира не объявляет пустой плейлист работающей трансляцией")
+if not playlist["items"]:
+    is_explicit_test_signal = (
+        broadcast.get("status") == "test_signal"
+        and broadcast.get("testSignal") is True
+        and isinstance(broadcast.get("streamUrl"), str)
+        and broadcast["streamUrl"].startswith("https://")
+    )
+    if status.get("streaming") is not False:
+        raise SystemExit("Ошибка: пустой плейлист не должен отмечаться как эфир мультфильмов")
+    if broadcast.get("status") != "offline" and not is_explicit_test_signal:
+        raise SystemExit("Ошибка: пустой плейлист допускает только offline или явно обозначенный test_signal")
+print("OK: пустой плейлист не выдаётся за эфир мультфильмов; тестовый сигнал помечен отдельно")
 PY
 
 echo "[3/4] Проверка обязательных настроек SRS"
