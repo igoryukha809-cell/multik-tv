@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17102f">
+<title>Видеостудия — МУЛЬТИК ТВ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:18px;background:#100c25;color:#fff;font:16px system-ui,Arial,sans-serif}main{max-width:1050px;margin:auto}a{color:#ffe17b}h1{font-size:clamp(28px,6vw,42px)}h2{color:#ffe17b}.muted{color:#c6bedf;line-height:1.55}.panel{background:#201a3c;border:1px solid #514477;border-radius:18px;padding:18px;margin:16px 0}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button,.filelabel,input{font:inherit;border-radius:10px;padding:11px;border:1px solid #75679c}button,.filelabel{background:#ffe17b;color:#21163c;font-weight:800;cursor:pointer}input[type=search]{flex:1;min-width:190px;background:#120e27;color:white}input[type=file]{position:absolute;left:-9999px}video{width:100%;max-height:60vh;background:#05040b;border-radius:12px;margin-top:12px}.item{border-top:1px solid #514477;padding:12px 0;display:grid;gap:7px}.item:first-child{border-top:0}.small{font-size:13px;color:#c6bedf}.tag{display:inline-block;border:1px solid #75679c;border-radius:20px;padding:3px 8px;font-size:12px}.warn{border-left:4px solid #ffe17b;padding:12px;background:#17132e;border-radius:8px;line-height:1.55}button.secondary{background:#3a315a;color:white}.itemtitle{font-weight:800}.empty{color:#c6bedf;padding:12px 0}
+</style></head>
+<body><main>
+<p>🌈 <strong>МУЛЬТИК ТВ</strong></p>
+<h1>Видеостудия</h1>
+<p class="muted">Добавляй свои видеофайлы для просмотра на этом устройстве и ищи мультфильмы в открытых интернет-каталогах.</p>
+<section class="panel">
+<h2>1. Мои видеофайлы</h2>
+<p class="muted">Выбери видео на телефоне или компьютере. Файлы не отправляются на сайт и доступны только в этой вкладке/браузере.</p>
+<div class="row"><label class="filelabel" for="files">＋ Выбрать видеофайлы</label><input id="files" type="file" accept="video/*,.mp4,.webm,.ogv,.mov,.m4v" multiple><button id="clear" class="secondary" type="button">Очистить очередь</button></div>
+<p id="localCount" class="small">Очередь пуста.</p>
+<video id="player" controls playsinline preload="metadata"></video>
+<div id="localList" class="empty">Выбранные файлы появятся здесь.</div>
+</section>
+<section class="panel">
+<h2>2. Поиск мультфильмов в интернете</h2>
+<p class="muted">Поиск по каталогу Internet Archive. Результаты открываются на сайте-источнике. Наличие записи в архиве само по себе не подтверждает право на публичный эфир.</p>
+<form id="searchForm" class="row"><input id="query" type="search" placeholder="Например: русская анимация, cartoon, short film" required><button type="submit">Искать</button></form>
+<p id="searchStatus" class="small" aria-live="polite">Введи запрос и нажми «Искать».</p>
+<div id="results"></div>
+</section>
+<section class="panel">
+<h2>3. Как попасть в общий эфир</h2>
+<p class="warn">Локальные файлы не загружаются на сервер и не становятся видны зрителям. Для общего эфира нужны загрузка на сервер, подключённый видеопоток и подтверждённые права на публичный показ каждого материала. Не используй найденные ролики без разрешения правообладателя или подходящей лицензии.</p>
+<p><a href="connect-broadcast.html">Настройка видеосервера</a> · <a href="live.html">Открыть эфир</a> · <a href="online-catalog.html">Каталог источников</a></p>
+</section>
+<p><a href="index.html">← На главную</a></p>
+</main>
+<script>
+const fileInput=document.getElementById('files'),player=document.getElementById('player'),localList=document.getElementById('localList'),localCount=document.getElementById('localCount');
+let localFiles=[],activeUrl=null;
+function playFile(i){if(!localFiles[i])return;if(activeUrl)URL.revokeObjectURL(activeUrl);activeUrl=URL.createObjectURL(localFiles[i]);player.src=activeUrl;player.load();player.play().catch(()=>{});}
+function renderFiles(){localCount.textContent=localFiles.length?('В очереди: '+localFiles.length+' файл(ов).'):'Очередь пуста.';localList.innerHTML='';if(!localFiles.length){localList.textContent='Выбранные файлы появятся здесь.';localList.className='empty';return;}localList.className='';localFiles.forEach((f,i)=>{const row=document.createElement('div');row.className='item';const name=document.createElement('span');name.className='itemtitle';name.textContent=(i+1)+'. '+f.name;const meta=document.createElement('span');meta.className='small';meta.textContent=(f.size/1024/1024).toFixed(1)+' МБ';const actions=document.createElement('div');actions.className='row';const play=document.createElement('button');play.textContent='▶ Смотреть';play.type='button';play.onclick=()=>playFile(i);const remove=document.createElement('button');remove.textContent='Убрать';remove.className='secondary';remove.type='button';remove.onclick=()=>{localFiles.splice(i,1);renderFiles();};actions.append(play,remove);row.append(name,meta,actions);localList.append(row);});}
+fileInput.addEventListener('change',()=>{const added=Array.from(fileInput.files||[]).filter(f=>f.type.startsWith('video/')||/\.(mp4|webm|ogv|mov|m4v)$/i.test(f.name));localFiles.push(...added);renderFiles();fileInput.value='';});
+document.getElementById('clear').onclick=()=>{localFiles=[];if(activeUrl)URL.revokeObjectURL(activeUrl);activeUrl=null;player.pause();player.removeAttribute('src');player.load();renderFiles();};
+const form=document.getElementById('searchForm'),query=document.getElementById('query'),status=document.getElementById('searchStatus'),results=document.getElementById('results');
+form.addEventListener('submit',async e=>{e.preventDefault();const term=query.value.trim();if(!term)return;status.textContent='Ищу в Internet Archive…';results.replaceChildren();try{const q='mediatype:movies AND ('+term.replace(/[\\():\[\]{}"]/g,' ').split(/\s+/).filter(Boolean).map(w=>'title:'+w+' OR subject:'+w).join(' AND ')+')';const url='https://archive.org/advancedsearch.php?q='+encodeURIComponent(q)+'&fl[]='+encodeURIComponent('identifier')+'&fl[]='+encodeURIComponent('title')+'&fl[]='+encodeURIComponent('description')+'&fl[]='+encodeURIComponent('creator')+'&fl[]='+encodeURIComponent('year')+'&fl[]='+encodeURIComponent('licenseurl')+'&fl[]='+encodeURIComponent('rights')+'&rows=15&page=1&output=json';const response=await fetch(url);if(!response.ok)throw Error('HTTP '+response.status);const data=await response.json();const docs=data.response?.docs||[];status.textContent='Найдено записей: '+(data.response?.numFound??docs.length)+'. Показаны первые '+docs.length+'.';if(!docs.length){results.textContent='Ничего не найдено. Попробуй другой запрос.';return;}docs.forEach(doc=>{const card=document.createElement('article');card.className='item';const title=document.createElement('div');title.className='itemtitle';title.textContent=doc.title||doc.identifier;const desc=document.createElement('div');desc.className='small';desc.textContent=[doc.creator,doc.year,doc.description].filter(Boolean).join(' · ').slice(0,420)||'Описание не указано.';const rights=document.createElement('div');rights.className='small';rights.textContent=doc.licenseurl?'Лицензия указана в записи — проверь её условия на странице источника.':(doc.rights?'Заявление о правах: '+String(doc.rights).slice(0,220):'Лицензия/права не указаны — не использовать в публичном эфире без разрешения.');const link=document.createElement('a');link.href='https://archive.org/details/'+encodeURIComponent(doc.identifier);link.target='_blank';link.rel='noopener noreferrer';link.textContent='Открыть оригинальную запись ↗';card.append(title,desc,rights,link);results.append(card);});}catch(err){status.textContent='Не удалось выполнить поиск. Проверь подключение и попробуй позже.';const link=document.createElement('a');link.href='https://archive.org/details/movies';link.target='_blank';link.rel='noopener';link.textContent='Открыть каталог видео Internet Archive';results.append(link);}});
+</script></body></html>
