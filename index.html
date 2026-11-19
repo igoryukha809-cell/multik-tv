@@ -1,153 +1,37 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#7132a8">
-<meta name="description" content="МУЛЬТИК ТВ — бесплатные инструменты для подготовки и локального воспроизведения детского телеканала.">
-<title>МУЛЬТИК ТВ — главный экран</title>
-<link rel="stylesheet" href="styles.css">
-<link rel="manifest" href="manifest.webmanifest">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10172b">
+<meta name="description" content="МУЛЬТИК ТВ — детский телеканал: эфир, телепрограмма, передачи и авторская анимация.">
+<title>МУЛЬТИК ТВ — детский телеканал</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
-.portal{max-width:980px;margin:auto;padding:12px}
-.hero{background:#fff;color:#30215b;border-radius:22px;padding:clamp(20px,5vw,36px);text-align:center;box-shadow:0 8px 25px #35136b55}
-.hero h1{font-size:clamp(32px,7vw,58px);margin:0 0 8px}
-.hero p{line-height:1.6}
-.state{display:inline-block;padding:8px 13px;border-radius:30px;background:#fff0c2;color:#714400;font-weight:800;font-size:13px}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:16px 0}
-.tile{display:block;text-decoration:none;background:#fff;color:#30215b;border-radius:18px;padding:20px;box-shadow:0 6px 18px #35136b33;min-height:150px}
-.tile strong{display:block;font-size:20px;margin-bottom:8px}
-.tile span{line-height:1.5;font-size:14px}
-.info{background:#fff;color:#30215b;border-radius:18px;padding:18px;line-height:1.6}
-.info h2{margin-top:0}
-
-/* Короткая экранная заставка МУЛЬТИК ТВ */
-#channel-intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 45%,#8b35bd 0,#43166f 42%,#170c35 100%);color:#fff;transition:opacity .7s ease,visibility .7s ease}
-#channel-intro.is-hidden{opacity:0;visibility:hidden;pointer-events:none}
-#channel-intro .intro-stars{position:absolute;inset:0;background-image:radial-gradient(#fff 1px,transparent 1.5px),radial-gradient(#ffe58a 1px,transparent 1.5px);background-size:73px 73px,113px 113px;background-position:0 0,31px 47px;animation:intro-drift 18s linear infinite;opacity:.7}
-#channel-intro .intro-orbit{position:absolute;width:min(76vw,520px);aspect-ratio:1;border:12px solid transparent;border-top-color:#ffdc67;border-right-color:#62e4d0;border-bottom-color:#ff6f9e;border-left-color:#9a7bff;border-radius:50%;filter:drop-shadow(0 0 22px #fff8);animation:intro-spin 8s linear infinite}
-#channel-intro .intro-core{position:relative;text-align:center;padding:36px 24px;max-width:900px;animation:intro-pop 1s cubic-bezier(.2,.8,.2,1) both}
-#channel-intro .intro-logo{font-size:clamp(35px,8vw,86px);font-weight:1000;letter-spacing:.02em;line-height:1.08;color:#fff;text-shadow:0 5px 0 #55207e,0 0 28px #ffe27c;animation:intro-glow 2s ease-in-out infinite alternate}
-#channel-intro .intro-tag{font-size:clamp(13px,2.8vw,24px);font-weight:800;letter-spacing:.16em;margin-top:20px;color:#fff0a8}
-#channel-intro .intro-skip{position:absolute;right:18px;bottom:18px;border:1px solid #ffffff99;border-radius:999px;padding:11px 18px;background:#ffffff20;color:#fff;font-weight:800;cursor:pointer;backdrop-filter:blur(8px)}
-#channel-intro .intro-skip:focus-visible{outline:3px solid #ffe58a;outline-offset:3px}
-@keyframes intro-spin{to{transform:rotate(360deg)}}
-@keyframes intro-drift{to{background-position:73px 73px,-82px 160px}}
-@keyframes intro-pop{from{opacity:0;transform:scale(.72)}to{opacity:1;transform:scale(1)}}
-@keyframes intro-glow{to{text-shadow:0 5px 0 #55207e,0 0 42px #ffe27c,0 0 70px #ff8ac4}}
-@media(prefers-reduced-motion:reduce){#channel-intro *,#channel-intro *:before{animation:none!important;transition:none!important}}
-
+:root{color-scheme:dark;--bg:#0b1020;--panel:#141d33;--panel2:#1b2944;--line:#2b3b5a;--text:#f5f7ff;--muted:#aab7d0;--gold:#ffd66b;--cyan:#63d9ed;--pink:#ff78b5}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif}a{color:inherit;text-decoration:none}.topline{height:5px;background:linear-gradient(90deg,#ff6388,#ffca62,#64db9a,#54c9ee,#9b83ff)}.wrap{max-width:1180px;margin:auto;padding:0 22px}
+header{position:sticky;top:0;z-index:20;background:#0b1020ed;backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.head{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:12px;font-weight:950;letter-spacing:.05em;font-size:22px}.brandmark{width:43px;height:43px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#ffe16e,#ff7e9e 52%,#7e83ff);font-size:25px;box-shadow:0 6px 20px #0005}.nav{display:flex;gap:22px;color:#c6d0e5;font-weight:700;font-size:14px}.nav a:hover{color:var(--gold)}.onair{display:flex;align-items:center;gap:8px;color:#ffd1d9;font-size:12px;font-weight:900;letter-spacing:.1em}.dot{width:8px;height:8px;border-radius:50%;background:#f05b71;box-shadow:0 0 0 4px #f05b7122}
+main{padding-bottom:60px}.hero{padding:38px 0 24px;display:grid;grid-template-columns:1.5fr .8fr;gap:22px;align-items:stretch}.feature{position:relative;overflow:hidden;border:1px solid #344565;border-radius:22px;background:linear-gradient(125deg,#243d67,#272454 55%,#4b285c);padding:30px;min-height:270px}.eyebrow{font-size:12px;letter-spacing:.18em;color:var(--gold);font-weight:900}.feature h1{font-size:clamp(34px,5vw,58px);line-height:1.02;max-width:600px;margin:13px 0}.feature p{max-width:520px;color:#d2d9ea}.feature:after{content:"🌈";position:absolute;right:7%;bottom:-28px;font-size:clamp(110px,19vw,220px);opacity:.2;transform:rotate(-12deg)}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;position:relative;z-index:1}.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:11px;background:var(--gold);color:#182039;font-weight:900}.btn.alt{background:#ffffff16;color:white;border:1px solid #ffffff44}.sidebox{border:1px solid var(--line);border-radius:22px;background:var(--panel);padding:22px;display:flex;flex-direction:column;justify-content:space-between}.sidebox h2{font-size:20px;margin:8px 0}.sidebox p{color:var(--muted);font-size:14px}.statusline{border-top:1px solid var(--line);padding-top:15px;display:flex;gap:10px;align-items:center;font-size:13px;color:#ffcf86}.section-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin:28px 0 14px}.section-head h2{font-size:24px;margin:0}.section-head a{font-size:13px;color:var(--cyan);font-weight:800}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;overflow:hidden;transition:transform .18s,border-color .18s}.card:hover{transform:translateY(-3px);border-color:#627ba5}.thumb{height:115px;display:grid;place-items:center;font-size:48px;background:linear-gradient(135deg,#253d68,#3a2b67)}.card:nth-child(3n+2) .thumb{background:linear-gradient(135deg,#55304f,#293c67)}.card:nth-child(3n) .thumb{background:linear-gradient(135deg,#24505a,#38306c)}.cardbody{padding:16px}.card h3{font-size:17px;margin:0 0 5px}.card p{margin:0;color:var(--muted);font-size:13px}.schedule{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.slot{display:flex;gap:12px;align-items:center;padding:14px;border-radius:13px;background:var(--panel);border:1px solid var(--line)}.slot time{color:var(--gold);font-weight:950;font-variant-numeric:tabular-nums}.slot span{font-size:14px;font-weight:750}.notice{margin-top:28px;padding:18px 20px;border:1px solid #725c35;background:#292319;border-radius:14px;color:#e9d8ae;font-size:13px}.tools{display:flex;flex-wrap:wrap;gap:10px}.tools a{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 13px;color:#d8e2f6;font-size:13px;font-weight:700}.tools a:hover{border-color:var(--cyan)}footer{border-top:1px solid var(--line);padding:26px 0;color:#8997b1;font-size:12px}.foot{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+@media(max-width:760px){.nav{display:none}.hero{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.schedule{grid-template-columns:1fr 1fr}.feature{padding:24px}.head{min-height:66px}}@media(max-width:480px){.wrap{padding:0 14px}.grid{grid-template-columns:1fr 1fr;gap:9px}.thumb{height:88px}.cardbody{padding:12px}.card h3{font-size:14px}.card p{font-size:12px}.schedule{grid-template-columns:1fr}.brand{font-size:18px}}
 </style>
 </head>
-<body>
-
-<div id="channel-intro" role="dialog" aria-label="Заставка канала МУЛЬТИК ТВ">
-  <div class="intro-stars" aria-hidden="true"></div>
-  <div class="intro-orbit" aria-hidden="true"></div>
-  <div class="intro-core">
-    <div class="intro-logo">🌈 МУЛЬТИК ТВ</div>
-    <div class="intro-tag">МИР НАЧИНАЕТСЯ С ВОЛШЕБСТВА!</div>
-  </div>
-  <button class="intro-skip" id="intro-skip" type="button">Пропустить ✕</button>
-</div>
-
-<header>
-<div class="logo">🌈 МУЛЬТИК ТВ</div>
-<p>Волшебный мир любимых мультфильмов!</p>
-</header>
-<main class="portal">
-<section class="hero">
-<div class="state">БЕСПЛАТНЫЙ РЕЖИМ · ПОДГОТОВКА ЭФИРА</div>
-<h1>Добро пожаловать!</h1>
-<p>Здесь можно смотреть русскоязычную анимацию с открытыми лицензиями, собрать собственный плейлист и подготовить видео. Локальные файлы обрабатываются в браузере на твоём устройстве.</p>
+<body><div class="topline"></div>
+<header><div class="wrap head"><a class="brand" href="index.html"><span class="brandmark">🌈</span><span>МУЛЬТИК ТВ</span></a><nav class="nav"><a href="live.html">Прямой эфир</a><a href="guide.html">Телепрограмма</a><a href="#shows">Передачи</a><a href="#tools">Студия</a></nav><a class="onair" href="live.html"><i class="dot"></i> ЭФИР / СТАТУС</a></div></header>
+<main class="wrap">
+<section class="hero"><div class="feature"><div class="eyebrow">ТВОЙ ДЕТСКИЙ ТЕЛЕКАНАЛ</div><h1>Мир ярких историй начинается здесь</h1><p>Добро пожаловать на МУЛЬТИК ТВ — место для авторской анимации, добрых историй, творчества и открытий.</p><div class="actions"><a class="btn" href="live.html">▶ Смотреть эфир</a><a class="btn alt" href="guide.html">Телепрограмма</a></div></div>
+<aside class="sidebox"><div><div class="eyebrow">СЕЙЧАС НА КАНАЛЕ</div><h2>Тестовая заставка</h2><p>Страница эфира проверяет подключение источника. Настоящий публичный видеопоток пока не настроен.</p></div><div class="statusline"><i class="dot"></i><span>Публичный эфир: не запущен</span></div></aside></section>
+<div class="section-head" id="shows"><h2>Разделы канала</h2><a href="online-catalog.html">Открыть каталог →</a></div>
+<section class="grid">
+<a class="card" href="live.html"><div class="thumb">📺</div><div class="cardbody"><h3>Прямой эфир</h3><p>Страница просмотра и проверки видеосигнала</p></div></a>
+<a class="card" href="guide.html"><div class="thumb">🗓️</div><div class="cardbody"><h3>Телепрограмма</h3><p>Расписание передач и эфирная сетка</p></div></a>
+<a class="card" href="online-catalog.html"><div class="thumb">🎬</div><div class="cardbody"><h3>Онлайн-каталог</h3><p>Подборка анимации из открытых источников</p></div></a>
+<a class="card" href="studio.html"><div class="thumb">🎞️</div><div class="cardbody"><h3>Видеостудия</h3><p>Подготовка и организация видеоматериалов</p></div></a>
+<a class="card" href="weather-show.html"><div class="thumb">🌤️</div><div class="cardbody"><h3>Погода с Мультиком</h3><p>Погодная передача канала</p></div></a>
+<a class="card" href="ai-studio.html"><div class="thumb">✨</div><div class="cardbody"><h3>Творческая мастерская</h3><p>Сценарии, идеи и собственные проекты</p></div></a>
 </section>
-<section class="tiles" aria-label="Инструменты канала">
-<a class="tile" href="studio.html"><strong>🎞️ Видеостудия: файлы и поиск</strong><span>Добавляй видео с устройства в локальную очередь и ищи мультфильмы в интернет-архиве.</span></a>
-
-<a class="tile" href="platform-24-7.html"><strong>📡 Собственная платформа 24/7</strong><span>Панель своей эфирной системы SRS + FFmpeg. Облачный сервер пока не запущен.</span></a>
-<a class="tile" href="kinescope-connect.html"><strong>📡 Подключить Kinescope</strong><span>Настройка тестовой трансляции и проверка встраивания плеера.</span></a>
-<a class="tile" href="connect-broadcast.html"><strong>🔌 Подключить настоящий эфир</strong><span>Проверка статуса канала, инструкция подключения SRS и предпросмотр HLS-потока.</span></a>
-
-<a class="tile" href="cloud-computer.html"><strong>☁️ Облачный компьютер</strong><span>Открыть облачную Linux-студию для редактирования и проверки проекта в браузере.</span></a>
-<a class="tile" href="watch.html"><strong>▶️ Автоматический показ</strong><span>Браузерный показ русскоязычной анимации с открытыми лицензиями и ссылками на авторов.</span></a>
-<a class="tile" href="cloud.html"><strong>☁️ МУЛЬТИК ТВ Cloud</strong><span>Браузерная студия: видеотека, плейлист и локальное воспроизведение.</span></a>
-<a class="tile" href="autopilot.html"><strong>🤖 Бесплатный автопилот</strong><span>Состояние автоматического обновления программы и проверка доступных материалов.</span></a>
-<a class="tile" href="tv.html"><strong>📺 Смотреть МУЛЬТИК ТВ</strong><span>Автономный браузерный эфир: встроенная заставка и последовательный показ ваших видеофайлов без внешних сервисов.</span></a>
-<a class="tile" href="weather-service.html"><strong>🌦️ Погодный сервис МУЛЬТИК ТВ</strong><span>Свой экран прогноза: текущая погода и ближайшие часы в городах России, обновление каждые 15 минут.</span></a>
-<a class="tile" href="weather.html"><strong>🌤️ Погода на МУЛЬТИК ТВ</strong><span>Погода в Барнауле и крупных городах России, плюс наша отдельная погодная передача.</span></a>
-<a class="tile" href="weather-broadcast.html"><strong>🌦️ Погода в эфире</strong><span>Полноэкранная погодная студия с текущими данными и эфирной бегущей строкой.</span></a>
-<a class="tile" href="weather-show.html"><strong>🎙️ Погода с Мультиком</strong><span>Ежедневная передача с ведущим и сценарием выпуска на 2 минуты 30 секунд.</span></a>
-<a class="tile" href="channel.html"><strong>📡 Статус канала</strong><span>Автоматическая бесплатная проверка расписания и готовности эфира.</span></a>
-<a class="tile" href="playlist-editor.html"><strong>🎬 Редактор эфира</strong><span>Собирай собственный локальный плейлист, меняй порядок видео и экспортируй список файлов.</span></a>
-<a class="tile" href="server.html"><strong>🖥️ Собственный видеосервер</strong><span>Своя сборка SRS + FFmpeg + Docker для локального HLS-эфира и автоматического плейлиста.</span></a>
-<a class="tile" href="playlist-builder.html"><strong>📋 Конструктор эфирного плейлиста</strong><span>Свяжи реестр прав с подготовкой очереди, укажи прямые ссылки и экспортируй JSON после ручной проверки разрешений.</span></a>
-<a class="tile" href="rights-and-content.html"><strong>📜 Права на мультфильмы</strong><span>Проверяй лицензии и разрешения перед добавлением видео в публичный эфир.</span></a>
-<a class="tile" href="auto-library.html"><strong>🤖 Автоподбор мультфильмов</strong><span>Автоматически ищи видео в Wikimedia Commons, проверяй сведения о лицензии и собирай список для подготовки эфира.</span></a>
-<a class="tile" href="online-catalog.html"><strong>🌐 Онлайн-каталог</strong><span>Открывай мультфильмы из бесплатных официальных источников во встроенном плеере.</span></a>
-<a class="tile" href="playout.html"><strong>📡 Автоэфир Cloud</strong><span>Бесплатный браузерный плейаут: видеотека, очередь и автоматическое переключение роликов на этом устройстве.</span></a>
-<a class="tile" href="free-broadcast.html"><strong>📺 Пульт эфира</strong><span>Добавляй свои видео, запускай плейлист и настраивай расписание локального воспроизведения.</span></a>
-<a class="tile" href="stream.html"><strong>▶️ Видеоплеер</strong><span>Проверяй публичные HTTPS-потоки HLS, MP4 и WebM, когда появится адрес работающего источника.</span></a>
-<a class="tile" href="montage-studio.html"><strong>🎬 Студия монтажа</strong><span>Собирай ролики, добавляй титры и музыку, экспортируй результат в поддерживаемом браузером формате.</span></a>
-<a class="tile" href="auto-intro.html"><strong>✨ Автозаставка с музыкой</strong><span>Создавай готовую анимированную заставку МУЛЬТИК ТВ с оригинальной музыкой одним нажатием.</span></a>
-<a class="tile" href="video-editor.html"><strong>🎞️ Новая видеостудия</strong><span>Монтируй свои видео и изображения, добавляй музыку и титры, экспортируй WebM. Есть YouTube-предпросмотр по ссылке.</span></a>
-<a class="tile" href="voice-studio.html"><strong>🎙️ Студия озвучки</strong><span>Подготавливай текст и переходи к бесплатным инструментам синтеза речи.</span></a>
-<a class="tile" href="ai-studio.html"><strong>✨ AI-мастерская</strong><span>Создавай сценарии, раскадровки и простые иллюстрации.</span></a>
-<a class="tile" href="live.html"><strong>🔴 Прямой эфир</strong><span>Открыть общую страницу интернет-трансляции и проверить наличие сигнала.</span></a>
-<a class="tile" href="broadcast-log.html"><strong>📝 Журнал фактического эфира</strong><span>Фиксируй время выхода передач и события, добавляй заметки, экспортируй журнал в TXT, CSV или JSON.</span></a>
-<a class="tile" href="media-check.html"><strong>🔎 Проверка видеофайлов</strong><span>Проверяй читаемость роликов, длительность, размеры кадра и скачивай технический CSV-отчёт.</span></a>
-<a class="tile" href="wifi.html"><strong>📡 Wi-Fi студии</strong><span>Проект имени сети MULTIK-TV-STUDIO, безопасные настройки роутера и пошаговая инструкция запуска.</span></a>
-<a class="tile" href="teleprompter.html"><strong>🎤 Телесуфлёр ведущего</strong><span>Плавная прокрутка текста, настройка скорости и размера букв, зеркальный и полноэкранный режимы.</span></a>
-<a class="tile" href="preflight.html"><strong>✅ Предэфирная проверка</strong><span>Проверь готовность выпуска по чек-листу, сохрани отметки и скачай TXT-отчёт.</span></a>
-<a class="tile" href="subtitles.html"><strong>💬 Редактор субтитров</strong><span>Создавай субтитры с таймкодами, редактируй фразы и экспортируй SRT, WebVTT или JSON.</span></a>
-<a class="tile" href="rights-register.html"><strong>📜 Реестр прав и разрешений</strong><span>Веди список материалов, правообладателей, лицензий и подтверждений для проверки перед эфиром.</span></a>
-<a class="tile" href="announcer.html"><strong>📣 Мастер эфирных анонсов</strong><span>Создавай оригинальные объявления передач, копируй текст или скачивай его для ведущего.</span></a>
-<a class="tile" href="rundown.html"><strong>🗒️ Эфирный лист</strong><span>Собирай порядок передач, считай длительность, сохраняй и экспортируй план выпуска.</span></a>
-<a class="tile" href="video-studio.html"><strong>🎬 Создать видео МУЛЬТИК ТВ</strong><span>Новая анимированная заставка канала с записью готового ролика WebM прямо в браузере.</span></a>
-<a class="tile" href="signal.html"><strong>📡 Генератор видеосигнала</strong><span>Создаёт собственный анимированный видеосигнал в браузере и позволяет записать его в WebM.</span></a>
-<a class="tile" href="graphics.html"><strong>🎨 Дизайнер экранной графики</strong><span>Создавай эфирные плашки, объявления и бегущую строку, сохраняй свою графику в SVG.</span></a>
-<a class="tile" href="guide.html"><strong>🗓️ Телепрограмма МУЛЬТИК ТВ</strong><span>Собственная сетка передач на день, часы, описания и добавление авторских программ.</span></a>
-<a class="tile" href="engine.html"><strong>🎛️ Собственный эфирный движок</strong><span>Автоматическая эфирная сетка, локальная видеотека и запуск передач по расписанию.</span></a>
-<a class="tile" href="station.html"><strong>🌈 Собственная телестудия</strong><span>Автономная заставка и собственная видеотека прямо в браузере — без внешних видеосервисов.</span></a>
-<a class="tile" href="plugin.html"><strong>🛠️ Помощник бесплатного эфира</strong><span>Пошаговый запуск домашнего сервера и проверка локального видеопотока.</span></a>
-<a class="tile" href="stream-server/README.md"><strong>🛠️ Серверная инструкция</strong><span>Исходная конфигурация SRS и описание того, что потребуется для настоящего онлайн-эфира.</span></a>
-</section>
-<section class="info">
-<h2>Что уже можно делать бесплатно</h2>
-<ul>
-<li>Запускать автономную заставку и воспроизводить свои видеофайлы по очереди прямо в браузере.</li>
-<li>Настраивать расписание локального показа на этом устройстве.</li>
-<li>Монтировать собственные материалы и готовить заставки.</li>
-<li>Подготавливать сценарии, раскадровки и текст озвучки.</li>
-</ul>
-<h2>Важное уточнение</h2>
-<p>Сейчас это бесплатный набор веб-инструментов, а не подтверждённая круглосуточная трансляция для зрителей в интернете. Для публичного эфира нужен реально запущенный потоковый сервер и подходящий интернет-канал. Мы не подключаем платные ресурсы. Используй только видео, на публичный показ которых есть разрешение.</p>
-</section>
-</main>
-<footer>© МУЛЬТИК ТВ · Бесплатные инструменты канала</footer>
-<script>
-
-const channelIntro = document.getElementById("channel-intro");
-const skipIntro = () => {
-  if (!channelIntro) return;
-  channelIntro.classList.add("is-hidden");
-  try { sessionStorage.setItem("multikTvIntroSeen", "1"); } catch (_) {}
-  window.setTimeout(() => channelIntro.remove(), 800);
-};
-if (channelIntro) {
-  document.getElementById("intro-skip").addEventListener("click", skipIntro);
-  let alreadySeen = false;
-  try { alreadySeen = sessionStorage.getItem("multikTvIntroSeen") === "1"; } catch (_) {}
-  if (alreadySeen || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    skipIntro();
-  } else {
-    window.setTimeout(skipIntro, 7000);
-  }
-}
-
-if ("serviceWorker" in navigator && location.protocol === "https:") {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
-}
-</script>
-</body>
-</html>
+<div class="section-head"><h2>Программа канала</h2><a href="guide.html">Вся программа →</a></div>
+<section class="schedule"><div class="slot"><time>09:00</time><span>Мастерская фантазии</span></div><div class="slot"><time>11:00</time><span>Мир открытий</span></div><div class="slot"><time>15:00</time><span>Киноклуб юных авторов</span></div></section>
+<div class="notice">Важно: сайт уже содержит инструменты подготовки и локального воспроизведения. Круглосуточная интернет-трансляция появится только после подключения и проверки настоящего потокового сервера. Для публичного показа используются только материалы с подтверждёнными правами.</div>
+<div class="section-head" id="tools"><h2>Техническая студия</h2></div>
+<nav class="tools" aria-label="Инструменты"><a href="engine.html">Эфирный движок</a><a href="playlist-editor.html">Редактор плейлиста</a><a href="rights-register.html">Реестр прав</a><a href="server.html">Видеосервер</a><a href="diagnostics.html">Диагностика</a><a href="preflight.html">Предэфирная проверка</a><a href="graphics.html">Экранная графика</a><a href="teleprompter.html">Телесуфлёр</a></nav>
+</main><footer><div class="wrap foot"><span>© МУЛЬТИК ТВ · Детский телеканал</span><span><a href="rights-and-content.html">Права на контент</a> · <a href="index.html">На главную</a></span></div></footer>
+</body></html>
