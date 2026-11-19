@@ -5,7 +5,7 @@ import path from "node:path";
 import os from "node:os";
 import fs from "node:fs/promises";
 import { createReadStream } from "node:fs";
-import { randomUUID, timingSafeEqual } from "node:crypto";
+import { randomUUID, randomBytes, createHash, timingSafeEqual } from "node:crypto";
 import { S3Client, ListObjectsV2Command, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -17,6 +17,41 @@ app.use(express.json({ limit: "64kb" }));
 
 const PORT = Number(process.env.PORT || 10000);
 const TOKEN = process.env.UPLOAD_API_TOKEN || "";
+const ADMIN_TOKEN = process.env.ADMIN_API_TOKEN || "";
+const DATA_DIR = process.env.DATA_DIR || "./data";
+const ACCESS_KEYS_FILE = process.env.ACCESS_KEYS_FILE || path.join(DATA_DIR, "access-keys.json");
+await fs.mkdir(path.dirname(ACCESS_KEYS_FILE), { recursive: true });
+
+async function readAccessKeys() {
+  try {
+    const raw = await fs.readFile(ACCESS_KEYS_FILE, "utf8");
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    if (err.code === "ENOENT") return [];
+    throw err;
+  }
+}
+async function writeAccessKeys(keys) {
+  const temp = ACCESS_KEYS_FILE + ".tmp";
+  await fs.writeFile(temp, JSON.stringify(keys, null, 2), { mode: 0o600 });
+  await fs.rename(temp, ACCESS_KEYS_FILE);
+}
+function hashAccessKey(value) {
+  return createHash("sha256").update(value).digest("hex");
+}
+function safeEqual(a, b) {
+  const left = Buffer.from(String(a));
+  const right = Buffer.from(String(b));
+  return left.length === right.length && timingSafeEqual(left, right);
+}
+function adminAuth(req, res, next) {
+  const supplied = (req.headers.authorization || "").replace(/^Bearer /, "");
+  if (!ADMIN_TOKEN || !safeEqual(supplied, ADMIN_TOKEN)) {
+    return res.status(401).json({ error: "Нет доступа администратора." });
+  }
+  next();
+}
 const BUCKET = process.env.B2_BUCKET || process.env.AWS_S3_BUCKET || "";
 const ENDPOINT = process.env.B2_ENDPOINT || process.env.AWS_S3_ENDPOINT || "";
 const ACCESS_KEY = process.env.AWS_ACCESS_KEY_ID || "";
@@ -97,6 +132,58 @@ async function listVideos() {
   } while (ContinuationToken);
   return rows.sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""));
 }
+
+
+// Собственная система ключей доступа МУЛЬТИК ТВ.
+// Полный ключ показывается только один раз; в файле хранится только SHA-256-хеш.
+app.get("/api/admin/keys", adminAuth, async (_req, res, next) => {
+  try {
+    const keys = await readAccessKeys();
+    res.json(keys.map(({ id, label, scope, createdAt, lastUsedAt, revokedAt }) =>
+      ({ id, label, scope, createdAt, lastUsedAt: lastUsedAt || null, revokedAt: revokedAt || null })));
+  } catch (err) { next(err); }
+});
+
+app.post("/api/admin/keys", adminAuth, async (req, res, next) => {
+  try {
+    const label = String(req.body?.label || "").trim().slice(0, 60);
+    const scope = req.body?.scope;
+    if (!label) return res.status(400).json({ error: "Укажите название ключа." });
+    if (!["upload", "api"].includes(scope)) return res.status(400).json({ error: "Недопустимый тип ключа." });
+    const keys = await readAccessKeys();
+    const token = "mtv_" + randomBytes(32).toString("base64url");
+    const record = {
+      id: randomUUID(),
+      label,
+      scope,
+      hash: hashAccessKey(token),
+      createdAt: new Date().toISOString(),
+      lastUsedAt: null,
+      revokedAt: null
+    };
+    keys.push(record);
+    await writeAccessKeys(keys);
+    res.status(201).json({
+      id: record.id,
+      label: record.label,
+      scope: record.scope,
+      createdAt: record.createdAt,
+      key: token,
+      warning: "Скопируйте ключ сейчас: повторно показать его нельзя."
+    });
+  } catch (err) { next(err); }
+});
+
+app.delete("/api/admin/keys/:id", adminAuth, async (req, res, next) => {
+  try {
+    const keys = await readAccessKeys();
+    const record = keys.find(item => item.id === req.params.id);
+    if (!record) return res.status(404).json({ error: "Ключ не найден." });
+    if (!record.revokedAt) record.revokedAt = new Date().toISOString();
+    await writeAccessKeys(keys);
+    res.json({ ok: true, id: record.id, revokedAt: record.revokedAt });
+  } catch (err) { next(err); }
+});
 
 app.get("/api/videos", requireStorage, async (_req, res, next) => {
   try { res.json(await listVideos()); } catch (err) { next(err); }
