@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#21123c"><title>Проверка системы — МУЛЬТИК ТВ</title><link rel="stylesheet" href="styles.css">
+<style>
+main{max-width:900px;margin:auto;padding:16px}.panel{background:#fff;color:#2b1b4d;border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 5px 18px #35136b22}.muted{color:#655a78;line-height:1.55}.checks{display:grid;gap:9px}.check{padding:12px;border:1px solid #e4dced;border-radius:12px;display:flex;gap:10px;align-items:flex-start}.check b{display:block}.ok{color:#176b38}.warn{color:#8b5a00}.bad{color:#a12626}.dot{font-size:20px}.btn{display:inline-block;background:#6336a5;color:white;text-decoration:none;padding:11px 15px;border-radius:10px;font-weight:700;margin:4px 4px 4px 0}button{border:0;border-radius:10px;padding:11px 15px;background:#6336a5;color:white;font-weight:700}
+</style></head><body><header><div class="logo">🧰 ДИАГНОСТИКА МУЛЬТИК ТВ</div><p>Автоматическая проверка сайта и браузера</p></header><main>
+<section class="panel"><h1>Проверка системы</h1><p class="muted">Проверяю доступность файлов проекта, браузерные функции и опубликованный статус канала. Эта проверка ничего не устанавливает, не загружает видео и не запускает сервер.</p><button id="run">Повторить проверку</button> <span id="summary" class="muted" role="status">Проверка ещё не запускалась.</span></section>
+<section class="panel"><h2>Результаты</h2><div class="checks" id="checks"><p class="muted">Нажми «Повторить проверку».</p></div></section>
+<section class="panel"><h2>Что означают результаты</h2><p class="muted"><b class="ok">Готово</b> — проверка прошла в этом браузере.</p><p class="muted"><b class="warn">Ограничение</b> — функция зависит от браузера или требует отдельного действия.</p><p class="muted"><b class="bad">Ошибка</b> — файл или функция не прошли проверку.</p><p class="muted">Проверка сайта не может подтвердить реальную передачу видеопотока в интернет. Для этого нужен запущенный медиасервер и отдельная проверка потока с сервера.</p></section>
+<div><a class="btn" href="engine.html">Эфирный движок</a><a class="btn" href="server.html">Видеосервер</a><a class="btn" href="guide.html">Телепрограмма</a><a class="btn" href="index.html">На главную</a></div>
+</main><script>
+const $=id=>document.getElementById(id);
+function row(name,detail,status){const el=document.createElement('div');el.className='check';const dot=document.createElement('span');dot.className='dot '+status;dot.textContent=status==='ok'?'✓':status==='bad'?'✕':'!';const body=document.createElement('div'),b=document.createElement('b'),p=document.createElement('span');b.textContent=name;p.className='muted';p.textContent=detail;body.append(b,p);el.append(dot,body);$('checks').append(el)}
+async function checkFile(path,label){try{const r=await fetch(path+'?check='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);return {ok:true,label,detail:'Файл доступен · HTTP '+r.status}}catch(e){return {ok:false,label,detail:'Не удалось загрузить файл: '+e.message}}}
+async function run(){
+ const results=[];$('checks').replaceChildren();$('summary').textContent='Выполняю проверки…';
+ results.push({ok:location.protocol==='https:',label:'Защищённое соединение HTTPS',detail:location.protocol==='https:'?'Сайт открыт по HTTPS.':'Сайт открыт не по HTTPS; некоторые функции могут быть ограничены.'});
+ results.push({ok:!!window.indexedDB,label:'Локальная видеотека',detail:window.indexedDB?'Браузер поддерживает IndexedDB для хранения выбранных видео.':'IndexedDB недоступна в этом браузере.'});
+ results.push({ok:!!window.localStorage,label:'Локальные настройки',detail:window.localStorage?'Браузер предоставляет localStorage для настроек и программы.':'localStorage недоступен.'});
+ const v=document.createElement('video'),mp4=v.canPlayType('video/mp4'),webm=v.canPlayType('video/webm');
+ results.push({ok:!!(mp4||webm),label:'Воспроизведение видео',detail:'MP4: '+(mp4||'не определено')+' · WebM: '+(webm||'не определено')+'. Поддержка MKV зависит от браузера и кодека.'});
+ for(const [path,label] of [['broadcast/status.json','Файл статуса канала'],['broadcast/playlist.json','Публичный плейлист'],['data/autopilot.json','Данные автопилота'],['engine.html','Страница эфирного движка'],['guide.html','Страница телепрограммы']])results.push(await checkFile(path,label));
+ try{const r=await fetch('broadcast/status.json?check='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const s=await r.json();const live=s.streaming===true&&s.state==='online';results.push({ok:live,label:'Фактический статус интернет-эфира',warn:!live,detail:live?'В статусном файле указан активный поток. Нужна отдельная проверка воспроизведения.':(s.message||'Публичный видеопоток не подтверждён')})}catch(e){results.push({ok:false,label:'Фактический статус интернет-эфира',detail:'Не удалось прочитать статус: '+e.message})}
+ let ok=0,warn=0,bad=0;for(const x of results){const st=x.ok?'ok':x.warn?'warn':'bad';if(st==='ok')ok++;else if(st==='warn')warn++;else bad++;row(x.label,x.detail,st)}
+ $('summary').textContent='Готово: '+ok+' успешно · '+warn+' ограничений · '+bad+' ошибок.';
+}
+$('run').onclick=run;run();
+</script></body></html>
