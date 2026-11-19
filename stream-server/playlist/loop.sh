@@ -27,7 +27,7 @@ load_media() {
   if [[ -f "${MEDIA_DIR}/playlist.txt" ]]; then
     while IFS= read -r entry || [[ -n "$entry" ]]; do
       entry="${entry%$'\r'}"
-      [[ -z "$entry" || "$entry" == \\#* ]] && continue
+      [[ -z "$entry" || "$entry" == \#* ]] && continue
       # Accept only a basename; never follow directories or path traversal.
       [[ "$entry" != */* && "$entry" != *\\* && "$entry" != "." && "$entry" != ".." ]] || {
         echo "Пропускаю недопустимую строку плейлиста: $entry" >&2
