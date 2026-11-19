@@ -65,6 +65,8 @@ const upload = multer({
   }
 });
 
+app.get("/", (_req, res) => res.json({ service: "МУЛЬТИК ТВ Storage API", health: "/health", videos: "/api/videos" }));
+
 app.get("/health", (_req, res) => res.json({
   ok: true,
   storage: "tigris",
