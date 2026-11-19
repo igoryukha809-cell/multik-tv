@@ -1,35 +1,42 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#17102f"><title>Загрузка видео — МУЛЬТИК ТВ</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17102f">
+<title>Загрузчик — МУЛЬТИК ТВ</title>
 <style>
-:root{font-family:system-ui,Arial,sans-serif;color:#fff;background:#100c25}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#493078,#100c25 65%)}header,main{max-width:900px;margin:auto;padding:18px}.bar{height:6px;background:linear-gradient(90deg,#ff5f9e,#ffcf4b,#66d5a7,#53c8ee,#9475e8)}.nav{background:#fff;color:#292d50;padding:12px 18px;border-radius:0 0 16px 16px;display:flex;gap:16px;flex-wrap:wrap}.nav a{color:#4b5270;font-weight:800;text-decoration:none}.panel{background:#201a3c;border:1px solid #514477;border-radius:18px;padding:20px;margin:16px 0}h1,h2{color:#ffe17b}.muted{color:#c6bedf;line-height:1.6}.notice{background:#15112a;padding:14px;border-radius:12px;line-height:1.5}.pick{display:block;border:2px dashed #8d7ac0;border-radius:14px;padding:24px;text-align:center;margin:16px 0}.pick input{max-width:100%}button{border:0;border-radius:10px;padding:11px 16px;background:#ffe17b;color:#17102f;font-weight:800;margin:5px;cursor:pointer}button:disabled{opacity:.5}.item{padding:12px 0;border-bottom:1px solid #514477;overflow-wrap:anywhere}.item:last-child{border:0}.small{font-size:13px;color:#c6bedf}.success{color:#8ff0b2;font-weight:800}.progress{color:#ffe17b;font-weight:800}
-</style></head>
-<body><div class="bar"></div><header><nav class="nav"><a href="index.html">🌈 МУЛЬТИК ТВ</a><a href="live.html">Эфир</a><a href="guide.html">Программа</a><a href="studio.html">Студия</a></nav></header>
-<main><h1>Собственный загрузчик МУЛЬТИК ТВ</h1>
+*{box-sizing:border-box}body{margin:0;font:16px system-ui,Arial;background:#100c25;color:#fff}.top{height:6px;background:linear-gradient(90deg,#ff5f9e,#ffcf4b,#66d5a7,#53c8ee,#9475e8)}header,main{max-width:760px;margin:auto;padding:18px}.nav{display:flex;gap:16px;flex-wrap:wrap}.nav a{color:#ffe17b;text-decoration:none;font-weight:700}.panel{background:#201a3c;border:1px solid #514477;border-radius:18px;padding:20px;margin:18px 0}h1,h2{color:#ffe17b}.drop{display:block;text-align:center;padding:34px 16px;border:2px dashed #9a86ce;border-radius:16px;background:#17122e;cursor:pointer}.drop input{display:none}.big{font-size:42px}.muted,.small{color:#c6bedf;line-height:1.5}.small{font-size:13px}.status{margin:14px 0;min-height:26px;color:#ffe17b}.item{padding:14px 0;border-bottom:1px solid #514477;overflow-wrap:anywhere}.item:last-child{border:0}.actions{display:flex;gap:8px;flex-wrap:wrap}button{border:0;border-radius:10px;padding:10px 14px;background:#ffe17b;color:#17102f;font-weight:800;cursor:pointer}button.secondary{background:#514477;color:white}button:disabled{opacity:.5}progress{width:100%;height:12px;accent-color:#ffe17b}.tag{color:#8ff0b2;font-weight:700}
+</style>
+</head>
+<body>
+<div class="top"></div>
+<header><nav class="nav"><a href="index.html">🌈 МУЛЬТИК ТВ</a><a href="live.html">Эфир</a><a href="guide.html">Программа</a><a href="studio.html">Студия</a></nav></header>
+<main>
+<h1>Загрузчик МУЛЬТИК ТВ</h1>
 <section class="panel">
-<p class="notice">Это встроенный загрузчик канала. Выбранные видео сохраняются в памяти браузера на этом устройстве. Они не отправляются в интернет и пока не доступны зрителям.</p>
-<label class="pick">Выбери видео для загрузки<br><br><input id="files" type="file" accept="video/mp4,video/webm,video/quicktime,video/x-matroska,.mkv" multiple></label>
-<p id="status" class="muted" role="status">Файлы останутся в этом браузере. Доступный объём зависит от свободного места и ограничений устройства.</p>
-<button id="save" disabled>Сохранить в этом браузере</button>
-<div class="notice" style="margin-top:16px"><b>Отправить на сервер канала</b><p class="small">Введи адрес своего сервера и пароль, который взрослый настроит в его параметрах. Пароль не сохраняется на сайте.</p><label>Адрес сервера <input id="apiUrl" type="url" placeholder="https://адрес-сервера" style="width:100%;padding:10px;margin:6px 0"></label><label>Пароль загрузчика <input id="apiToken" type="password" autocomplete="off" style="width:100%;padding:10px;margin:6px 0"></label><button id="sendServer" disabled>Отправить выбранные видео на сервер</button><p id="serverStatus" class="muted" role="status">Сервер ещё не подключён.</p><div id="serverList" class="small"></div></div>
+<p class="muted">Выбери видео — загрузчик сам сохранит его в видеотеке этого устройства. Никаких адресов сервера и паролей вводить не нужно.</p>
+<label class="drop" for="files"><div class="big">⬆️</div><b>Нажми, чтобы выбрать видео</b><p class="small">Можно выбрать несколько файлов MP4, WebM или MOV</p><input id="files" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" multiple></label>
+<div id="status" class="status" role="status">Ожидаю выбор видео.</div>
+<progress id="progress" value="0" max="100" hidden></progress>
 </section>
-<section class="panel"><h2>Видеотека канала</h2><p class="notice">Чтобы перенести очень большой файл на сервер позже, сначала сохрани его копию на устройство кнопкой «Скачать копию». Не удаляй оригинал из этой видеотеки, пока серверная копия не будет проверена.</p><div id="list" class="muted">Загружаем список…</div></section>
-<section class="panel"><h2>Важно об эфире</h2><p class="muted">Эти файлы хранятся только в этом браузере. Для показа всем зрителям потребуется отдельное серверное хранилище и проверка прав на публичную трансляцию.<a href="live.html">← Вернуться к эфиру</a></section></main>
+<section class="panel">
+<h2>Моя видеотека</h2>
+<div id="list" class="muted">Загрузка списка…</div>
+</section>
+<section class="panel">
+<b>Важно</b>
+<p class="muted">Сейчас это локальная видеотека: файлы сохраняются только в браузере на этом устройстве. Они не отправляются на сервер и не появляются в прямом эфире. Для общей видеотеки телеканала потребуется подключить серверное хранилище.</p>
+</section>
+</main>
 <script>
-const DB='multiktv-upload-library-v1',STORE='videos';let selected=[];
-const statusEl=document.getElementById('status'),save=document.getElementById('save'),list=document.getElementById('list'),picker=document.getElementById('files');
-const apiUrl=document.getElementById('apiUrl'),apiToken=document.getElementById('apiToken'),sendServer=document.getElementById('sendServer'),serverStatus=document.getElementById('serverStatus'),serverList=document.getElementById('serverList');
-function apiBase(){return apiUrl.value.trim().replace(/\\/$/,'');}
-function updateServerButton(){sendServer.disabled=!(selected.length&&apiBase()&&apiToken.value);}
-apiUrl.addEventListener('input',updateServerButton);apiToken.addEventListener('input',updateServerButton);
+const DB='multiktv-upload-library-v2',STORE='videos';
+const picker=document.getElementById('files'),status=document.getElementById('status'),progress=document.getElementById('progress'),list=document.getElementById('list');
 function openDB(){return new Promise((resolve,reject)=>{const q=indexedDB.open(DB,1);q.onupgradeneeded=()=>q.result.createObjectStore(STORE,{keyPath:'id'});q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});}
-async function all(){const db=await openDB();return new Promise((resolve,reject)=>{const q=db.transaction(STORE).objectStore(STORE).getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});}
-async function refresh(){try{const rows=await all();list.innerHTML='';if(!rows.length){list.textContent='Пока нет сохранённых видео.';return;}for(const v of rows){const d=document.createElement('div');d.className='item';const name=document.createElement('b');name.textContent=v.name;const info=document.createElement('div');info.className='small';info.textContent=(v.size/1024/1024).toFixed(1)+' МБ · '+new Date(v.savedAt).toLocaleString();const dl=document.createElement('button');dl.textContent='Скачать копию';dl.onclick=()=>{const url=URL.createObjectURL(v.blob);const a=document.createElement('a');a.href=url;a.download=v.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);};const del=document.createElement('button');del.textContent='Удалить';del.onclick=async()=>{if(!confirm('Удалить сохранённый файл из этого браузера?'))return;const db=await openDB();db.transaction(STORE,'readwrite').objectStore(STORE).delete(v.id);refresh();};d.append(name,info,dl,del);list.append(d);}}catch(e){list.textContent='Не удалось прочитать локальную видеотеку: '+e.message;}}
-picker.onchange=()=>{selected=[...picker.files];save.disabled=!selected.length;updateServerButton();statusEl.textContent=selected.length?('Выбрано файлов: '+selected.length+'. Общий размер: '+(selected.reduce((n,f)=>n+f.size,0)/1024/1024).toFixed(1)+' МБ. Проверь свободное место на устройстве.'):'Файлы не выбраны.';};
-save.onclick=async()=>{const batch=[...selected];save.disabled=true;statusEl.className='muted progress';try{const db=await openDB();let saved=0;for(let i=0;i<batch.length;i++){const f=batch[i];statusEl.textContent='Загрузка '+(i+1)+' из '+batch.length+': '+f.name;await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put({id:crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+i,name:f.name,size:f.size,type:f.type,savedAt:Date.now(),blob:f});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Операция отменена'));});saved++;}selected=[];picker.value='';await refresh();statusEl.className='muted success';statusEl.textContent='✓ Видео успешно загружено и сохранено в видеотеке этого браузера: '+saved+' '+(saved===1?'файл':'файлов')+'.';}catch(e){statusEl.className='muted';statusEl.textContent='Не удалось сохранить видео. Успешно сохранено файлов: '+(typeof saved==='number'?saved:0)+'. Возможно, не хватает места: '+e.message;}finally{save.disabled=!selected.length;}};
-
-// Облачная интеграция отключена: используется встроенная локальная видеотека.
+async function getAll(){const db=await openDB();return new Promise((resolve,reject)=>{const q=db.transaction(STORE).objectStore(STORE).getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});}
+async function refresh(){try{const rows=await getAll();list.replaceChildren();if(!rows.length){list.textContent='Видео пока нет. Нажми кнопку выше, чтобы добавить первое.';return;}for(const v of rows){const item=document.createElement('div');item.className='item';const name=document.createElement('b');name.textContent=v.name;const meta=document.createElement('p');meta.className='small';meta.textContent=(v.size/1048576).toFixed(1)+' МБ · добавлено '+new Date(v.savedAt).toLocaleString();const actions=document.createElement('div');actions.className='actions';const download=document.createElement('button');download.textContent='Скачать';download.onclick=()=>{const url=URL.createObjectURL(v.blob),a=document.createElement('a');a.href=url;a.download=v.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);};const remove=document.createElement('button');remove.className='secondary';remove.textContent='Удалить';remove.onclick=async()=>{if(!confirm('Удалить это видео из памяти браузера?'))return;const db=await openDB();db.transaction(STORE,'readwrite').objectStore(STORE).delete(v.id);refresh();};actions.append(download,remove);item.append(name,meta,actions);list.append(item);}}catch(e){list.textContent='Не удалось открыть видеотеку: '+e.message;}}
+picker.addEventListener('change',async()=>{const files=[...picker.files];if(!files.length)return;progress.hidden=false;progress.value=0;status.textContent='Сохраняю видео…';let done=0;try{const db=await openDB();for(const file of files){await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put({id:(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random()),name:file.name,size:file.size,type:file.type,savedAt:Date.now(),blob:file});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Операция отменена'));});done++;progress.value=done/files.length*100;}await refresh();status.innerHTML='<span class="tag">✓ Готово! Сохранено файлов: '+done+'.</span>'; }catch(e){status.textContent='Не удалось сохранить файл. Возможно, на устройстве недостаточно свободного места: '+e.message;}finally{picker.value='';setTimeout(()=>{progress.hidden=true;progress.value=0;},1200);}});
 refresh();
-</script></body></html>
+</script>
+</body>
+</html>
