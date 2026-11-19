@@ -27,6 +27,17 @@ class RenderBlueprintTests(unittest.TestCase):
         self.assertIn("TECHNICAL TEST SIGNAL - NOT A LIVE PROGRAM", startup)
         self.assertIn("rtmp://127.0.0.1/live/multiktv", startup)
 
+
+    def test_render_start_script_has_valid_shell_syntax_and_matching_hls_output(self):
+        startup = ROOT / "stream-server" / "render-start.sh"
+        import subprocess
+        result = subprocess.run(["bash", "-n", str(startup)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        config = (ROOT / "stream-server" / "srs.conf").read_text(encoding="utf-8")
+        self.assertIn("hls_m3u8_file   [app]/[stream].m3u8;", config)
+        self.assertIn("rtmp://127.0.0.1/live/multiktv", startup.read_text(encoding="utf-8"))
+        self.assertIn("/live/multiktv.m3u8", (ROOT / "render.yaml").read_text(encoding="utf-8"))
+
     def test_test_stream_is_not_misrepresented_as_channel_content(self):
         readme = (ROOT / "stream-server" / "README.md").read_text(encoding="utf-8")
         self.assertIn("не настоящий телеканал 24/7", readme)
