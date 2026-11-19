@@ -83,7 +83,8 @@ app.use((req, res, next) => {
 function auth(requiredScope = "upload") {
   return async (req, res, next) => {
     const got = (req.headers.authorization || "").replace(/^Bearer /, "");
-    if (TOKEN && safeEqual(got, TOKEN)) return next(); // legacy upload token
+    // Старый UPLOAD_API_TOKEN разрешён только для загрузки; удаление требует ключ scope=api.
+    if (requiredScope === "upload" && TOKEN && safeEqual(got, TOKEN)) return next();
     if (!got) return res.status(401).json({ error: "Нужен ключ доступа." });
     try {
       const digest = hashAccessKey(got);
