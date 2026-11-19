@@ -29,7 +29,7 @@ class RenderBlueprintTests(unittest.TestCase):
 
     def test_test_stream_is_not_misrepresented_as_channel_content(self):
         readme = (ROOT / "stream-server" / "README.md").read_text(encoding="utf-8")
-        self.assertIn("не полноценный эфир телеканала", readme)
+        self.assertIn("не настоящий телеканал 24/7", readme)
         self.assertIn("не гарантирует круглосуточную работу", readme.lower())
 
 
