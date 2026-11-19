@@ -45,7 +45,7 @@ const key="multiktv-guide-v2";let rows;
 try{const saved=JSON.parse(localStorage.getItem(key));rows=Array.isArray(saved)?saved:base.map(x=>[...x])}catch(e){rows=base.map(x=>[...x])}
 const $=id=>document.getElementById(id);
 const minutes=t=>{const [h,m]=t.split(":").map(Number);return h*60+m};
-function ordered(){return rows.filter(r=>Array.isArray(r)&&/^([01]\\d|2[0-3]):[0-5]\\d$/.test(r[0])&&typeof r[1]==="string").sort((a,b)=>a[0].localeCompare(b[0]))}
+function ordered(){return rows.filter(r=>Array.isArray(r)&&/^([01]\d|2[0-3]):[0-5]\d$/.test(r[0])&&typeof r[1]==="string").sort((a,b)=>a[0].localeCompare(b[0]))}
 function draw(){
  const list=ordered(),now=new Date(),n=now.getHours()*60+now.getMinutes();
  $("schedule").replaceChildren();
