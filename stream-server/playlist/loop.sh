@@ -40,13 +40,13 @@ load_media() {
     done < "${MEDIA_DIR}/playlist.txt"
   fi
   if (( ${#ordered[@]} > 0 )); then
-    printf '%s\\n' "${ordered[@]}"
+    printf '%s\n' "${ordered[@]}"
   else
     local -a discovered=()
     shopt -s nullglob
     discovered=("${MEDIA_DIR}"/*.mp4 "${MEDIA_DIR}"/*.mkv "${MEDIA_DIR}"/*.mov "${MEDIA_DIR}"/*.webm)
     shopt -u nullglob
-    printf '%s\\n' "${discovered[@]}"
+    printf '%s\n' "${discovered[@]}"
   fi
 }
 
