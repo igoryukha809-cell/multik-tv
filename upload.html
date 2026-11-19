@@ -24,5 +24,50 @@ async function all(){const db=await openDB();return new Promise((resolve,reject)
 async function refresh(){try{const rows=await all();list.innerHTML='';if(!rows.length){list.textContent='Пока нет сохранённых видео.';return;}for(const v of rows){const d=document.createElement('div');d.className='item';const name=document.createElement('b');name.textContent=v.name;const info=document.createElement('div');info.className='small';info.textContent=(v.size/1024/1024).toFixed(1)+' МБ · '+new Date(v.savedAt).toLocaleString();const dl=document.createElement('button');dl.textContent='Скачать копию';dl.onclick=()=>{const url=URL.createObjectURL(v.blob);const a=document.createElement('a');a.href=url;a.download=v.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);};const del=document.createElement('button');del.textContent='Удалить';del.onclick=async()=>{if(!confirm('Удалить сохранённый файл из этого браузера?'))return;const db=await openDB();db.transaction(STORE,'readwrite').objectStore(STORE).delete(v.id);refresh();};d.append(name,info,dl,del);list.append(d);}}catch(e){list.textContent='Не удалось прочитать локальную видеотеку: '+e.message;}}
 picker.onchange=()=>{selected=[...picker.files];save.disabled=!selected.length;statusEl.textContent=selected.length?('Выбрано файлов: '+selected.length+'. Общий размер: '+(selected.reduce((n,f)=>n+f.size,0)/1024/1024).toFixed(1)+' МБ. Проверь свободное место на устройстве.'):'Файлы не выбраны.';};
 save.onclick=async()=>{save.disabled=true;try{const db=await openDB();for(let i=0;i<selected.length;i++){const f=selected[i];statusEl.textContent='Сохраняем '+(i+1)+' из '+selected.length+': '+f.name;await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put({id:crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+i,name:f.name,size:f.size,type:f.type,savedAt:Date.now(),blob:f});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}statusEl.textContent='Сохранение завершено. Видео находятся только в локальной памяти этого браузера.';selected=[];picker.value='';await refresh();}catch(e){statusEl.textContent='Не удалось сохранить файл. Возможно, не хватает места или браузер ограничил хранилище: '+e.message;}finally{save.disabled=!selected.length;}};
+
+// Облачная загрузка включается только после настройки API взрослым владельцем.
+const apiInput=document.getElementById('storageApi');
+const tokenInput=document.getElementById('storageToken');
+const cloudPicker=document.getElementById('cloudFile');
+const cloudButton=document.getElementById('cloudUpload');
+const cloudStatus=document.getElementById('cloudStatus');
+let cloudFile=null,apiReady=false;
+function apiBase(){return apiInput.value.trim().replace(/\\/$/,'');}
+function updateCloudButton(){cloudButton.disabled=!(apiReady&&cloudFile&&tokenInput.value.trim());}
+cloudPicker.addEventListener('change',()=>{cloudFile=cloudPicker.files[0]||null;apiReady=false;cloudStatus.textContent=cloudFile?('Выбран файл: '+cloudFile.name+' ('+(cloudFile.size/1024/1024).toFixed(1)+' МБ). Проверяем API…'):'Файл не выбран.';updateCloudButton();});
+async function checkStorageApi(){
+  apiReady=false;updateCloudButton();
+  const base=apiBase();
+  if(!base){cloudStatus.textContent='Введи адрес настроенного Storage API.';return;}
+  let u;try{u=new URL(base);if(u.protocol!=='https:')throw new Error('Нужен HTTPS-адрес.');}catch(e){cloudStatus.textContent='Проверь адрес API: '+e.message;return;}
+  cloudStatus.textContent='Проверяем подключение…';
+  try{
+    const r=await fetch(base+'/health',{headers:{'Accept':'application/json'}});
+    const data=await r.json();
+    if(!r.ok||!data.configured){cloudStatus.textContent='API доступен, но хранилище ещё не настроено. Взрослому владельцу нужно завершить настройки сервера.';return;}
+    apiReady=true;cloudStatus.textContent='API настроен. Выбери видео и введи ключ загрузки, который хранит взрослый владелец.';updateCloudButton();
+  }catch(e){cloudStatus.textContent='Не удалось связаться с API. Проверь адрес, публикацию сервера и CORS.';}
+}
+apiInput.addEventListener('change',checkStorageApi);
+apiInput.addEventListener('blur',checkStorageApi);
+tokenInput.addEventListener('input',updateCloudButton);
+cloudButton.addEventListener('click',async()=>{
+  if(!apiReady||!cloudFile||!tokenInput.value.trim())return;
+  if(!['video/mp4','video/webm','video/quicktime'].includes(cloudFile.type)||cloudFile.size>5*1024*1024*1024){cloudStatus.textContent='Поддерживаются MP4, WebM и MOV размером до 5 ГБ.';return;}
+  cloudButton.disabled=true;cloudStatus.textContent='Запрашиваем временную ссылку…';
+  try{
+    const base=apiBase();
+    const r=await fetch(base+'/upload-url',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tokenInput.value.trim()},body:JSON.stringify({filename:cloudFile.name,contentType:cloudFile.type,size:cloudFile.size})});
+    const data=await r.json();
+    if(!r.ok)throw new Error(data.error||'Сервер отклонил запрос.');
+    cloudStatus.textContent='Загружаем файл в облачное хранилище…';
+    const put=await fetch(data.uploadUrl,{method:'PUT',headers:{'Content-Type':cloudFile.type},body:cloudFile});
+    if(!put.ok)throw new Error('Хранилище вернуло ошибку загрузки: HTTP '+put.status);
+    cloudStatus.textContent='Загрузка завершена. Ссылка на файл: '+data.publicUrl+' . Файл ещё не добавлен в телевизионный эфир.';
+    tokenInput.value='';
+  }catch(e){cloudStatus.textContent='Ошибка загрузки: '+e.message+' Проверь настройки API и CORS.';}
+  finally{updateCloudButton();}
+});
+
 refresh();
 </script></body></html>
