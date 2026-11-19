@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17102f"><title>Загрузка видео — МУЛЬТИК ТВ</title>
+<style>
+:root{font-family:system-ui,Arial,sans-serif;color:#fff;background:#100c25}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#493078,#100c25 65%)}header,main{max-width:900px;margin:auto;padding:18px}.bar{height:6px;background:linear-gradient(90deg,#ff5f9e,#ffcf4b,#66d5a7,#53c8ee,#9475e8)}.nav{background:#fff;color:#292d50;padding:12px 18px;border-radius:0 0 16px 16px;display:flex;gap:16px;flex-wrap:wrap}.nav a{color:#4b5270;font-weight:800;text-decoration:none}.panel{background:#201a3c;border:1px solid #514477;border-radius:18px;padding:20px;margin:16px 0}h1,h2{color:#ffe17b}.muted{color:#c6bedf;line-height:1.6}.notice{background:#15112a;padding:14px;border-radius:12px;line-height:1.5}.pick{display:block;border:2px dashed #8d7ac0;border-radius:14px;padding:24px;text-align:center;margin:16px 0}.pick input{max-width:100%}button{border:0;border-radius:10px;padding:11px 16px;background:#ffe17b;color:#17102f;font-weight:800;margin:5px;cursor:pointer}button:disabled{opacity:.5}.item{padding:12px 0;border-bottom:1px solid #514477;overflow-wrap:anywhere}.item:last-child{border:0}.small{font-size:13px;color:#c6bedf}
+</style></head>
+<body><div class="bar"></div><header><nav class="nav"><a href="index.html">🌈 МУЛЬТИК ТВ</a><a href="live.html">Эфир</a><a href="guide.html">Программа</a><a href="studio.html">Студия</a></nav></header>
+<main><h1>Загрузка видео для МУЛЬТИК ТВ</h1>
+<section class="panel">
+<p class="notice">Важно: эта версия сохраняет выбранные видео <b>только в хранилище браузера на этом устройстве</b>. Файлы не отправляются на Render и не становятся доступны зрителям. Для настоящей загрузки на сервер потребуется подключить постоянное облачное хранилище и серверный API.</p>
+<label class="pick">Выбери видеофайлы с устройства<br><br><input id="files" type="file" accept="video/mp4,video/webm,video/quicktime,video/x-matroska,.mkv" multiple></label>
+<p id="status" class="muted" role="status">Файлы останутся в этом браузере. Доступный объём зависит от свободного места и ограничений устройства.</p>
+<button id="save" disabled>Сохранить выбранные файлы на этом устройстве</button>
+</section>
+<section class="panel"><h2>Моя локальная видеотека</h2><div id="list" class="muted">Загружаем список…</div></section>
+<section class="panel"><h2>Следующий этап — серверный эфир</h2><p class="muted">Чтобы видео автоматически показывались всем зрителям, нужно настроить серверную загрузку и постоянное хранилище. Не загружай материалы, если у канала нет разрешения на публичный показ.</p><a href="live.html">← Вернуться к эфиру</a></section></main>
+<script>
+const DB='multiktv-upload-library-v1',STORE='videos';let selected=[];
+const statusEl=document.getElementById('status'),save=document.getElementById('save'),list=document.getElementById('list'),picker=document.getElementById('files');
+function openDB(){return new Promise((resolve,reject)=>{const q=indexedDB.open(DB,1);q.onupgradeneeded=()=>q.result.createObjectStore(STORE,{keyPath:'id'});q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});}
+async function all(){const db=await openDB();return new Promise((resolve,reject)=>{const q=db.transaction(STORE).objectStore(STORE).getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});}
+async function refresh(){try{const rows=await all();list.innerHTML='';if(!rows.length){list.textContent='Пока нет сохранённых видео.';return;}for(const v of rows){const d=document.createElement('div');d.className='item';const name=document.createElement('b');name.textContent=v.name;const info=document.createElement('div');info.className='small';info.textContent=(v.size/1024/1024).toFixed(1)+' МБ · '+new Date(v.savedAt).toLocaleString();const del=document.createElement('button');del.textContent='Удалить';del.onclick=async()=>{const db=await openDB();db.transaction(STORE,'readwrite').objectStore(STORE).delete(v.id);refresh();};d.append(name,info,del);list.append(d);}}catch(e){list.textContent='Не удалось прочитать локальную видеотеку: '+e.message;}}
+picker.onchange=()=>{selected=[...picker.files];save.disabled=!selected.length;statusEl.textContent=selected.length?('Выбрано файлов: '+selected.length+'. Общий размер: '+(selected.reduce((n,f)=>n+f.size,0)/1024/1024).toFixed(1)+' МБ. Проверь свободное место на устройстве.'):'Файлы не выбраны.';};
+save.onclick=async()=>{save.disabled=true;try{const db=await openDB();for(let i=0;i<selected.length;i++){const f=selected[i];statusEl.textContent='Сохраняем '+(i+1)+' из '+selected.length+': '+f.name;await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put({id:crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+i,name:f.name,size:f.size,type:f.type,savedAt:Date.now(),blob:f});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}statusEl.textContent='Сохранение завершено. Видео находятся только в локальной памяти этого браузера.';selected=[];picker.value='';await refresh();}catch(e){statusEl.textContent='Не удалось сохранить файл. Возможно, не хватает места или браузер ограничил хранилище: '+e.message;}finally{save.disabled=!selected.length;}};
+refresh();
+</script></body></html>
