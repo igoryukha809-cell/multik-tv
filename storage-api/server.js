@@ -9,14 +9,15 @@ app.disable("x-powered-by");
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(express.json({ limit: "16kb" }));
 
-const required = ["R2_ACCOUNT_ID","R2_ACCESS_KEY_ID","R2_SECRET_ACCESS_KEY","R2_BUCKET","UPLOAD_API_TOKEN","PUBLIC_MEDIA_BASE_URL"];
+const required = ["B2_REGION","B2_KEY_ID","B2_APPLICATION_KEY","B2_BUCKET","UPLOAD_API_TOKEN","PUBLIC_MEDIA_BASE_URL"];
 const missing = required.filter(k => !process.env[k]);
 const port = Number(process.env.PORT || 10000);
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || "https://igoryukha809-cell.github.io").split(",").map(x => x.trim()).filter(Boolean);
 const s3 = missing.length ? null : new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY }
+  region: process.env.B2_REGION,
+  endpoint: `https://s3.${process.env.B2_REGION}.backblazeb2.com`,
+  forcePathStyle: true,
+  credentials: { accessKeyId: process.env.B2_KEY_ID, secretAccessKey: process.env.B2_APPLICATION_KEY }
 });
 
 app.use((req,res,next) => {
@@ -51,7 +52,7 @@ app.post("/upload-url", async (req,res) => {
   const ext = ({ "video/mp4":"mp4", "video/webm":"webm", "video/quicktime":"mov" })[contentType];
   const key = `uploads/${new Date().toISOString().slice(0,10)}/${randomUUID()}.${ext}`;
   try {
-    const command = new PutObjectCommand({ Bucket: process.env.R2_BUCKET, Key: key, ContentType: contentType });
+    const command = new PutObjectCommand({ Bucket: process.env.B2_BUCKET, Key: key, ContentType: contentType });
     const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 900 });
     const base = process.env.PUBLIC_MEDIA_BASE_URL.replace(/\/$/,"");
     res.json({ uploadUrl, key, publicUrl: `${base}/${key}`, expiresIn: 900, maxBytes: 5 * 1024 * 1024 * 1024 });
