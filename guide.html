@@ -62,6 +62,7 @@ function draw(){
  $("next").textContent=next>=0?list[next][1]+" · "+list[next][0]:"Следующая передача будет в расписании завтра";
 }
 function save(message){localStorage.setItem(key,JSON.stringify(rows));draw();$("notice").textContent=message||"Изменения сохранены на этом устройстве."}
+window.addEventListener("storage",event=>{if(event.key!==key)return;try{const incoming=JSON.parse(event.newValue||"[]");if(Array.isArray(incoming)){rows=incoming;draw();$("notice").textContent="Расписание обновлено из другой вкладки этого браузера."}}catch(e){$("notice").textContent="Не удалось обновить расписание из другой вкладки."}});
 $("add").onclick=()=>{const time=$("newTime").value,title=$("newTitle").value.trim(),desc=$("newDesc").value.trim();
  if(!time||!title){$("notice").textContent="Укажи время и название передачи.";return}
  if(rows.some(r=>r[0]===time)){$("notice").textContent="На это время уже запланирована передача. Выбери другое время.";return}
