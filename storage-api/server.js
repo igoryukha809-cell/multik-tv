@@ -17,18 +17,18 @@ app.use(express.json({ limit: "64kb" }));
 
 const PORT = Number(process.env.PORT || 10000);
 const TOKEN = process.env.UPLOAD_API_TOKEN || "";
-const BUCKET = process.env.TIGRIS_BUCKET || process.env.AWS_S3_BUCKET || "";
-const ENDPOINT = process.env.TIGRIS_ENDPOINT || "https://t3.storage.dev";
-const ACCESS_KEY = process.env.AWS_ACCESS_KEY_ID || process.env.TIGRIS_ACCESS_KEY_ID || "";
-const SECRET_KEY = process.env.AWS_SECRET_ACCESS_KEY || process.env.TIGRIS_SECRET_ACCESS_KEY || "";
+const BUCKET = process.env.B2_BUCKET || process.env.AWS_S3_BUCKET || "";
+const ENDPOINT = process.env.B2_ENDPOINT || process.env.AWS_S3_ENDPOINT || "";
+const ACCESS_KEY = process.env.AWS_ACCESS_KEY_ID || "";
+const SECRET_KEY = process.env.AWS_SECRET_ACCESS_KEY || "";
 const ORIGINS = (process.env.ALLOWED_ORIGINS || "https://igoryukha809-cell.github.io").split(",").map(x => x.trim()).filter(Boolean);
 const TMP = path.join(os.tmpdir(), "multik-tv-uploads");
 await fs.mkdir(TMP, { recursive: true });
 
-const configured = Boolean(BUCKET && ACCESS_KEY && SECRET_KEY);
+const REGION = process.env.B2_REGION || "";\nconst configured = Boolean(BUCKET && ENDPOINT && REGION && ACCESS_KEY && SECRET_KEY);
 const s3 = configured ? new S3Client({
   endpoint: ENDPOINT,
-  region: "auto",
+  region: REGION,
   credentials: { accessKeyId: ACCESS_KEY, secretAccessKey: SECRET_KEY }
 }) : null;
 
@@ -52,7 +52,7 @@ function auth(req, res, next) {
   next();
 }
 function requireStorage(_req, res, next) {
-  if (!configured || !s3) return res.status(503).json({ error: "Tigris ещё не настроен. Проверьте переменные окружения сервера." });
+  if (!configured || !s3) return res.status(503).json({ error: "Backblaze B2 ещё не настроен. Проверьте переменные окружения сервера." });
   next();
 }
 
@@ -69,7 +69,7 @@ app.get("/", (_req, res) => res.json({ service: "МУЛЬТИК ТВ Storage API
 
 app.get("/health", (_req, res) => res.json({
   ok: true,
-  storage: "tigris",
+  storage: "backblaze-b2",
   configured,
   bucketConfigured: Boolean(BUCKET),
   credentialsConfigured: Boolean(ACCESS_KEY && SECRET_KEY)
@@ -150,4 +150,4 @@ app.use((err, _req, res, _next) => {
   res.status(status).json({ error: err.message || "Ошибка хранилища." });
 });
 
-app.listen(PORT, "0.0.0.0", () => console.log("МУЛЬТИК ТВ API с Tigris запущен на порту " + PORT));
+app.listen(PORT, "0.0.0.0", () => console.log("МУЛЬТИК ТВ API с Backblaze B2 запущен на порту " + PORT));
