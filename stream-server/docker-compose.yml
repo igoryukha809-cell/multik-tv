@@ -7,8 +7,8 @@ services:
     stop_grace_period: 20s
     command: ["./objs/srs", "-c", "conf/srs.conf"]
     ports:
-      - "1935:1935"
-      - "8080:8080"
+      - "127.0.0.1:1935:1935"
+      - "127.0.0.1:8080:8080"
     volumes:
       - ./srs.conf:/usr/local/srs/conf/srs.conf:ro
       - srs-hls:/usr/local/srs/objs/nginx/html
