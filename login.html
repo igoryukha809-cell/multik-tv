@@ -9,22 +9,21 @@
 </head>
 <body><main class="panel">
 <h1>МУЛЬТИК ТВ</h1><p>Безопасный вход по электронной почте. Мы отправим одноразовую ссылку — пароль вводить не нужно.</p>
-<form id="login"><label for="email">Электронная почта</label><input id="email" type="email" autocomplete="email" required placeholder="name@example.com"><button id="submit" type="submit">Отправить ссылку для входа</button></form>
+<form id="login"><label for="email">Электронная почта</label><input id="email" type="email" autocomplete="email" required value="Igoryukha809@gmail.com"><button id="submit" type="submit">Отправить ссылку для входа</button></form>
 <div class="status" id="status" role="status" aria-live="polite"></div>
 <p class="hint">Вход заработает после настройки Supabase по инструкции. Эта страница не запрашивает пароль ChatGPT и не является входом через OpenAI.</p>
 <p><a href="./index.html">← На главную</a></p>
 </main>
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-// Заполнить публичными настройками своего проекта Supabase. Никогда не вставляйте service_role key.
-const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+import {SUPABASE_URL,SUPABASE_ANON_KEY} from './admin-config.js';
+// Используются общие публичные настройки из admin-config.js. Только anon/publishable key.
 const form=document.querySelector('#login'),email=document.querySelector('#email'),button=document.querySelector('#submit'),status=document.querySelector('#status');
 form.addEventListener('submit',async event=>{
  event.preventDefault();status.textContent='';
  if(SUPABASE_URL.includes('YOUR_PROJECT')||SUPABASE_ANON_KEY.includes('YOUR_SUPABASE')){status.textContent='Сначала настройте Supabase по инструкции auth-setup.md.';return;}
  button.disabled=true;
- try{const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {error}=await supabase.auth.signInWithOtp({email:email.value.trim(),options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;status.textContent='Письмо отправлено. Откройте ссылку в письме, чтобы завершить вход.';}
+ try{const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {error}=await supabase.auth.signInWithOtp({email:email.value.trim(),options:{emailRedirectTo:location.origin+location.pathname.replace(/login\.html$/, 'access-keys.html')}});if(error)throw error;status.textContent='Письмо отправлено. Откройте ссылку в письме, чтобы завершить вход.';}
  catch(error){status.textContent='Не удалось отправить ссылку: '+error.message;}
  finally{button.disabled=false;}
 });
