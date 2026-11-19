@@ -12,6 +12,7 @@
 - [Каталог](https://igoryukha809-cell.github.io/multik-tv/online-catalog.html)
 - [Телепрограмма](https://igoryukha809-cell.github.io/multik-tv/guide.html)
 - [Статус канала](https://igoryukha809-cell.github.io/multik-tv/channel.html)
+- [Подборка открытой анимации и проверка лицензий](https://igoryukha809-cell.github.io/multik-tv/open-animation.html)
 
 ## Облачный тестовый видеосервер
 
