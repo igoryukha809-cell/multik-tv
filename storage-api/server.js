@@ -193,7 +193,7 @@ app.get("/api/playlist", requireStorage, async (_req, res, next) => {
   try { res.json({ channel: "МУЛЬТИК ТВ", items: await listVideos() }); } catch (err) { next(err); }
 });
 
-app.post("/api/upload", auth, requireStorage, upload.single("video"), async (req, res, next) => {
+app.post("/api/upload", auth("upload"), requireStorage, upload.single("video"), async (req, res, next) => {
   if (!req.file) return res.status(400).json({ error: "Файл не получен." });
   const ext = path.extname(req.file.originalname).toLowerCase();
   const key = "videos/" + randomUUID() + ext;
@@ -224,7 +224,7 @@ app.post("/api/upload", auth, requireStorage, upload.single("video"), async (req
   finally { await fs.rm(req.file.path, { force: true }).catch(() => {}); }
 });
 
-app.delete("/api/videos/:id", auth, requireStorage, async (req, res, next) => {
+app.delete("/api/videos/:id", auth("api"), requireStorage, async (req, res, next) => {
   try {
     const key = req.params.id;
     if (!key.startsWith("videos/") || key.includes("..")) return res.status(400).json({ error: "Недопустимый идентификатор видео." });
