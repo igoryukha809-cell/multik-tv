@@ -1,42 +1,45 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#17102f">
-<title>Загрузчик — МУЛЬТИК ТВ</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17102f"><title>Загрузчик — МУЛЬТИК ТВ</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font:16px system-ui,Arial;background:#100c25;color:#fff}.top{height:6px;background:linear-gradient(90deg,#ff5f9e,#ffcf4b,#66d5a7,#53c8ee,#9475e8)}header,main{max-width:760px;margin:auto;padding:18px}.nav{display:flex;gap:16px;flex-wrap:wrap}.nav a{color:#ffe17b;text-decoration:none;font-weight:700}.panel{background:#201a3c;border:1px solid #514477;border-radius:18px;padding:20px;margin:18px 0}h1,h2{color:#ffe17b}.drop{display:block;text-align:center;padding:34px 16px;border:2px dashed #9a86ce;border-radius:16px;background:#17122e;cursor:pointer}.drop input{display:none}.big{font-size:42px}.muted,.small{color:#c6bedf;line-height:1.5}.small{font-size:13px}.status{margin:14px 0;min-height:26px;color:#ffe17b}.item{padding:14px 0;border-bottom:1px solid #514477;overflow-wrap:anywhere}.item:last-child{border:0}.actions{display:flex;gap:8px;flex-wrap:wrap}button{border:0;border-radius:10px;padding:10px 14px;background:#ffe17b;color:#17102f;font-weight:800;cursor:pointer}button.secondary{background:#514477;color:white}button:disabled{opacity:.5}progress{width:100%;height:12px;accent-color:#ffe17b}.tag{color:#8ff0b2;font-weight:700}
+*{box-sizing:border-box}body{margin:0;font:16px system-ui,Arial;background:#100c25;color:#fff}.top{height:6px;background:linear-gradient(90deg,#ff5f9e,#ffcf4b,#66d5a7,#53c8ee,#9475e8)}header,main{max-width:760px;margin:auto;padding:18px}.nav{display:flex;gap:16px;flex-wrap:wrap}.nav a{color:#ffe17b;text-decoration:none;font-weight:700}.panel{background:#201a3c;border:1px solid #514477;border-radius:18px;padding:20px;margin:18px 0}h1,h2{color:#ffe17b}.drop{display:block;text-align:center;padding:30px 16px;border:2px dashed #9a86ce;border-radius:16px;background:#17122e;cursor:pointer}.drop input{display:none}.big{font-size:40px}.muted,.small{color:#c6bedf;line-height:1.5}.small{font-size:13px}.status{margin:14px 0;min-height:26px;color:#ffe17b}.item{padding:14px 0;border-bottom:1px solid #514477;overflow-wrap:anywhere}.item:last-child{border:0}.actions{display:flex;gap:8px;flex-wrap:wrap}button{border:0;border-radius:10px;padding:10px 14px;background:#ffe17b;color:#17102f;font-weight:800;cursor:pointer}button.secondary{background:#514477;color:white}button:disabled{opacity:.5}input[type=url],input[type=password]{width:100%;padding:12px;border-radius:9px;border:1px solid #8173a9;margin:6px 0 12px;background:#15112a;color:white}progress{width:100%;height:12px;accent-color:#ffe17b}.tag{color:#8ff0b2;font-weight:700}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 </style>
 </head>
-<body>
-<div class="top"></div>
+<body><div class="top"></div>
 <header><nav class="nav"><a href="index.html">🌈 МУЛЬТИК ТВ</a><a href="live.html">Эфир</a><a href="guide.html">Программа</a><a href="studio.html">Студия</a></nav></header>
 <main>
 <h1>Загрузчик МУЛЬТИК ТВ</h1>
 <section class="panel">
-<p class="muted">Выбери видео — загрузчик сам сохранит его в видеотеке этого устройства. Никаких адресов сервера и паролей вводить не нужно.</p>
-<label class="drop" for="files"><div class="big">⬆️</div><b>Нажми, чтобы выбрать видео</b><p class="small">Можно выбрать несколько файлов MP4, WebM или MOV</p><input id="files" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" multiple></label>
-<div id="status" class="status" role="status">Ожидаю выбор видео.</div>
+<h2>1. Подключение хранилища</h2>
+<p class="muted">Укажи адрес уже запущенного сервера загрузчика и пароль, который взрослый настроил в его параметрах. Пароль остаётся только в памяти этой вкладки и не сохраняется.</p>
+<label>Адрес сервера (HTTPS)<input id="api" type="url" placeholder="https://адрес-сервера" autocomplete="url"></label>
+<label>Пароль загрузчика<input id="token" type="password" placeholder="Пароль сервера" autocomplete="off"></label>
+<div class="row"><button id="check">Проверить подключение</button><span id="connection" class="small">Сервер не проверен</span></div>
+</section>
+<section class="panel">
+<h2>2. Загрузить видео</h2>
+<label class="drop" for="files"><div class="big">⬆️</div><b>Нажми, чтобы выбрать видео</b><p class="small">MP4, WebM или MOV · можно выбрать несколько</p><input id="files" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" multiple></label>
+<div id="selected" class="small">Файлы не выбраны.</div>
+<button id="upload" disabled>Загрузить выбранные видео</button>
+<div id="status" class="status" role="status">Сначала подключи сервер.</div>
 <progress id="progress" value="0" max="100" hidden></progress>
 </section>
-<section class="panel">
-<h2>Моя видеотека</h2>
-<div id="list" class="muted">Загрузка списка…</div>
-</section>
-<section class="panel">
-<b>Важно</b>
-<p class="muted">Сейчас это локальная видеотека: файлы сохраняются только в браузере на этом устройстве. Они не отправляются на сервер и не появляются в прямом эфире. Для общей видеотеки телеканала потребуется подключить серверное хранилище.</p>
-</section>
+<section class="panel"><div class="row"><h2 style="margin-right:auto">3. Видео на сервере</h2><button id="reload" class="secondary">Обновить список</button></div><div id="list" class="muted">Подключи сервер, чтобы увидеть видеотеку.</div></section>
+<section class="panel"><b>Важно</b><p class="muted">Этот загрузчик отправляет файлы на сервер и показывает серверную видеотеку. Сам по себе он не запускает ролики в прямой эфир: эфирному серверу ещё нужно подключить плейлист. Загружай только видео, на публичный показ которых у канала есть разрешение.</p></section>
 </main>
 <script>
-const DB='multiktv-upload-library-v2',STORE='videos';
-const picker=document.getElementById('files'),status=document.getElementById('status'),progress=document.getElementById('progress'),list=document.getElementById('list');
-function openDB(){return new Promise((resolve,reject)=>{const q=indexedDB.open(DB,1);q.onupgradeneeded=()=>q.result.createObjectStore(STORE,{keyPath:'id'});q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});}
-async function getAll(){const db=await openDB();return new Promise((resolve,reject)=>{const q=db.transaction(STORE).objectStore(STORE).getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});}
-async function refresh(){try{const rows=await getAll();list.replaceChildren();if(!rows.length){list.textContent='Видео пока нет. Нажми кнопку выше, чтобы добавить первое.';return;}for(const v of rows){const item=document.createElement('div');item.className='item';const name=document.createElement('b');name.textContent=v.name;const meta=document.createElement('p');meta.className='small';meta.textContent=(v.size/1048576).toFixed(1)+' МБ · добавлено '+new Date(v.savedAt).toLocaleString();const actions=document.createElement('div');actions.className='actions';const download=document.createElement('button');download.textContent='Скачать';download.onclick=()=>{const url=URL.createObjectURL(v.blob),a=document.createElement('a');a.href=url;a.download=v.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);};const remove=document.createElement('button');remove.className='secondary';remove.textContent='Удалить';remove.onclick=async()=>{if(!confirm('Удалить это видео из памяти браузера?'))return;const db=await openDB();db.transaction(STORE,'readwrite').objectStore(STORE).delete(v.id);refresh();};actions.append(download,remove);item.append(name,meta,actions);list.append(item);}}catch(e){list.textContent='Не удалось открыть видеотеку: '+e.message;}}
-picker.addEventListener('change',async()=>{const files=[...picker.files];if(!files.length)return;progress.hidden=false;progress.value=0;status.textContent='Сохраняю видео…';let done=0;try{const db=await openDB();for(const file of files){await new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put({id:(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random()),name:file.name,size:file.size,type:file.type,savedAt:Date.now(),blob:file});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Операция отменена'));});done++;progress.value=done/files.length*100;}await refresh();status.innerHTML='<span class="tag">✓ Готово! Сохранено файлов: '+done+'.</span>'; }catch(e){status.textContent='Не удалось сохранить файл. Возможно, на устройстве недостаточно свободного места: '+e.message;}finally{picker.value='';setTimeout(()=>{progress.hidden=true;progress.value=0;},1200);}});
-refresh();
-</script>
-</body>
-</html>
+const $=id=>document.getElementById(id);let files=[];
+function base(){return $('api').value.trim().replace(/\/$/,'');}
+function headers(){return {'Authorization':'Bearer '+$('token').value};}
+function ready(){return /^https:\/\//i.test(base())&&$('token').value.length>0;}
+async function request(path,opts={}){const res=await fetch(base()+path,{...opts,headers:{...headers(),...(opts.headers||{})}});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.error||('Ошибка сервера: '+res.status));return data;}
+$('files').addEventListener('change',()=>{files=[...$('files').files];$('selected').textContent=files.length?files.map(f=>f.name+' ('+(f.size/1048576).toFixed(1)+' МБ)').join(' · '):'Файлы не выбраны.';$('upload').disabled=!files.length||!ready();});
+$('api').addEventListener('input',()=>{$('upload').disabled=!files.length||!ready();});
+$('token').addEventListener('input',()=>{$('upload').disabled=!files.length||!ready();});
+$('check').onclick=async()=>{const c=$('connection');c.textContent='Проверяю…';try{const r=await fetch(base()+'/health');if(!r.ok)throw new Error('HTTP '+r.status);const d=await r.json();if(!d.ok)throw new Error('Сервис не подтвердил готовность');c.innerHTML='<span class="tag">✓ Сервер доступен</span>';$('status').textContent='Сервер отвечает. Можно загружать видео.';await refresh();}catch(e){c.textContent='Не удалось подключиться: '+e.message;}};
+$('upload').onclick=async()=>{if(!ready())return;const batch=[...files];$('upload').disabled=true;$('progress').hidden=false;let done=0;try{for(const file of batch){$('status').textContent='Загружаю '+file.name+'…';await new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST',base()+'/api/upload');xhr.setRequestHeader('Authorization','Bearer '+$('token').value);xhr.upload.onprogress=e=>{if(e.lengthComputable)$('progress').value=(done+e.loaded/e.total)/batch.length*100;};xhr.onload=()=>{let d={};try{d=JSON.parse(xhr.responseText);}catch{}if(xhr.status>=200&&xhr.status<300)resolve(d);else reject(new Error(d.error||'Ошибка загрузки: HTTP '+xhr.status));};xhr.onerror=()=>reject(new Error('Сетевая ошибка. Проверь интернет и адрес сервера.'));xhr.onabort=()=>reject(new Error('Загрузка отменена.'));const fd=new FormData();fd.append('video',file,file.name);xhr.send(fd);});done++;$('progress').value=done/batch.length*100;}files=[];$('files').value='';$('selected').textContent='Файлы загружены.';$('status').innerHTML='<span class="tag">✓ Загружено на сервер: '+done+' файлов.</span>';}catch(e){$('status').textContent='Загрузка остановлена после '+done+' файлов: '+e.message;}finally{$('upload').disabled=!files.length||!ready();await refresh();setTimeout(()=>{$('progress').hidden=true;$('progress').value=0;},1200);}};
+async function refresh(){if(!ready()){$('list').textContent='Введи адрес сервера и пароль.';return;}try{const rows=await request('/api/videos',{headers:{}});$('list').replaceChildren();if(!rows.length){$('list').textContent='На сервере пока нет видео.';return;}for(const v of rows){const item=document.createElement('div');item.className='item';const name=document.createElement('b');name.textContent=v.name;const meta=document.createElement('p');meta.className='small';meta.textContent=(v.size/1048576).toFixed(1)+' МБ · '+new Date(v.createdAt).toLocaleString();const link=document.createElement('a');link.href=base()+v.url;link.target='_blank';link.rel='noopener';link.textContent='Открыть видео';link.style.color='#ffe17b';item.append(name,meta,link);$('list').append(item);}}catch(e){$('list').textContent='Не удалось получить видеотеку: '+e.message;}}
+$('reload').onclick=refresh;
+</script></body></html>
