@@ -6,7 +6,7 @@ import os from "node:os";
 import fs from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import { randomUUID, randomBytes, createHash, timingSafeEqual } from "node:crypto";
-import { S3Client, ListObjectsV2Command, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, ListObjectsV2Command, DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -25,6 +25,17 @@ const ACCESS_KEYS_FILE = process.env.ACCESS_KEYS_FILE || path.join(DATA_DIR, "ac
 await fs.mkdir(path.dirname(ACCESS_KEYS_FILE), { recursive: true });
 
 async function readAccessKeys() {
+  // Railway Object Storage keeps admin keys across deploys and restarts.
+  if (configured && s3) {
+    try {
+      const result = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: "system/access-keys.json" }));
+      const raw = await result.Body.transformToString();
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      if (err.name !== "NoSuchKey" && err.$metadata?.httpStatusCode !== 404) throw err;
+    }
+  }
   try {
     const raw = await fs.readFile(ACCESS_KEYS_FILE, "utf8");
     const parsed = JSON.parse(raw);
@@ -35,8 +46,18 @@ async function readAccessKeys() {
   }
 }
 async function writeAccessKeys(keys) {
+  const body = JSON.stringify(keys, null, 2);
+  if (configured && s3) {
+    await s3.send(new PutObjectCommand({
+      Bucket: BUCKET,
+      Key: "system/access-keys.json",
+      Body: body,
+      ContentType: "application/json"
+    }));
+    return;
+  }
   const temp = ACCESS_KEYS_FILE + ".tmp";
-  await fs.writeFile(temp, JSON.stringify(keys, null, 2), { mode: 0o600 });
+  await fs.writeFile(temp, body, { mode: 0o600 });
   await fs.rename(temp, ACCESS_KEYS_FILE);
 }
 function hashAccessKey(value) {
