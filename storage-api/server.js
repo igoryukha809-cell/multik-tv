@@ -18,7 +18,7 @@ app.use(express.json({ limit: "64kb" }));
 const PORT = Number(process.env.PORT || 10000);
 const TOKEN = process.env.UPLOAD_API_TOKEN || "";
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
-const SUPABASE_URL = (process.env.SUPABASE_URL || "").replace(/\\/$/, "");
+const SUPABASE_URL = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "";
 const DATA_DIR = process.env.DATA_DIR || "./data";
 const ACCESS_KEYS_FILE = process.env.ACCESS_KEYS_FILE || path.join(DATA_DIR, "access-keys.json");
