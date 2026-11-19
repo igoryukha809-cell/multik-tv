@@ -1,22 +1,40 @@
-# Лёгкое хранилище МУЛЬТИК ТВ
+# Облачное хранилище МУЛЬТИК ТВ — Backblaze B2
 
-Мини-сервер без Backblaze, Cloudflare и AWS. Принимает MP4/WebM/MOV, сохраняет файлы в DATA_DIR и ведёт простой JSON-каталог.
+Сервис хранения заменён с Tigris на Backblaze B2. Сервер использует S3-совместимый API через уже установленный AWS SDK.
 
-## Переменные
-- PORT=10000
-- DATA_DIR=/var/data (папка должна быть постоянным диском)
-- UPLOAD_API_TOKEN — длинный пароль, который хранится только в настройках сервера и вводится в панели загрузчика
-- ALLOWED_ORIGINS=https://igoryukha809-cell.github.io
+## Настройка
 
-## Запуск локально
-Установить Node.js 22+, затем:
-```sh
-npm install
-UPLOAD_API_TOKEN='заменить-на-длинный-случайный-пароль' DATA_DIR=./data npm start
-```
-Проверка: GET /health. Загрузка: POST /api/upload (multipart поле video, Bearer token). Каталог: GET /api/videos и GET /api/playlist.
+Учётную запись, ключи и любые платёжные настройки должен контролировать взрослый владелец. Регистрация: https://www.backblaze.com/sign-up/s3
 
-## Важно
-Это файловое хранилище, а не HLS-транслятор. Оно отдаёт загруженные видео по HTTPS и список файлов. Чтобы показывать непрерывный эфир зрителям, эфирный сервер должен отдельно читать этот список и перекодировать/передавать видео в HLS. Пока такой мост не подключён, файлы доступны в медиатеке сервера, но не появляются автоматически в эфире.
+Официальная инструкция по созданию ключей: https://www.backblaze.com/docs/cloud-storage-create-and-manage-application-keys
 
-Для сохранности нужен постоянный диск. Если запустить на бесплатном хостинге без persistent disk, файлы могут исчезнуть при перезапуске или пересоздании сервиса. Не публикуйте пароль в GitHub и не присылайте его в чат. Создание сервиса и диска должен подтвердить взрослый владелец аккаунта.
+1. Включить B2 Cloud Storage и создать bucket для видео.
+2. Открыть B2 Cloud Storage → Application Keys → Add a New Application Key.
+3. Ограничить ключ созданным bucket и выбрать Read and Write. Для ограниченного bucket включить Allow List All Bucket Names, необходимый для S3 List Buckets.
+4. Создать ключ и сохранить keyID и applicationKey в защищённом месте. Секрет показывается только один раз. Не использовать Master Application Key.
+
+## Переменные окружения сервера
+
+- B2_BUCKET — точное имя bucket.
+- B2_ENDPOINT — S3 endpoint, показанный в настройках bucket, например https://s3.us-west-004.backblazeb2.com.
+- B2_REGION — регион из endpoint, например us-west-004.
+- AWS_ACCESS_KEY_ID — keyID.
+- AWS_SECRET_ACCESS_KEY — applicationKey.
+- UPLOAD_API_TOKEN — отдельный длинный пароль для панели загрузки.
+- ALLOWED_ORIGINS — https://igoryukha809-cell.github.io
+
+Все секреты вводятся только в защищённые переменные сервера Render. Не помещать их в GitHub, HTML/JavaScript, логи или сообщения.
+
+## Проверка
+
+Открыть /health. После настройки ожидается ok: true, storage: backblaze-b2 и configured: true.
+
+- Каталог: GET /api/videos
+- Плейлист: GET /api/playlist
+- Загрузка: POST /api/upload, multipart поле video, заголовок Authorization: Bearer <UPLOAD_API_TOKEN>
+
+## Стоимость и ограничения
+
+Первые 10 GB хранения указаны как бесплатные. Сверх лимита хранение платное; исходящий трафик бесплатен до 3× среднемесячного объёма хранения, затем может взиматься плата. Проверять актуальные условия до загрузки: https://www.backblaze.com/cloud-storage/pricing
+
+Это объектное хранилище, а не видеотранслятор. Оно само не создаёт HLS-эфир и не обеспечивает круглосуточное вещание. Для эфира отдельно нужен playout/streaming-сервер и разрешения на публичный показ каждого материала.
