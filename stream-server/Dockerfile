@@ -1,6 +1,6 @@
 FROM ossrs/srs:5
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg bash ca-certificates fonts-dejavu-core librsvg2-bin curl jq && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg bash ca-certificates fonts-dejavu-core librsvg2-bin curl jq espeak-ng && rm -rf /var/lib/apt/lists/*
 WORKDIR /usr/local/srs
 COPY srs.conf /usr/local/srs/conf/multik-tv.conf
 COPY render-start.sh /usr/local/srs/render-start.sh
