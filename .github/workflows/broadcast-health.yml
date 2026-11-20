@@ -1,0 +1,69 @@
+name: МУЛЬТИК ТВ — проверка эфира
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: broadcast-health
+  cancel-in-progress: true
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Проверить сайт канала
+        id: site
+        shell: bash
+        run: |
+          code=$(curl -L -sS -o /tmp/site.html -w "%{http_code}" --max-time 25 https://igoryukha809-cell.github.io/multik-tv/)
+          echo "HTTP $code"
+          test "$code" = "200"
+          grep -qi "МУЛЬТИК ТВ" /tmp/site.html
+
+      - name: Проверить погодный API
+        id: weather
+        shell: bash
+        run: |
+          curl -fsS --max-time 25 "https://api.open-meteo.com/v1/forecast?latitude=53.35&longitude=83.76&current=temperature_2m,weather_code&timezone=auto" -o /tmp/weather.json
+          python3 -c 'import json; d=json.load(open("/tmp/weather.json")); assert "current" in d and "temperature_2m" in d["current"]; print("Погодные данные получены:", d["current"]["temperature_2m"], d["current"].get("temperature_2m_unit","°C"))'
+
+      - name: Проверить HLS видеопоток
+        id: stream
+        continue-on-error: true
+        shell: bash
+        run: |
+          url="https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8"
+          code=$(curl -L -sS -o /tmp/stream.m3u8 -w "%{http_code}" --max-time 35 "$url" || true)
+          echo "HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "HLS недоступен (HTTP $code)"
+            exit 1
+          fi
+          grep -q "#EXTM3U" /tmp/stream.m3u8
+          segment=$(grep -v '^#' /tmp/stream.m3u8 | head -n 1)
+          test -n "$segment"
+          case "$segment" in
+            http://*|https://*) segment_url="$segment" ;;
+            *) segment_url="https://multik-tv-test-stream-yltl.onrender.com/live/$segment" ;;
+          esac
+          curl -fsS -I --max-time 20 "$segment_url" >/dev/null
+
+      - name: Итог проверки
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Автоматическая проверка МУЛЬТИК ТВ"
+            echo ""
+            echo "- Сайт: ${{ steps.site.outcome }}"
+            echo "- Погодный API: ${{ steps.weather.outcome }}"
+            echo "- HLS-видеопоток: ${{ steps.stream.outcome }}"
+            echo ""
+            echo "Проверка выполняется каждые 15 минут. Она обнаруживает сбои, но не перезапускает Render и не гарантирует непрерывный эфир."
+          } >> "$GITHUB_STEP_SUMMARY"
