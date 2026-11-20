@@ -54,7 +54,7 @@ const $=id=>document.getElementById(id);
 const minutes=t=>{const [h,m]=t.split(":").map(Number);return h*60+m};
 function ordered(){return rows.filter(r=>Array.isArray(r)&&/^([01]\d|2[0-3]):[0-5]\d$/.test(r[0])&&typeof r[1]==="string").sort((a,b)=>a[0].localeCompare(b[0]))}
 function draw(){
- const list=ordered(),now=new Date(),n=now.getHours()*60+now.getMinutes();
+ const list=ordered(),parts=new Intl.DateTimeFormat("ru-RU",{timeZone:"Asia/Krasnoyarsk",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date()),n=Number(parts.find(p=>p.type==="hour").value)*60+Number(parts.find(p=>p.type==="minute").value);
  $("schedule").replaceChildren();
  let active=-1,next=-1;
  list.forEach((r,i)=>{if(minutes(r[0])<=n)active=i});
@@ -75,8 +75,8 @@ $("add").onclick=()=>{const time=$("newTime").value,title=$("newTitle").value.tr
  if(rows.some(r=>r[0]===time)){$("notice").textContent="На это время уже запланирована передача. Выбери другое время.";return}
  rows.push([time,title,desc||"Авторская передача МУЛЬТИК ТВ"]);save("Передача добавлена в локальную сетку.");$("newTitle").value="";$("newDesc").value=""};
 $("reset").onclick=()=>{if(!confirm("Восстановить базовую сетку? Твои добавленные передачи будут удалены."))return;rows=base.map(x=>[...x]);save("Базовая сетка восстановлена.")};
-$("export").onclick=()=>{const blob=new Blob([JSON.stringify({channel:"МУЛЬТИК ТВ",timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"local",updatedAt:new Date().toISOString(),items:ordered()},null,2)],{type:"application/json"});
+$("export").onclick=()=>{const blob=new Blob([JSON.stringify({channel:"МУЛЬТИК ТВ",timezone:"Asia/Krasnoyarsk",updatedAt:new Date().toISOString(),items:ordered()},null,2)],{type:"application/json"});
  const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="multik-tv-schedule.json";a.click();URL.revokeObjectURL(url);$("notice").textContent="Резервная копия расписания подготовлена."};
-function tick(){const d=new Date();$("clock").textContent=d.toLocaleTimeString("ru-RU");$("date").textContent=d.toLocaleDateString("ru-RU",{weekday:"long",day:"numeric",month:"long",year:"numeric"});draw()}
+function tick(){const d=new Date(),opts={timeZone:"Asia/Krasnoyarsk"};$("clock").textContent=d.toLocaleTimeString("ru-RU",{...opts,hour12:false});$("date").textContent=d.toLocaleDateString("ru-RU",{...opts,weekday:"long",day:"numeric",month:"long",year:"numeric"})+" · Красноярское время (UTC+7)";draw()}
 tick();setInterval(tick,15000);
 </script></body></html>
