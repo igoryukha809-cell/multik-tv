@@ -33,26 +33,16 @@ jobs:
           curl -fsS --max-time 25 "https://api.open-meteo.com/v1/forecast?latitude=53.35&longitude=83.76&current=temperature_2m,weather_code&timezone=auto" -o /tmp/weather.json
           python3 -c 'import json; d=json.load(open("/tmp/weather.json")); assert "current" in d and "temperature_2m" in d["current"]; print("Погодные данные получены:", d["current"]["temperature_2m"], d["current"].get("temperature_2m_unit","°C"))'
 
-      - name: Проверить HLS видеопоток
+      - name: Получить код диагностики
+        uses: actions/checkout@v4
+
+      - name: Проверить реальное состояние HLS-эфира
         id: stream
-        continue-on-error: true
+        env:
+          STREAM_BASE_URL: https://multik-tv-test-stream-yltl.onrender.com
         shell: bash
         run: |
-          url="https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8"
-          code=$(curl -L -sS -o /tmp/stream.m3u8 -w "%{http_code}" --max-time 35 "$url" || true)
-          echo "HTTP $code"
-          if [ "$code" != "200" ]; then
-            echo "HLS недоступен (HTTP $code)"
-            exit 1
-          fi
-          grep -q "#EXTM3U" /tmp/stream.m3u8
-          segment=$(grep -v '^#' /tmp/stream.m3u8 | head -n 1)
-          test -n "$segment"
-          case "$segment" in
-            http://*|https://*) segment_url="$segment" ;;
-            *) segment_url="https://multik-tv-test-stream-yltl.onrender.com/live/$segment" ;;
-          esac
-          curl -fsS -I --max-time 20 "$segment_url" >/dev/null
+          python3 scripts/stream_autorepair.py
 
       - name: Итог проверки
         if: always()
@@ -65,5 +55,6 @@ jobs:
             echo "- Погодный API: ${{ steps.weather.outcome }}"
             echo "- HLS-видеопоток: ${{ steps.stream.outcome }}"
             echo ""
-            echo "Проверка выполняется каждые 15 минут. Она обнаруживает сбои, но не перезапускает Render и не гарантирует непрерывный эфир."
+            echo "HLS-проверка теперь проверяет health.json, цепочку плейлистов и скачивание реального медиасегмента. Ошибка HLS делает проверку неуспешной."
+            echo "Проверка выполняется каждые 15 минут. Она обнаруживает сбои, но сама по себе не перезапускает Render."
           } >> "$GITHUB_STEP_SUMMARY"
