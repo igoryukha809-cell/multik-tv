@@ -435,7 +435,9 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
       restart_delay=2
       last_segment=""
       last_change=$SECONDS
-      echo "WATCHDOG: monitoring HLS segment progress every 5 seconds."
+      advancing_segments=0
+      health_live=0
+      echo "WATCHDOG: verifying consecutive HLS segment progress before declaring LIVE."
       while kill -0 "$FFMPEG_PID" 2>/dev/null; do
         if ! kill -0 "$SRS_PID" 2>/dev/null; then
           echo "CRITICAL: SRS exited; stopping publisher and requesting platform restart."
@@ -460,6 +462,13 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
               if [[ "$segment_path" != "$last_segment" ]]; then
                 last_segment="$segment_path"
                 last_change=$SECONDS
+                advancing_segments=$((advancing_segments + 1))
+                echo "WATCHDOG: confirmed advancing media segment $advancing_segments."
+                if (( advancing_segments >= 2 && health_live == 0 )); then
+                  write_health "live" "HLS playlist advanced through multiple downloadable media segments"
+                  echo "LIVE: continuous HLS progress confirmed by multiple finalized segments."
+                  health_live=1
+                fi
               fi
             else
               echo "WATCHDOG: newest HLS media segment is not downloadable or is too small."
