@@ -98,7 +98,7 @@ function updateMaintenanceSchedule(){
  const inWindow=h>=2&&h<7;
  let target;
  if(inWindow){target=new Date(Date.UTC(y,m-1,d,4,0,0));}
- else if(h<2){target=new Date(Date.UTC(y,m-1,d,23,0,0));}
+ else if(h<2){target=new Date(Date.UTC(y,m-1,d-1,23,0,0));}
  else{target=new Date(Date.UTC(y,m-1,d+1,23,0,0));}
  let seconds=Math.max(0,Math.floor((target-now)/1000));
  const hh=String(Math.floor(seconds/3600)).padStart(2,'0');
