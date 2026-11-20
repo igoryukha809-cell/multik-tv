@@ -25,9 +25,11 @@ footer{background:#29234f;color:#e2def6;padding:25px 0;font-size:12px}.foot{disp
 @media(max-width:420px){.wrap{padding:0 13px}.brand{font-size:18px}.mark{width:40px;height:40px}.live-link{font-size:10px;padding:9px}.cards{gap:8px}.art{height:95px;font-size:48px}.tile-body{padding:10px}.tile h3{font-size:13px}.program-strip{gap:7px}.program{padding:10px}.program strong{font-size:11px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
+<style id="city-time-style">.site-city-time{max-width:1180px;margin:10px auto;padding:9px 18px;display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap;color:#51427f;font:700 13px system-ui,Arial,sans-serif}.site-city-time select{padding:8px 10px;border:1px solid #d7cce8;border-radius:10px;background:#fff;color:#30215b;font:inherit}.site-city-time strong{font-variant-numeric:tabular-nums;color:#7132a8}</style>
 </head>
 <body><div class="rainbow"></div>
 <header><div class="wrap head"><a class="brand" href="index.html"><span class="mark">🌈</span><span>МУЛЬТИК ТВ</span></a><nav class="nav"><a href="live.html">Эфир</a><a href="guide.html">Телепрограмма</a><a href="weather.html">Погода</a><a href="online-catalog.html">Мультфильмы</a><a href="#projects">Проекты</a><a href="#games">Игры</a></nav><a class="live-link" href="live.html">▶ СМОТРЕТЬ</a></div></header>
+<div class="site-city-time"><label for="siteCitySelect">🌍 Город и часовой пояс:</label><select id="siteCitySelect"><option value="Asia/Krasnoyarsk">Красноярск</option><option value="Europe/Moscow">Москва</option><option value="Europe/Kaliningrad">Калининград</option><option value="Asia/Yekaterinburg">Екатеринбург</option><option value="Asia/Novosibirsk">Новосибирск</option><option value="Asia/Vladivostok">Владивосток</option><option value="Europe/Berlin">Берлин</option><option value="Europe/London">Лондон</option><option value="Asia/Tokyo">Токио</option><option value="America/New_York">Нью-Йорк</option></select><strong id="siteCityClock">--:--:--</strong></div>
 <main class="wrap">
 <section class="hero">
 <div class="hero-main"><div class="kicker">ТВОЙ МИР МУЛЬТФИЛЬМОВ И ОТКРЫТИЙ</div><h1>Вместе интереснее!</h1><p>Добрые истории, новые идеи, творчество и весёлые открытия — добро пожаловать на МУЛЬТИК ТВ!</p><div class="actions"><a class="btn" href="live.html">▶ Прямой эфир</a><a class="btn light" href="guide.html">Телепрограмма</a></div></div>
@@ -58,4 +60,5 @@ footer{background:#29234f;color:#e2def6;padding:25px 0;font-size:12px}.foot{disp
 const d=new Date();document.getElementById('todayDate').textContent=d.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
 document.querySelectorAll('[data-answer]').forEach(b=>b.addEventListener('click',()=>{const out=document.getElementById('quizResult');out.textContent=b.dataset.answer==='right'?'Верно! 🌈 Свет преломляется в каплях воды.':'Попробуй ещё раз! Подумай, что происходит после дождя.';}));
 </script>
+<script>(function(){const select=document.getElementById("siteCitySelect"),clock=document.getElementById("siteCityClock");if(!select||!clock)return;select.value=localStorage.getItem("multiktv-city-zone")||"Asia/Krasnoyarsk";function tick(){clock.textContent=new Date().toLocaleTimeString("ru-RU",{timeZone:select.value,hour12:false})+" · "+select.selectedOptions[0].textContent}select.addEventListener("change",()=>{localStorage.setItem("multiktv-city-zone",select.value);tick()});tick();setInterval(tick,1000)})();</script>
 </body></html>
