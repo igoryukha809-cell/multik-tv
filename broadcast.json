@@ -8,17 +8,17 @@
     "weather": {
       "title": "Погода с Мультиком",
       "time": "10:00",
-      "timezone": "Asia/Krasnoyarsk",
+      "timezone": "Europe/Moscow",
       "source": "Open-Meteo",
       "generatedBy": "FFmpeg"
     }
   },
-  "note": "Профилактика ежедневно с 02:00 до 07:00 по Красноярскому времени (Asia/Krasnoyarsk, UTC+7). Время телепрограммы и погодного выпуска также указано по Красноярску. Статус остаётся test_signal до подтверждения успешного развёртывания и проверки HLS.",
+  "note": "Все времена телепрограммы, погодного выпуска и профилактики указаны по московскому времени (Europe/Moscow). Профилактика ежедневно с 02:00 до 07:00. Статус остаётся test_signal до подтверждения успешного развёртывания и проверки HLS.",
   "maintenance": {
     "daily": true,
     "start": "02:00",
     "end": "07:00",
-    "timezone": "Asia/Krasnoyarsk",
-    "reference": "Daily maintenance window aligned to the channel's Krasnoyarsk broadcast time"
+    "timezone": "Europe/Moscow",
+    "reference": "Daily maintenance window aligned to Moscow broadcast time"
   }
 }
