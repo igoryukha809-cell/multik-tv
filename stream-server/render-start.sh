@@ -364,6 +364,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
   echo "Один FFmpeg-передатчик будет воспроизводить все выпуски подряд без переподключения между ними."
   while kill -0 "$SRS_PID" 2>/dev/null; do
     write_health "live" "Continuous programme playlist is being published"
+    result=0
     ffmpeg -hide_banner -nostdin -loglevel warning -re -stream_loop -1 \
       -f concat -safe 0 -i "$PLAYLIST_FILE" \
       -map 0:v:0 -map 0:a:0? \
@@ -371,8 +372,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
       -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 \
       -b:v 1300k -maxrate 1300k -bufsize 2600k \
       -c:a aac -b:a 96k -ar 44100 -ac 2 \
-      -f flv rtmp://127.0.0.1/live/multiktv
-    result=$?
+      -f flv rtmp://127.0.0.1/live/multiktv || result=$?
     write_health "recovering" "Publisher exited with code $result; restarting the same playlist"
     echo "ОШИБКА: FFmpeg передатчик завершился с кодом $result; повторный запуск через 2 секунды."
     sleep 2
