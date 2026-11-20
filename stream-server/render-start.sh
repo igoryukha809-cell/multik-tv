@@ -9,6 +9,10 @@ PROGRAM_FILE="/tmp/multik-tv-program.webm"
 DOWNLOAD_LOG="/tmp/multik-tv-download.log"
 WEATHER_TIME="${WEATHER_TIME:-10:00}"
 export TZ="${BROADCAST_TZ:-Europe/Moscow}"
+if [[ ! "$WEATHER_TIME" =~ ^([01][0-9]|2[0-3]):[0-5][0-9]$ ]]; then
+  echo "Invalid WEATHER_TIME (expected HH:MM): $WEATHER_TIME" >&2
+  exit 1
+fi
 WEATHER_DIR="/tmp/multik-tv-weather"
 WEATHER_VIDEO="/tmp/multik-tv-weather-show.mp4"
 ORIGINAL_DIR="/usr/local/srs/originals"
@@ -583,7 +587,24 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
       advancing_segments=0
       health_live=0
       echo "WATCHDOG: verifying consecutive HLS segment progress before declaring LIVE."
+      # Daily weather slot is scheduled by Moscow wall-clock time. If the
+      # service starts after today's slot, wait until tomorrow rather than
+      # unexpectedly airing the forecast immediately.
+      if [[ "$(date '+%H:%M')" < "$WEATHER_TIME" ]]; then
+        LAST_WEATHER_DATE="$(date -d yesterday +%F)"
+      else
+        LAST_WEATHER_DATE="$(date +%F)"
+      fi
       while kill -0 "$FFMPEG_PID" 2>/dev/null; do
+        current_date="$(date +%F)"
+        current_clock="$(date '+%H:%M')"
+        if (( WEATHER_READY )) && [[ "$current_date" != "$LAST_WEATHER_DATE" && "$current_clock" >= "$WEATHER_TIME" ]]; then
+          echo "SCHEDULE: Moscow time $WEATHER_TIME reached; switching to the daily weather programme."
+          result=127
+          scheduled_weather_date="$current_date"
+          kill "$FFMPEG_PID" 2>/dev/null || true
+          break
+        fi
         if ! kill -0 "$SRS_PID" 2>/dev/null; then
           echo "CRITICAL: SRS exited; stopping publisher and requesting platform restart."
           kill "$FFMPEG_PID" 2>/dev/null || true
@@ -653,6 +674,23 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
     wait "$FFMPEG_PID" || wait_result=$?
     if (( result == 0 )); then result=$wait_result; fi
     FFMPEG_PID=""
+    if (( result == 127 )); then
+      echo "SCHEDULE: airing weather programme for $scheduled_weather_date (Europe/Moscow)."
+      write_health "starting" "Switching to the scheduled daily weather programme"
+      play_channel_ident || echo "WARNING: channel ident failed before scheduled weather."
+      if ! ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$WEATHER_VIDEO" \
+          -map 0:v:0 -map 0:a:0? \
+          -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20" \
+          -c:v libx264 -preset ultrafast -tune zerolatency -threads 1 -pix_fmt yuv420p -r 20 -g 40 \
+          -b:v 450k -maxrate 450k -bufsize 900k \
+          -c:a aac -b:a 96k -ar 44100 -ac 2 \
+          -f flv rtmp://127.0.0.1/live/multiktv; then
+        echo "WARNING: scheduled weather playback failed; returning to the main programme."
+      fi
+      LAST_WEATHER_DATE="$scheduled_weather_date"
+      write_health "recovering" "Scheduled weather programme finished; resuming the continuous programme"
+      continue
+    fi
     echo "PUBLISHER_EXIT: code=$result; recent FFmpeg diagnostics follow."
     for ffmpeg_log in /usr/local/srs/ffmpeg-*.log; do
       [[ -f "$ffmpeg_log" ]] || continue
