@@ -78,7 +78,7 @@ mkdir -p "$HEALTH_DIR/broadcast"
 write_health() {
   local state="$1" detail="$2" streaming="false"
   if [[ "$state" == "live" ]]; then streaming="true"; fi
-  printf '{"service":"multik-tv","streaming":%s,"status":"%s","detail":"%s","updatedAt":"%s"}\\n' "$streaming" "$state" "$detail" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$HEALTH_DIR/broadcast/health.json.tmp"
+  printf '{"service":"multik-tv","streaming":%s,"status":"%s","detail":"%s","updatedAt":"%s"}\n' "$streaming" "$state" "$detail" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$HEALTH_DIR/broadcast/health.json.tmp"
   mv "$HEALTH_DIR/broadcast/health.json.tmp" "$HEALTH_DIR/broadcast/health.json"
 }
 write_health "starting" "SRS started; preparing programme output"
@@ -384,7 +384,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
   while kill -0 "$SRS_PID" 2>/dev/null; do
     write_health "starting" "Starting continuous MP4 publisher"
     result=0
-    ffmpeg -hide_banner -nostdin -loglevel warning -re -stream_loop -1 -i "$COMBINED_FILE" \
+    ffmpeg -hide_banner -nostdin -loglevel info -report -re -stream_loop -1 -i "$COMBINED_FILE" \
       -map 0:v:0 -map 0:a:0? \
       -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=25" \
       -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 \
@@ -468,6 +468,11 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
     wait "$FFMPEG_PID" || wait_result=$?
     if (( result == 0 )); then result=$wait_result; fi
     FFMPEG_PID=""
+    echo "PUBLISHER_EXIT: code=$result; recent FFmpeg diagnostics follow."
+    for ffmpeg_log in /usr/local/srs/ffmpeg-*.log; do
+      [[ -f "$ffmpeg_log" ]] || continue
+      tail -n 80 "$ffmpeg_log" || true
+    done
     write_health "recovering" "Watchdog detected publisher or HLS failure; automatic restart scheduled"
     echo "WATCHDOG: publisher stopped (code $result); retrying in ${restart_delay}s."
     sleep "$restart_delay"
