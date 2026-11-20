@@ -77,7 +77,7 @@ while kill -0 "$SRS_PID" 2>/dev/null; do
 done
 
 if [[ -s "$PROGRAM_FILE" ]] && ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$PROGRAM_FILE" >/dev/null 2>&1; then
-  echo "Starting the CC BY-SA 4.0 Russian program loop."
+  echo "Starting the licensed program loop (CC BY-SA 4.0 Russian animation)."
   while kill -0 "$SRS_PID" 2>/dev/null; do
     ffmpeg -hide_banner -nostdin -loglevel warning -re -stream_loop -1 -i "$PROGRAM_FILE" \
       -map 0:v:0 -map 0:a:0? \
