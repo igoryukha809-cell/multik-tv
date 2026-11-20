@@ -72,6 +72,15 @@ start_test_signal() {
     -c:a aac -b:a 96k -ar 44100 -ac 2 -f flv rtmp://127.0.0.1/live/multiktv
 }
 
+# Publish an honest startup health document. SRS failure exits the container so Render can restart it.
+HEALTH_DIR="/usr/local/srs/objs/nginx/html"
+mkdir -p "$HEALTH_DIR/broadcast"
+write_health() {
+  local state="$1" detail="$2"
+  printf '{"service":"multik-tv","streaming":false,"status":"%s","detail":"%s","updatedAt":"%s"}\\n' "$state" "$detail" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$HEALTH_DIR/broadcast/health.json.tmp"
+  mv "$HEALTH_DIR/broadcast/health.json.tmp" "$HEALTH_DIR/broadcast/health.json"
+}
+write_health "starting" "SRS started; preparing programme output"
 if [[ -n "$PROGRAM_VIDEO_URL" && "$PROGRAM_RIGHTS_CONFIRMED" == "true" ]]; then
   echo "Downloading externally licensed programme after explicit rights confirmation."
   curl -fL --retry 4 --retry-delay 3 --connect-timeout 20 --max-time 900 \
@@ -83,8 +92,8 @@ else
 fi
 
 # Publish the channel slate and ident, then a test signal until original shows are rendered.
-play_maintenance_slate
-play_channel_ident
+play_maintenance_slate || echo "WARNING: maintenance slate failed; continuing startup."
+play_channel_ident || echo "WARNING: channel ident failed; continuing startup."
 start_test_signal &
 FFMPEG_PID=$!
 
@@ -309,7 +318,7 @@ play_weather_show() {
     echo "Погодный выпуск пропущен; продолжаю основную программу."
     return 1
   fi
-  play_channel_ident
+  play_channel_ident || echo "WARNING: channel ident failed; continuing to weather show."
   ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$WEATHER_VIDEO" \
     -an -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 \
     -b:v 1200k -maxrate 1200k -bufsize 2400k -f flv rtmp://127.0.0.1/live/multiktv
@@ -364,7 +373,7 @@ if (( PROGRAM_READY )) || compgen -G "$ORIGINAL_DIR/*.mp4" >/dev/null; then
     fi
 
     if (( PROGRAM_READY )); then
-      play_channel_ident
+      play_channel_ident || echo "WARNING: channel ident failed; continuing to programme."
       echo "В эфире: Пеппер и Кэррот, эпизод 6 (CC BY-SA 4.0)."
       ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$PROGRAM_FILE" \
         -map 0:v:0 -map 0:a:0? \
@@ -375,7 +384,7 @@ if (( PROGRAM_READY )) || compgen -G "$ORIGINAL_DIR/*.mp4" >/dev/null; then
     for original_show in "$ORIGINAL_DIR"/*.mp4; do
       [[ -f "$original_show" ]] || continue
       echo "В эфире авторская передача: ${original_show##*/}."
-      play_channel_ident
+      play_channel_ident || echo "WARNING: channel ident failed; continuing to programme."
       ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$original_show" \
         -map 0:v:0 -map 0:a:0? -c:v libx264 -preset veryfast -tune zerolatency \
         -pix_fmt yuv420p -r 25 -g 50 -b:v 1100k -maxrate 1100k -bufsize 2200k \
