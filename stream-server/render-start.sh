@@ -76,8 +76,9 @@ start_test_signal() {
 HEALTH_DIR="/usr/local/srs/objs/nginx/html"
 mkdir -p "$HEALTH_DIR/broadcast"
 write_health() {
-  local state="$1" detail="$2"
-  printf '{"service":"multik-tv","streaming":false,"status":"%s","detail":"%s","updatedAt":"%s"}\\n' "$state" "$detail" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$HEALTH_DIR/broadcast/health.json.tmp"
+  local state="$1" detail="$2" streaming="false"
+  if [[ "$state" == "live" ]]; then streaming="true"; fi
+  printf '{"service":"multik-tv","streaming":%s,"status":"%s","detail":"%s","updatedAt":"%s"}\\n' "$streaming" "$state" "$detail" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$HEALTH_DIR/broadcast/health.json.tmp"
   mv "$HEALTH_DIR/broadcast/health.json.tmp" "$HEALTH_DIR/broadcast/health.json"
 }
 write_health "starting" "SRS started; preparing programme output"
