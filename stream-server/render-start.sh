@@ -132,7 +132,7 @@ generate_weather_show() {
     clip="${WEATHER_DIR}/weather-${count}.mp4"
     url="https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_min,temperature_2m_max,precipitation_probability_max&forecast_days=1&timezone=auto"
 
-    if ! curl -fsSL --retry 4 --retry-delay 5 --retry-all-errors --connect-timeout 10 --max-time 35 "$url" -o "$json"; then
+    if ! curl -fsSL --retry 4 --retry-delay 5 --connect-timeout 10 --max-time 35 "$url" -o "$json"; then
       echo "Погода для ${city} временно недоступна; пропускаю город."
       continue
     fi
