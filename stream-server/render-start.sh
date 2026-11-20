@@ -295,13 +295,19 @@ generate_weather_show() {
         printf '%s' "$source" > "$cache_source"
         printf '%s' "$now" > "$cache_time"
       else
-        echo "MET Norway недоступен для ${city}; переключаюсь на wttr.in."
-        source="wttr.in"
-        url="https://wttr.in/${lat},${lon}?format=j1"
-        if ! curl -fsSL --retry 1 --retry-delay 2 --connect-timeout 8 --max-time 20 \
-          -H "User-Agent: MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)" "$url" -o "$json"; then
-          echo "Оба погодных источника недоступны для ${city}; пропускаю город."
-          continue
+        echo "MET Norway недоступен для ${city}; переключаюсь на Open-Meteo."
+        source="Open-Meteo"
+        url="https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto"
+        if ! curl -fsSL --retry 2 --retry-delay 2 --connect-timeout 8 --max-time 25 \
+          -H "Accept: application/json" "$url" -o "$json"; then
+          echo "Open-Meteo недоступен для ${city}; переключаюсь на резервный wttr.in."
+          source="wttr.in"
+          url="https://wttr.in/${lat},${lon}?format=j1"
+          if ! curl -fsSL --retry 1 --retry-delay 2 --connect-timeout 8 --max-time 20 \
+            -H "User-Agent: MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)" "$url" -o "$json"; then
+            echo "Все погодные источники недоступны для ${city}; пропускаю город."
+            continue
+          fi
         fi
         cp "$json" "$cache_file"
         printf '%s' "$source" > "$cache_source"
@@ -318,6 +324,27 @@ generate_weather_show() {
       rain="$(jq -r '.weather[0].hourly[0].chanceofrain // "—"' "$json")"
       low="$(jq -r '.weather[0].mintempC // "—"' "$json")"
       high="$(jq -r '.weather[0].maxtempC // "—"' "$json")"
+    elif [[ "$source" == "Open-Meteo" ]]; then
+      temp="$(jq -r '.current.temperature_2m // empty' "$json")"
+      feels="$(jq -r '.current.apparent_temperature // empty' "$json")"
+      wind="$(jq -r '.current.wind_speed_10m // empty' "$json")"
+      humidity="$(jq -r '.current.relative_humidity_2m // empty' "$json")"
+      rain="$(jq -r '.daily.precipitation_probability_max[0] // "—"' "$json")"
+      low="$(jq -r '.daily.temperature_2m_min[0] // "—"' "$json")"
+      high="$(jq -r '.daily.temperature_2m_max[0] // "—"' "$json")"
+      code="$(jq -r '.current.weather_code // empty' "$json")"
+      case "$code" in
+        0) condition="Ясно" ;;
+        1) condition="Преимущественно ясно" ;;
+        2) condition="Переменная облачность" ;;
+        3) condition="Облачно" ;;
+        45|48) condition="Туман" ;;
+        51|53|55|56|57) condition="Морось" ;;
+        61|63|65|66|67|80|81|82) condition="Дождь" ;;
+        71|73|75|77|85|86) condition="Снег" ;;
+        95|96|99) condition="Гроза" ;;
+        *) condition="Условия уточняются" ;;
+      esac
     else
       temp="$(jq -r '.properties.timeseries[0].data.instant.details.air_temperature // empty' "$json")"
       feels="$(jq -r '.properties.timeseries[0].data.instant.details.apparent_air_temperature // empty' "$json")"
@@ -449,15 +476,10 @@ else
   echo "Не удалось создать авторские передачи; проверяю доступные оригинальные выпуски."
 fi
 
-# Generate weather with a silent audio track so concat can safely combine it
-# with the programme files. It airs after every complete originals block.
-WEATHER_READY=0
-if generate_weather_show && [[ -s "$WEATHER_VIDEO" ]] && ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$WEATHER_VIDEO" >/dev/null 2>&1; then
-  WEATHER_READY=1
-  echo "Погодный выпуск подготовлен и включён в повторяющийся эфирный цикл."
-else
-  echo "Погодный выпуск недоступен; продолжаю без него, не прерывая основной эфир."
-fi
+# Build the forecast at the scheduled broadcast time, not at container startup.
+# This avoids stale weather and keeps the main programme on air during data collection.
+WEATHER_READY=1
+echo "Ежедневный погодный выпуск запланирован на ${WEATHER_TIME} (Europe/Moscow); данные будут собраны перед выходом в эфир."
 
 # One FFmpeg publisher handles the entire playlist, avoiding RTMP disconnects between programmes.
 PROGRAM_READY=0
@@ -479,9 +501,7 @@ for original_show in "$ORIGINAL_DIR"/*.mp4; do
     echo "ОШИБКА: повреждённый выпуск пропущен: ${original_show##*/}"
   fi
 done
-if (( WEATHER_READY )); then
-  printf "file '%s'\n" "$WEATHER_VIDEO" >> "$PLAYLIST_FILE"
-fi
+# Weather is deliberately excluded from the looping playlist; it airs once daily at WEATHER_TIME.
 if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
   echo "Starting continuous broadcast playlist: licensed_items=$PROGRAM_READY, original_items=$ORIGINAL_COUNT."
   echo "Собираю единый MP4-файл, чтобы FFmpeg не перезапускал RTMP при переходе между выпусками."
@@ -599,11 +619,17 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
         current_date="$(date +%F)"
         current_clock="$(date '+%H:%M')"
         if (( WEATHER_READY )) && [[ "$current_date" != "$LAST_WEATHER_DATE" && "$current_clock" >= "$WEATHER_TIME" ]]; then
-          echo "SCHEDULE: Moscow time $WEATHER_TIME reached; switching to the daily weather programme."
-          result=127
-          scheduled_weather_date="$current_date"
-          kill "$FFMPEG_PID" 2>/dev/null || true
-          break
+          echo "SCHEDULE: Moscow time $WEATHER_TIME reached; preparing today's weather while the main programme remains on air."
+          if generate_weather_show && [[ -s "$WEATHER_VIDEO" ]] && ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$WEATHER_VIDEO" >/dev/null 2>&1; then
+            result=127
+            scheduled_weather_date="$current_date"
+            echo "SCHEDULE: today's forecast is ready; switching to the weather programme."
+            kill "$FFMPEG_PID" 2>/dev/null || true
+            break
+          else
+            echo "WARNING: today's weather could not be prepared; keeping the main programme on air and skipping this slot."
+            LAST_WEATHER_DATE="$current_date"
+          fi
         fi
         if ! kill -0 "$SRS_PID" 2>/dev/null; then
           echo "CRITICAL: SRS exited; stopping publisher and requesting platform restart."
