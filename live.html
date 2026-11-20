@@ -69,6 +69,11 @@ function showPlayer(){
  if(fallbackStarted)return;
  maintenance.classList.add('hidden'); player.classList.remove('hidden'); test.classList.add('hidden'); placeholder.classList.add('hidden');
 }
+// Ограничиваем ожидание ответа: в мобильном браузере загрузка HLS-библиотеки
+// или манифеста может зависнуть без события ошибки.
+const connectionWatchdog=setTimeout(()=>{
+ showTestSignal('Превышено время ожидания ответа видеосервера.');
+},25000);
 (async()=>{
  try{
   const [configResponse,stateResponse]=await Promise.all([
@@ -86,7 +91,7 @@ function showPlayer(){
    if(/\.m3u8($|[?#])/i.test(url.href)){
     if(player.canPlayType('application/vnd.apple.mpegurl')){
      showPlayer(); player.src=url.href;
-     player.addEventListener('loadedmetadata',()=>{statusEl.textContent='🟢 HLS-поток найден. Нажми Play для просмотра.';details.textContent='Сервер передаёт видеосигнал.';},{once:true});
+     player.addEventListener('loadedmetadata',()=>{clearTimeout(connectionWatchdog);statusEl.textContent='🟢 HLS-поток найден. Нажми Play для просмотра.';details.textContent='Сервер передаёт видеосигнал.';},{once:true});
      player.addEventListener('error',()=>showTestSignal('HLS-поток не ответил.'),{once:true});
     }else{
      const module=await import('https://cdn.jsdelivr.net/npm/hls.js@1.5.20/+esm');
@@ -95,6 +100,7 @@ function showPlayer(){
      hlsEngine=new module.default({enableWorker:true,manifestLoadingMaxRetry:1,manifestLoadingTimeOut:10000,levelLoadingMaxRetry:1});
      hlsEngine.loadSource(url.href); hlsEngine.attachMedia(player);
      hlsEngine.on(module.default.Events.MANIFEST_PARSED,()=>{
+      clearTimeout(connectionWatchdog);
       statusEl.textContent='🟢 HLS-поток найден. Нажми Play для просмотра.';
       details.textContent='Видеосервер передаёт поток. Статус: '+(state.state||'проверяется')+'.';
      });
@@ -111,5 +117,5 @@ function showPlayer(){
   }else{
    showTestSignal('Адрес видеосервера не настроен.');
   }
- }catch(error){showTestSignal(error.message);}
+ }catch(error){clearTimeout(connectionWatchdog);showTestSignal(error.message);}
 })();</script></body></html>
