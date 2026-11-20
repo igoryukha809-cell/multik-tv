@@ -3,11 +3,12 @@ set -Eeuo pipefail
 cd /usr/local/srs
 
 HTTP_PORT="${PORT:-10000}"
-PROGRAM_VIDEO_URL="${PROGRAM_VIDEO_URL:-https://commons.wikimedia.org/wiki/Special:Redirect/file/Morevna_Project_-_Pepper%26Carrot_%28animated_comic%29_-_Episode_6_-_The_Potion_Contest_%28Russian_variant%29.webm}"
+PROGRAM_VIDEO_URL="${PROGRAM_VIDEO_URL:-}"
+PROGRAM_RIGHTS_CONFIRMED="${PROGRAM_RIGHTS_CONFIRMED:-false}"
 PROGRAM_FILE="/tmp/multik-tv-program.webm"
 DOWNLOAD_LOG="/tmp/multik-tv-download.log"
 WEATHER_TIME="${WEATHER_TIME:-10:00}"
-export TZ="${BROADCAST_TZ:-Asia/Krasnoyarsk}"
+export TZ="${BROADCAST_TZ:-Europe/Moscow}"
 WEATHER_DIR="/tmp/multik-tv-weather"
 WEATHER_VIDEO="/tmp/multik-tv-weather-show.mp4"
 ORIGINAL_DIR="/tmp/multik-tv-originals"
@@ -70,44 +71,50 @@ start_test_signal() {
     -c:a aac -b:a 96k -ar 44100 -ac 2 -f flv rtmp://127.0.0.1/live/multiktv
 }
 
-curl -fL --retry 4 --retry-delay 3 --connect-timeout 20 --max-time 900 \
-  -A "MultikTV/1.0 (open-license broadcast; attribution on channel site)" \
-  "$PROGRAM_VIDEO_URL" -o "$PROGRAM_FILE" >"$DOWNLOAD_LOG" 2>&1 &
-DOWNLOAD_PID=$!
+if [[ -n "$PROGRAM_VIDEO_URL" && "$PROGRAM_RIGHTS_CONFIRMED" == "true" ]]; then
+  echo "Downloading externally licensed programme after explicit rights confirmation."
+  curl -fL --retry 4 --retry-delay 3 --connect-timeout 20 --max-time 900 \
+    -A "MultikTV/1.0 (open-license broadcast; attribution on channel site)" \
+    "$PROGRAM_VIDEO_URL" -o "$PROGRAM_FILE" >"$DOWNLOAD_LOG" 2>&1 &
+  DOWNLOAD_PID=$!
+else
+  echo "No external programme enabled. Only original channel-made programmes will be aired until rights are confirmed."
+fi
 
-# Publish a moving test picture immediately; do not leave the HLS endpoint empty
-# while the 122 MB openly licensed episode is being downloaded.
+# Publish the channel slate and ident, then a test signal until original shows are rendered.
 play_maintenance_slate
 play_channel_ident
 start_test_signal &
 FFMPEG_PID=$!
 
-while kill -0 "$SRS_PID" 2>/dev/null; do
-  if [[ -s "$PROGRAM_FILE" ]] && ! kill -0 "$DOWNLOAD_PID" 2>/dev/null; then
-    if ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$PROGRAM_FILE" >/dev/null 2>&1; then
-      echo "Open-license program downloaded and validated."
+if [[ -n "$DOWNLOAD_PID" ]]; then
+  while kill -0 "$SRS_PID" 2>/dev/null; do
+    if [[ -s "$PROGRAM_FILE" ]] && ! kill -0 "$DOWNLOAD_PID" 2>/dev/null; then
+      if ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$PROGRAM_FILE" >/dev/null 2>&1; then
+        echo "Externally licensed programme downloaded and validated."
+        kill "$FFMPEG_PID" 2>/dev/null || true
+        wait "$FFMPEG_PID" 2>/dev/null || true
+        FFMPEG_PID=""
+        break
+      fi
+      echo "Downloaded file did not pass media validation; using original channel-made programmes."
+      rm -f "$PROGRAM_FILE"
       kill "$FFMPEG_PID" 2>/dev/null || true
       wait "$FFMPEG_PID" 2>/dev/null || true
       FFMPEG_PID=""
       break
     fi
-    echo "Downloaded file did not pass media validation; switching to original channel-made programmes."
-    rm -f "$PROGRAM_FILE"
-    kill "$FFMPEG_PID" 2>/dev/null || true
-    wait "$FFMPEG_PID" 2>/dev/null || true
-    FFMPEG_PID=""
-    break
-  fi
-  if ! kill -0 "$DOWNLOAD_PID" 2>/dev/null; then
-    echo "Program download failed; switching to original channel-made programmes."
-    cat "$DOWNLOAD_LOG" || true
-    kill "$FFMPEG_PID" 2>/dev/null || true
-    wait "$FFMPEG_PID" 2>/dev/null || true
-    FFMPEG_PID=""
-    break
-  fi
-  sleep 2
-done
+    if ! kill -0 "$DOWNLOAD_PID" 2>/dev/null; then
+      echo "Programme download failed; using original channel-made programmes."
+      cat "$DOWNLOAD_LOG" || true
+      kill "$FFMPEG_PID" 2>/dev/null || true
+      wait "$FFMPEG_PID" 2>/dev/null || true
+      FFMPEG_PID=""
+      break
+    fi
+    sleep 2
+  done
+fi
 
 
 generate_weather_show() {
