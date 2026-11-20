@@ -380,6 +380,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
     exit 1
   fi
   echo "Единый файл готов; запускаю один циклический MP4-поток."
+  restart_delay=2
   while kill -0 "$SRS_PID" 2>/dev/null; do
     write_health "starting" "Starting continuous MP4 publisher"
     result=0
@@ -392,40 +393,82 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
       -f flv rtmp://127.0.0.1/live/multiktv &
     FFMPEG_PID=$!
 
-    # Confirm actual HLS output before reporting LIVE.
-    manifest_url="http://127.0.0.1:${HTTP_PORT}/live/multiktv.m3u8"
+    manifest_url="http://127.0.0.1:\${HTTP_PORT}/live/multiktv.m3u8"
     manifest_file="/tmp/multik-tv-live-check.m3u8"
     live_confirmed=0
-    for attempt in $(seq 1 30); do
-      if ! kill -0 "$SRS_PID" 2>/dev/null || ! kill -0 "$FFMPEG_PID" 2>/dev/null; then
-        break
+    for attempt in $(seq 1 45); do
+      if ! kill -0 "$SRS_PID" 2>/dev/null; then
+        echo "CRITICAL: SRS exited while waiting for HLS; requesting platform restart."
+        kill "$FFMPEG_PID" 2>/dev/null || true
+        wait "$FFMPEG_PID" 2>/dev/null || true
+        FFMPEG_PID=""
+        exit 1
       fi
+      if ! kill -0 "$FFMPEG_PID" 2>/dev/null; then break; fi
       if curl -fsS --connect-timeout 2 --max-time 4 "$manifest_url" -o "$manifest_file"; then
         segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
-        if [[ -n "$segment" && "$segment" != *"/"* && "$segment" == *.ts ]] &&
-           curl -fsS --connect-timeout 2 --max-time 4 "http://127.0.0.1:${HTTP_PORT}/live/${segment}" -o /dev/null; then
-          write_health "live" "HLS manifest and media segment are reachable"
-          echo "LIVE: HLS manifest and media segment confirmed."
-          live_confirmed=1
-          break
+        if [[ -n "$segment" && "$segment" == *.ts ]]; then
+          if [[ "$segment" == http://* || "$segment" == https://* ]]; then
+            segment_url="$segment"
+          else
+            segment_url="http://127.0.0.1:\${HTTP_PORT}/live/\${segment#/}"
+          fi
+          if curl -fsS --connect-timeout 2 --max-time 4 "$segment_url" -o /dev/null; then
+            write_health "live" "HLS manifest and media segment are reachable"
+            echo "LIVE: HLS manifest and media segment confirmed."
+            live_confirmed=1
+            break
+          fi
         fi
       fi
       sleep 2
     done
 
-    while kill -0 "$FFMPEG_PID" 2>/dev/null; do
-      if ! kill -0 "$SRS_PID" 2>/dev/null; then
-        echo "SRS остановился; завершаю FFmpeg передатчик."
-        kill "$FFMPEG_PID" 2>/dev/null || true
-        break
-      fi
-      sleep 2
-    done
-    wait "$FFMPEG_PID" || result=$?
+    if (( live_confirmed )); then
+      restart_delay=2
+      last_segment=""
+      last_change=$SECONDS
+      echo "WATCHDOG: monitoring HLS segment progress every 5 seconds."
+      while kill -0 "$FFMPEG_PID" 2>/dev/null; do
+        if ! kill -0 "$SRS_PID" 2>/dev/null; then
+          echo "CRITICAL: SRS exited; stopping publisher and requesting platform restart."
+          kill "$FFMPEG_PID" 2>/dev/null || true
+          wait "$FFMPEG_PID" 2>/dev/null || true
+          FFMPEG_PID=""
+          exit 1
+        fi
+        if curl -fsS --connect-timeout 2 --max-time 4 "$manifest_url" -o "$manifest_file"; then
+          segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
+          if [[ -n "$segment" && "$segment" != "$last_segment" ]]; then
+            last_segment="$segment"
+            last_change=$SECONDS
+          elif (( SECONDS - last_change >= 30 )); then
+            echo "WATCHDOG: HLS segment stalled for 30 seconds; restarting FFmpeg."
+            result=124
+            break
+          fi
+        elif (( SECONDS - last_change >= 30 )); then
+          echo "WATCHDOG: HLS manifest unavailable for 30 seconds; restarting FFmpeg."
+          result=125
+          break
+        fi
+        sleep 5
+      done
+    else
+      echo "WATCHDOG: HLS did not become playable within 90 seconds; restarting FFmpeg."
+      result=126
+    fi
+
+    if kill -0 "$FFMPEG_PID" 2>/dev/null; then kill "$FFMPEG_PID" 2>/dev/null || true; fi
+    wait "$FFMPEG_PID" || [[ "$result" -ne 0 ]] || result=$?
     FFMPEG_PID=""
-    write_health "recovering" "Publisher stopped with code $result; restarting the continuous MP4"
-    echo "ОШИБКА: FFmpeg передатчик завершился с кодом $result; повторный запуск через 2 секунды."
-    sleep 2
+    write_health "recovering" "Watchdog detected publisher or HLS failure; automatic restart scheduled"
+    echo "WATCHDOG: publisher stopped (code $result); retrying in \${restart_delay}s."
+    sleep "$restart_delay"
+    if (( restart_delay < 30 )); then
+      restart_delay=$((restart_delay * 2))
+      (( restart_delay > 30 )) && restart_delay=30
+    fi
   done
 else
   write_health "error" "No valid programme files are available"
