@@ -393,7 +393,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
       -f flv rtmp://127.0.0.1/live/multiktv &
     FFMPEG_PID=$!
 
-    manifest_url="http://127.0.0.1:\${HTTP_PORT}/live/multiktv.m3u8"
+    manifest_url="http://127.0.0.1:${HTTP_PORT}/live/multiktv.m3u8"
     manifest_file="/tmp/multik-tv-live-check.m3u8"
     live_confirmed=0
     for attempt in $(seq 1 45); do
@@ -411,7 +411,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
           if [[ "$segment" == http://* || "$segment" == https://* ]]; then
             segment_url="$segment"
           else
-            segment_url="http://127.0.0.1:\${HTTP_PORT}/live/\${segment#/}"
+            segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment#/}"
           fi
           if curl -fsS --connect-timeout 2 --max-time 4 "$segment_url" -o /dev/null; then
             write_health "live" "HLS manifest and media segment are reachable"
@@ -465,7 +465,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
     if (( result == 0 )); then result=$wait_result; fi
     FFMPEG_PID=""
     write_health "recovering" "Watchdog detected publisher or HLS failure; automatic restart scheduled"
-    echo "WATCHDOG: publisher stopped (code $result); retrying in \${restart_delay}s."
+    echo "WATCHDOG: publisher stopped (code $result); retrying in ${restart_delay}s."
     sleep "$restart_delay"
     if (( restart_delay < 30 )); then
       restart_delay=$((restart_delay * 2))
