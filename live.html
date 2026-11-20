@@ -86,17 +86,44 @@ function stopMaintenanceSound(){
  if(soundTimer){clearTimeout(soundTimer);soundTimer=null;}
  if(maintenanceSoundButton){maintenanceSoundButton.textContent='♫ Включить звук';maintenanceSoundButton.setAttribute('aria-pressed','false');}
 }
-maintenanceSoundButton.addEventListener('click',async()=>{
+async function enableMaintenanceSound(){
  try{
   const AudioContextClass=window.AudioContext||window.webkitAudioContext;
-  if(!AudioContextClass){maintenanceSoundButton.textContent='Звук не поддерживается';return;}
+  if(!AudioContextClass){maintenanceSoundButton.textContent='Звук не поддерживается';return false;}
   if(!soundContext)soundContext=new AudioContextClass();
-  if(soundEnabled){stopMaintenanceSound();return;}
-  await soundContext.resume();soundEnabled=true;
-  maintenanceSoundButton.textContent='♫ Выключить звук';
-  maintenanceSoundButton.setAttribute('aria-pressed','true');playMaintenanceChime();
- }catch(error){maintenanceSoundButton.textContent='Не удалось включить звук';}
+  if(soundContext.state!=='running')await soundContext.resume();
+  if(soundContext.state!=='running')return false;
+  if(!soundEnabled){
+   soundEnabled=true;
+   maintenanceSoundButton.textContent='♫ Выключить звук';
+   maintenanceSoundButton.setAttribute('aria-pressed','true');
+   playMaintenanceChime();
+  }
+  return true;
+ }catch(error){return false;}
+}
+maintenanceSoundButton.addEventListener('click',async()=>{
+ if(soundEnabled){stopMaintenanceSound();return;}
+ if(!await enableMaintenanceSound())maintenanceSoundButton.textContent='Нажмите ещё раз для звука';
 });
+// Сначала пробуем включить звук автоматически. Если браузер запрещает
+// автозапуск со звуком, включаем его при первом касании/нажатии пользователя.
+(async()=>{
+ const started=await enableMaintenanceSound();
+ if(!started){
+  const unlock=async()=>{
+   if(maintenance.classList.contains('hidden'))return;
+   if(await enableMaintenanceSound()){
+    window.removeEventListener('pointerdown',unlock);
+    window.removeEventListener('keydown',unlock);
+    window.removeEventListener('touchstart',unlock);
+   }
+  };
+  window.addEventListener('pointerdown',unlock);
+  window.addEventListener('keydown',unlock);
+  window.addEventListener('touchstart',unlock,{passive:true});
+ }
+})();
 fitButton.addEventListener('click',()=>{
  const crop=player.classList.toggle('crop');
  fitButton.textContent=crop?'Заполнить экран: вкл.':'Заполнить экран: выкл.';
