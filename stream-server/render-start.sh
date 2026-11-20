@@ -10,6 +10,7 @@ WEATHER_TIME="${WEATHER_TIME:-10:00}"
 export TZ="${BROADCAST_TZ:-Asia/Krasnoyarsk}"
 WEATHER_DIR="/tmp/multik-tv-weather"
 WEATHER_VIDEO="/tmp/multik-tv-weather-show.mp4"
+ORIGINAL_DIR="/tmp/multik-tv-originals"
 WEATHER_FONT="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 
 if ! [[ "$HTTP_PORT" =~ ^[0-9]+$ ]]; then
@@ -208,6 +209,12 @@ play_weather_show() {
     -b:v 1200k -maxrate 1200k -bufsize 2400k -f flv rtmp://127.0.0.1/live/multiktv
 }
 
+if bash /usr/local/srs/generate-original-programs.sh "$ORIGINAL_DIR" "$WEATHER_FONT"; then
+  echo "Авторские познавательные передачи подготовлены."
+else
+  echo "Не удалось создать авторские передачи; продолжаю с проверенной лицензированной программой."
+fi
+
 if [[ -s "$PROGRAM_FILE" ]] && ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$PROGRAM_FILE" >/dev/null 2>&1; then
   echo "Starting the scheduled broadcast loop."
   echo "License: CC BY-SA 4.0; attribution is burned into the video."
@@ -231,6 +238,15 @@ if [[ -s "$PROGRAM_FILE" ]] && ffprobe -v error -select_streams v:0 -show_entrie
       -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='Pepper and Carrot Ep. 6 | Morevna Project | David Revoy | Gregoire Lourme | CC BY-SA 4.0':fontcolor=white:fontsize=15:box=1:boxcolor=black@0.55:boxborderw=7:x=12:y=h-th-12" \
       -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 -b:v 1600k -maxrate 1600k -bufsize 3200k \
       -c:a aac -b:a 128k -ar 44100 -ac 2 -f flv rtmp://127.0.0.1/live/multiktv || echo "Основной ролик завершился с ошибкой; повторю цикл."
+    for original_show in "$ORIGINAL_DIR"/*.mp4; do
+      [[ -f "$original_show" ]] || continue
+      echo "В эфире авторская передача: ${original_show##*/}."
+      play_channel_ident
+      ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$original_show" \
+        -map 0:v:0 -map 0:a:0? -c:v libx264 -preset veryfast -tune zerolatency \
+        -pix_fmt yuv420p -r 25 -g 50 -b:v 1100k -maxrate 1100k -bufsize 2200k \
+        -c:a aac -b:a 64k -ar 44100 -ac 2 -f flv rtmp://127.0.0.1/live/multiktv || echo "Авторский выпуск завершился с ошибкой; перехожу к следующему."
+    done
     sleep 3
   done
 else
