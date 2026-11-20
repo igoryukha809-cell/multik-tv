@@ -410,9 +410,10 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
         # Probe recent entries from newest to oldest and accept the first finalized segment.
         while IFS= read -r segment; do
           # SRS may append query parameters to segment URIs; strip them before extension/path checks.
-          segment="${segment%%\?*}"
           segment="${segment%%#*}"
-          [[ -n "$segment" && "$segment" == *.ts ]] || continue
+          segment_path="${segment%%\?*}"
+          [[ -n "$segment_path" && "$segment_path" == *.ts ]] || continue
+          # Keep SRS HLS context query parameters (for example hls_ctx) when fetching.
           case "$segment" in
             http://*|https://*) segment_url="$segment" ;;
             /*) segment_url="http://127.0.0.1:${HTTP_PORT}${segment}" ;;
@@ -448,14 +449,15 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
         fi
         if curl -fsS --connect-timeout 2 --max-time 4 "$manifest_url" -o "$manifest_file"; then
           segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
+          segment="${segment%%#*}"
           segment_path="${segment%%\?*}"
-          segment_path="${segment_path%%#*}"
           if [[ -n "$segment_path" ]]; then
-            case "$segment_path" in
-              http://*|https://*) segment_url="$segment_path" ;;
-              /*) segment_url="http://127.0.0.1:${HTTP_PORT}${segment_path}" ;;
-              live/*) segment_url="http://127.0.0.1:${HTTP_PORT}/${segment_path}" ;;
-              *) segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment_path#./}" ;;
+            # Keep the full URI query string: SRS may require hls_ctx to serve a segment.
+            case "$segment" in
+              http://*|https://*) segment_url="$segment" ;;
+              /*) segment_url="http://127.0.0.1:${HTTP_PORT}${segment}" ;;
+              live/*) segment_url="http://127.0.0.1:${HTTP_PORT}/${segment}" ;;
+              *) segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment#./}" ;;
             esac
             segment_bytes="$(curl -fsS --connect-timeout 2 --max-time 4 "$segment_url" -o /dev/null -w '%{size_download}' 2>/dev/null || echo 0)"
             if [[ "$segment_bytes" =~ ^[0-9]+$ ]] && (( segment_bytes >= 188 )); then
