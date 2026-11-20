@@ -223,7 +223,14 @@ play_weather_show() {
 if bash /usr/local/srs/generate-original-programs.sh "$ORIGINAL_DIR" "$WEATHER_FONT"; then
   echo "Авторские познавательные передачи подготовлены."
 else
-  echo "Не удалось создать авторские передачи; продолжаю с проверенной лицензированной программой."
+  echo "Не удалось создать авторские передачи; проверяю доступные оригинальные выпуски."
+fi
+
+# Stop the temporary test signal before the real programme loop starts.
+if [[ -n "$FFMPEG_PID" ]]; then
+  kill "$FFMPEG_PID" 2>/dev/null || true
+  wait "$FFMPEG_PID" 2>/dev/null || true
+  FFMPEG_PID=""
 fi
 
 PROGRAM_READY=0
