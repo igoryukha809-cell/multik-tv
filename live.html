@@ -223,7 +223,7 @@ function showTestSignal(message){
  statusEl.textContent='🟡 Профилактика: видеосервер временно недоступен. '+message;
  details.textContent='На канале отображается профилактическая заставка. Эфир проверится повторно автоматически.';
  // Повторная проверка после перезапуска сервера.
- setTimeout(()=>location.reload(),30000);
+ setTimeout(()=>location.reload(),60000);
 }
 function showPlayer(){
  stopMaintenanceSound();
@@ -233,8 +233,8 @@ function showPlayer(){
 // Ограничиваем ожидание ответа: в мобильном браузере загрузка HLS-библиотеки
 // или манифеста может зависнуть без события ошибки.
 const connectionWatchdog=setTimeout(()=>{
- showTestSignal('Превышено время ожидания ответа видеосервера.');
-},25000);
+ showTestSignal('Видеосервер не ответил за 90 секунд. Проверьте доступность потока и повторите подключение.');
+},90000);
 (async()=>{
  try{
   // broadcast/status.json is a GitHub Pages schedule-validation report, not live server telemetry.
@@ -258,7 +258,7 @@ const connectionWatchdog=setTimeout(()=>{
      const module=await import('https://cdn.jsdelivr.net/npm/hls.js@1.5.20/+esm');
      if(!module.default.isSupported())throw Error('Браузер не поддерживает HLS');
      showPlayer();
-     hlsEngine=new module.default({enableWorker:true,manifestLoadingMaxRetry:1,manifestLoadingTimeOut:10000,levelLoadingMaxRetry:1});
+     hlsEngine=new module.default({enableWorker:true,lowLatencyMode:false,liveSyncDurationCount:4,manifestLoadingMaxRetry:8,manifestLoadingRetryDelay:1000,manifestLoadingMaxRetryTimeout:8000,manifestLoadingTimeOut:15000,levelLoadingMaxRetry:8,levelLoadingRetryDelay:1000,levelLoadingMaxRetryTimeout:8000,fragLoadingMaxRetry:8,fragLoadingRetryDelay:1000,fragLoadingMaxRetryTimeout:8000});
      hlsEngine.loadSource(url.href); hlsEngine.attachMedia(player);
      hlsEngine.on(module.default.Events.MANIFEST_PARSED,()=>{
       clearTimeout(connectionWatchdog);selectRussianAudioTrack();
@@ -269,7 +269,7 @@ hlsEngine.on(module.default.Events.AUDIO_TRACKS_UPDATED,selectRussianAudioTrack)
      hlsEngine.on(module.default.Events.ERROR,(_,data)=>{
       if(data.fatal)showTestSignal('Видеосервер пока недоступен.');
      });
-     setTimeout(()=>{if(!player.readyState&&!fallbackStarted)showTestSignal('Не удалось получить HLS-манифест.');},20000);
+     setTimeout(()=>{if(!player.readyState&&!fallbackStarted)showTestSignal('Поток не начал передавать медиаданные за 90 секунд.');},90000);
     }
    }else{
     showPlayer();player.src=url.href;
