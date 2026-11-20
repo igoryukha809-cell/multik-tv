@@ -364,7 +364,7 @@ generate_weather_show() {
     fi
     printf '%s\n' "$spoken" > "${WEATHER_DIR}/weather-${count}.speech.txt"
     speech="${WEATHER_DIR}/weather-${count}.wav"
-    if ! espeak-ng -v ru+f3 -s 150 -p 66 -a 165 -w "$speech" "$spoken" 2>/dev/null; then
+    if ! espeak-ng -v ru+f3 -s 138 -p 74 -a 165 -g 5 -w "$speech" "$spoken" 2>/dev/null; then
       echo "Не удалось синтезировать голос ведущего для ${city}; использую резервную тишину."
       speech=""
     fi
