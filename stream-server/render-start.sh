@@ -440,6 +440,26 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
             break
           fi
         done < <(awk '!/^#/ && NF {a[++n]=$0} END {for(i=n;i>0;i--) print a[i]}' "$manifest_file" | head -n 5)
+        # SRS can finish writing TS files before the playlist exposes their names.
+        # Probe the newest local segments as a fallback instead of restarting a healthy publisher.
+        if (( live_confirmed == 0 )); then
+          while IFS= read -r segment_file; do
+            [[ -n "$segment_file" ]] || continue
+            segment="$segment_file"
+            segment_path="/live/$segment"
+            segment_url="http://127.0.0.1:${HTTP_PORT}${segment_path}"
+            segment_probe="$(curl -sS --connect-timeout 2 --max-time 4 -o /dev/null -w '%{http_code} %{size_download}' "$segment_url" 2>&1 || true)"
+            segment_http="${segment_probe%% *}"
+            segment_size="${segment_probe#* }"
+            echo "WATCHDOG: filesystem fallback probe file=$segment result=$segment_probe"
+            if [[ "$segment_http" == "200" && "$segment_size" =~ ^[0-9]+$ ]] && (( segment_size >= 188 )); then
+              write_health "live" "HLS media segment reachable through filesystem fallback"
+              echo "LIVE: finalized HLS segment confirmed through filesystem fallback: $segment"
+              live_confirmed=1
+              break
+            fi
+          done < <(find "$HEALTH_DIR/live" -maxdepth 1 -type f -name 'multiktv-*.ts' -printf '%T@ %f\\n' 2>/dev/null | sort -nr | head -n 5 | cut -d' ' -f2-)
+        fi
         (( live_confirmed )) && break
       fi
       sleep 2
@@ -464,7 +484,13 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
           segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
           segment="$(printf '%s' "$segment" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
           segment="${segment%%#*}"
-          segment_path="${segment%%\?*}"
+          segment_path="${segment%%\\?*}"
+          if [[ -z "$segment_path" ]]; then
+            # The HLS manifest may lag the segment writer; inspect finalized local TS files.
+            segment="$(find "$HEALTH_DIR/live" -maxdepth 1 -type f -name 'multiktv-*.ts' -printf '%T@ %f\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
+            segment_path="/live/$segment"
+            [[ -n "$segment" ]] && echo "WATCHDOG: filesystem fallback progress check: $segment"
+          fi
           if [[ -n "$segment_path" ]]; then
             # Keep the full URI query string: SRS may require hls_ctx to serve a segment.
             case "$segment" in
