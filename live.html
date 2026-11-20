@@ -210,7 +210,7 @@ fitButton.addEventListener('click',()=>{
  fitButton.textContent=crop?'Заполнить экран: вкл.':'Заполнить экран: выкл.';
  fitButton.setAttribute('aria-pressed',String(crop));
 });
-player.addEventListener('playing',()=>{statusEl.textContent='🟢 Видеопоток воспроизводится.';});
+player.addEventListener('playing',()=>{statusEl.textContent='🟢 Видеопоток воспроизводится.';showOnAir({streaming:true,activeItem:{title:'МУЛЬТИК ТВ · Авторская программа'}});});
 player.addEventListener('waiting',()=>{statusEl.textContent='🟡 Буферизация видеопотока…';});
 player.addEventListener('error',()=>{if(!fallbackStarted) showTestSignal('Поток недоступен. Показываем тестовую заставку.');});
 function showTestSignal(message){
@@ -237,19 +237,13 @@ const connectionWatchdog=setTimeout(()=>{
 },25000);
 (async()=>{
  try{
-  const [configResponse,stateResponse]=await Promise.all([
-   fetch('./broadcast.json',{cache:'no-store'}),
-   fetch('./broadcast/status.json',{cache:'no-store'})
-  ]);
+  // broadcast/status.json is a GitHub Pages schedule-validation report, not live server telemetry.
+  // Never use that stale static file to block a healthy HLS stream.
+  const configResponse=await fetch('./broadcast.json',{cache:'no-store'});
   if(!configResponse.ok)throw Error('Не удалось загрузить конфигурацию канала');
   const config=await configResponse.json();
-  const state=stateResponse.ok?await stateResponse.json():{streaming:false};
+  const state={streaming:false,activeItem:{title:'МУЛЬТИК ТВ · Авторская программа'}};
   showOnAir(state);
-  // Пока сервер не подтвердил реальный эфир, профилактика показывается сразу.
-  if(state.streaming!==true){
-   showTestSignal(state.message||'Видеосервер ещё не передаёт программу.');
-   return;
-  }
   if(config.streamUrl){
    const url=new URL(config.streamUrl,location.href);
    if(url.protocol!=='https:')throw Error('Для публичного эфира требуется HTTPS');
@@ -258,7 +252,7 @@ const connectionWatchdog=setTimeout(()=>{
    if(/\.m3u8($|[?#])/i.test(url.href)){
     if(player.canPlayType('application/vnd.apple.mpegurl')){
      showPlayer(); player.src=url.href;
-     player.addEventListener('loadedmetadata',()=>{clearTimeout(connectionWatchdog);showOnAir(state);selectRussianAudioTrack();details.textContent='Сервер передаёт поток. Плеер запускает его автоматически без звука; при наличии русской аудиодорожки она выбирается первой.';startAutomaticPlayback();},{once:true});
+     player.addEventListener('loadedmetadata',()=>{clearTimeout(connectionWatchdog);selectRussianAudioTrack();details.textContent='Поток получен от видеосервера. Плеер запускает его автоматически без звука; при наличии русской аудиодорожки она выбирается первой.';startAutomaticPlayback();},{once:true});
      player.addEventListener('error',()=>showTestSignal('HLS-поток не ответил.'),{once:true});
     }else{
      const module=await import('https://cdn.jsdelivr.net/npm/hls.js@1.5.20/+esm');
@@ -268,7 +262,7 @@ const connectionWatchdog=setTimeout(()=>{
      hlsEngine.loadSource(url.href); hlsEngine.attachMedia(player);
      hlsEngine.on(module.default.Events.MANIFEST_PARSED,()=>{
       clearTimeout(connectionWatchdog);selectRussianAudioTrack();
-      details.textContent='Видеосервер передаёт поток. Русская дорожка выбирается автоматически, если сервер её предоставляет.';
+      details.textContent='HLS-манифест получен. Ожидаем начало воспроизведения; русская дорожка выбирается автоматически, если сервер её предоставляет.';
       startAutomaticPlayback();
      });
 hlsEngine.on(module.default.Events.AUDIO_TRACKS_UPDATED,selectRussianAudioTrack);
