@@ -11,16 +11,16 @@
 <h1>МУЛЬТИК ТВ</h1><p>Безопасный вход по электронной почте. Мы отправим одноразовую ссылку — пароль вводить не нужно.</p>
 <form id="login"><label for="email">Электронная почта</label><input id="email" type="email" autocomplete="email" required value="Igoryukha809@gmail.com"><button id="submit" type="submit">Отправить ссылку для входа</button></form>
 <div class="status" id="status" role="status" aria-live="polite"></div>
-<p class="hint">Вход заработает после настройки Supabase по инструкции. Эта страница не запрашивает пароль ChatGPT и не является входом через OpenAI.</p>
+<p class="hint">Вход по электронной почте. Эта страница не запрашивает пароль ChatGPT и не является входом через OpenAI.</p>
 <p><a href="./index.html">← На главную</a></p>
 </main>
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import {SUPABASE_URL,SUPABASE_ANON_KEY} from './admin-config.js';
+import {SUPABASE_URL,SUPABASE_ANON_KEY} from './admin-config.js?v=20261120-2';
 const form=document.querySelector('#login'),email=document.querySelector('#email'),button=document.querySelector('#submit'),status=document.querySelector('#status');
 form.addEventListener('submit',async event=>{
  event.preventDefault();status.textContent='';
- if(SUPABASE_URL.includes('YOUR_PROJECT')||SUPABASE_ANON_KEY.includes('YOUR_SUPABASE')){status.textContent='Сначала настройте Supabase по инструкции auth-setup.md.';return;}
+ if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(SUPABASE_URL)||!SUPABASE_ANON_KEY||SUPABASE_URL.includes('YOUR_PROJECT')||SUPABASE_ANON_KEY.includes('YOUR_SUPABASE')){status.textContent='Настройки Supabase не загружены или содержат шаблонные значения. Обновите страницу позже либо проверьте admin-config.js.';return;}
  button.disabled=true;status.textContent='Отправляем запрос…';
  try{
   const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
@@ -29,14 +29,7 @@ form.addEventListener('submit',async event=>{
   status.textContent='Письмо отправлено. Откройте ссылку в письме, чтобы завершить вход.';
  }catch(error){
   console.error('Supabase signInWithOtp failed:',error);
-  const details=[
-   error?.name&&`Тип: ${error.name}`,
-   error?.status&&`HTTP: ${error.status}`,
-   error?.code&&`Код: ${error.code}`,
-   error?.message&&`Сообщение: ${error.message}`,
-   error?.details&&`Подробности: ${error.details}`,
-   error?.hint&&`Подсказка: ${error.hint}`
-  ].filter(Boolean);
+  const details=[error?.name&&`Тип: ${error.name}`,error?.status&&`HTTP: ${error.status}`,error?.code&&`Код: ${error.code}`,error?.message&&`Сообщение: ${error.message}`,error?.details&&`Подробности: ${error.details}`,error?.hint&&`Подсказка: ${error.hint}`].filter(Boolean);
   status.textContent='Не удалось отправить ссылку. Диагностика:\n'+(details.join('\n')||String(error));
  }
  finally{button.disabled=false;}
