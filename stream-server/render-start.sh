@@ -43,7 +43,7 @@ play_channel_ident() {
   echo "В эфире: фирменная заставка МУЛЬТИК ТВ с оригинальной музыкальной темой."
   ffmpeg -hide_banner -nostdin -loglevel warning -re -t 6.5 \
     -f lavfi -i "color=c=0x24164f:s=1280x720:r=25:d=6.5" \
-    -f lavfi -i 'aevalsrc=0.13*sin(2*PI*(if(lt(t\,0.55)\,523.25\,if(lt(t\,1.1)\,659.25\,if(lt(t\,1.65)\,783.99\,if(lt(t\,2.2)\,659.25\,if(lt(t\,2.75)\,698.46\,if(lt(t\,3.3)\,880\,if(lt(t\,4.4)\,783.99\,if(lt(t\,5.5)\,659.25\,523.25))))))))*t)+0.035*sin(2*PI*261.63*t):s=44100:d=6.5' \
+    -f lavfi -i 'aevalsrc=0.13*sin(2*PI*(if(lt(t\,0.55)\,523.25\,if(lt(t\,1.1)\,659.25\,if(lt(t\,1.65)\,783.99\,if(lt(t\,2.2)\,659.25\,if(lt(t\,2.75)\,698.46\,if(lt(t\,3.3)\,880\,if(lt(t\,4.4)\,783.99\,if(lt(t\,5.5)\,659.25\,523.25)))))))))*t)+0.035*sin(2*PI*261.63*t):s=44100:d=6.5' \
     -vf "drawbox=x=(w-320)/2:y=178:w=320:h=13:color=0xff5f9e:t=fill,drawbox=x=(w-320)/2:y=194:w=320:h=13:color=0xffcf4b:t=fill,drawbox=x=(w-320)/2:y=210:w=320:h=13:color=0x66d5a7:t=fill,drawbox=x=(w-320)/2:y=226:w=320:h=13:color=0x53c8ee:t=fill,drawbox=x=(w-320)/2:y=242:w=320:h=13:color=0x9475e8:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='МУЛЬТИК ТВ':fontcolor=white:fontsize=76:x=(w-text_w)/2:y=315:shadowcolor=black@0.45:shadowx=3:shadowy=3,drawtext=fontfile=${WEATHER_FONT}:text='ВМЕСТЕ ИНТЕРЕСНЕЕ':fontcolor=0xffe27d:fontsize=30:x=(w-text_w)/2:y=420" \
     -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 -b:v 1200k -maxrate 1200k -bufsize 2400k \
     -c:a aac -b:a 128k -ar 44100 -ac 2 -shortest -f flv rtmp://127.0.0.1/live/multiktv
