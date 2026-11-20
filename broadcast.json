@@ -9,11 +9,11 @@
       "title": "Погода с Мультиком",
       "time": "after_each_programme_cycle",
       "timezone": "Europe/Moscow",
-      "source": "Open-Meteo",
+      "source": "MET Norway Locationforecast 2.0 (primary), wttr.in (fallback)",
       "generatedBy": "FFmpeg",
       "scheduleMode": "repeating",
       "durationSeconds": 96,
-      "description": "Eight city weather cards, approximately 96 seconds, appended after the six original educational programmes in each continuous playlist cycle."
+      "description": "Eight city weather cards, approximately 96 seconds. Global forecast from MET Norway with wttr.in fallback; if both providers are unavailable, an explicitly labelled no-data card is used. Provider attribution is shown on each forecast card."
     },
     "originalShows": [
       {
@@ -60,7 +60,7 @@
       }
     ]
   },
-  "note": "Эфирный плейлист воспроизводит авторские познавательные передачи, затем погодный выпуск примерно на 96 секунд, после чего повторяет цикл. Погодные данные Open-Meteo запрашиваются при запуске видеосервера. Это повторяющийся цикл, а не отдельный ежедневный запуск в фиксированное время. Статус прямого эфира определяется фактическим продвижением HLS-сегментов и воспроизведением плеера.",
+  "note": "The continuous playlist plays six original educational programmes, then a weather segment of approximately 96 seconds, and repeats. Weather forecasts use MET Norway as the primary source and wttr.in as a fallback; if both are unavailable, the channel shows a clearly labelled no-data card. This is a repeating cycle, not a separate daily start at a fixed time. Live status is determined by actual HLS segment progress and player playback.",
   "maintenance": {
     "daily": true,
     "start": "02:00",
