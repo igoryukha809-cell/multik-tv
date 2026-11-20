@@ -7,6 +7,6 @@ COPY render-start.sh /usr/local/srs/render-start.sh
 COPY generate-original-programs.sh /usr/local/srs/generate-original-programs.sh
 COPY brand.svg /usr/local/srs/brand.svg
 COPY maintenance.svg /usr/local/srs/maintenance.svg
-RUN rsvg-convert -w 512 -h 512 /usr/local/srs/brand.svg -o /usr/local/srs/brand.png && rsvg-convert -w 1280 -h 720 /usr/local/srs/maintenance.svg -o /usr/local/srs/maintenance.png && chmod +x /usr/local/srs/render-start.sh /usr/local/srs/generate-original-programs.sh && bash -n /usr/local/srs/render-start.sh && bash -n /usr/local/srs/generate-original-programs.sh
+RUN rsvg-convert -w 512 -h 512 /usr/local/srs/brand.svg -o /usr/local/srs/brand.png && rsvg-convert -w 1280 -h 720 /usr/local/srs/maintenance.svg -o /usr/local/srs/maintenance.png && chmod +x /usr/local/srs/render-start.sh /usr/local/srs/generate-original-programs.sh && bash -n /usr/local/srs/render-start.sh && bash -n /usr/local/srs/generate-original-programs.sh && /usr/local/srs/generate-original-programs.sh /usr/local/srs/originals /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
 EXPOSE 10000
 CMD ["/usr/local/srs/render-start.sh"]
