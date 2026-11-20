@@ -262,7 +262,7 @@ generate_weather_show() {
     if curl -fsSL --retry 1 --retry-delay 3 --connect-timeout 8 --max-time 20 \
       -H "User-Agent: ${weather_ua}" -H "Accept: application/json" "$url" -o "$json"; then
       temp="$(jq -r '.properties.timeseries[0].data.instant.details.air_temperature // empty' "$json")"
-      feels="$(jq -r '.properties.timeseries[0].data.instant.details.air_temperature // empty' "$json")"
+      feels=""
       wind="$(jq -r '.properties.timeseries[0].data.instant.details.wind_speed // empty' "$json")"
       humidity="$(jq -r '.properties.timeseries[0].data.instant.details.relative_humidity // empty' "$json")"
       code="$(jq -r '.properties.timeseries[0].data.next_1_hours.summary.symbol_code // .properties.timeseries[0].data.next_6_hours.summary.symbol_code // empty' "$json")"
@@ -298,7 +298,7 @@ generate_weather_show() {
       high="$(jq -r '.weather[0].maxtempC // "—"' "$json")"
     fi
 
-    [[ -n "$temp" && -n "$feels" && -n "$wind" && -n "$humidity" ]] || {
+    [[ -n "$temp" && -n "$wind" && -n "$humidity" ]] || {
       echo "Неполные погодные данные от ${source} для ${city}; пропускаю город."
       continue
     }
@@ -307,10 +307,11 @@ generate_weather_show() {
       printf 'МУЛЬТИК ТВ  |  ПОГОДА С МУЛЬТИКОМ\n'
       printf '%s\n' "$city"
       printf 'Сейчас: %s °C  |  %s\n' "$temp" "$condition"
-      printf 'Ощущается как: %s °C\n' "$feels"
+      [[ -z "$feels" ]] || printf 'Ощущается как: %s °C\n' "$feels"
       printf 'Ветер: %s км/ч  |  Влажность: %s%%\n' "$wind" "$humidity"
-      printf 'Осадки: %s%%  |  Сегодня: %s...%s °C\n' "$rain" "$low" "$high"
-      printf 'Данные: Open-Meteo  |  Обновлено: %s\n' "$(date '+%H:%M %Z')"
+      [[ "$rain" == "—" ]] || printf 'Вероятность осадков: %s%%\n' "$rain"
+      [[ "$low" == "—" || "$high" == "—" ]] || printf 'Сегодня: %s...%s °C\n' "$low" "$high"
+      printf 'Источник: %s  |  Обновлено: %s\n' "$source" "$(date '+%H:%M %Z')"
     } > "$txt"
 
     if ffmpeg -hide_banner -nostdin -loglevel error \
