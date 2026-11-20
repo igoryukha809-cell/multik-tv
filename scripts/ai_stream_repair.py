@@ -38,8 +38,8 @@ if not patch.startswith('diff --git '): fail('Model response was not a unified d
 paths=re.findall(r'^diff --git a/(.*?) b/(.*?)$',patch,re.M)
 if not paths or any(a!=b or a not in ALLOWED for a,b in paths): fail('Patch touched a path outside the strict allowlist; rejected.')
 if len(patch)>30000: fail('Patch exceeded 30 KB; rejected.')
-with open('/tmp/ai-repair.patch','w',encoding='utf-8') as f: f.write(patch+'\n')
-for cmd in (['git','apply','--check','/tmp/ai-repair.patch'],['git','apply','/tmp/ai-repair.patch']):
+with open('ai-repair.patch','w',encoding='utf-8') as f: f.write(patch+'\n')
+for cmd in (['git','apply','--check','ai-repair.patch'],['git','apply','ai-repair.patch']):
     result=subprocess.run(cmd,text=True,capture_output=True)
     if result.returncode: fail('Patch validation failed: '+result.stderr[:3000])
 print('AI_REPAIR: constrained patch applied locally; CI must pass before a pull request is opened.')
