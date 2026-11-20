@@ -1,6 +1,10 @@
 name: МУЛЬТИК ТВ — проверка эфира
 
 on:
+  push:
+    paths:
+      - ".github/workflows/broadcast-health.yml"
+      - "scripts/stream_autorepair.py"
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
