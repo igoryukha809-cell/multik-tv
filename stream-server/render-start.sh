@@ -94,8 +94,7 @@ fi
 # Publish the channel slate and ident, then a test signal until original shows are rendered.
 play_maintenance_slate || echo "WARNING: maintenance slate failed; continuing startup."
 play_channel_ident || echo "WARNING: channel ident failed; continuing startup."
-start_test_signal &
-FFMPEG_PID=$!
+# No synthetic test pattern is published as a substitute for programmes.
 
 if [[ -n "$DOWNLOAD_PID" ]]; then
   while kill -0 "$SRS_PID" 2>/dev/null; do
@@ -340,61 +339,48 @@ else
   echo "Не удалось создать авторские передачи; проверяю доступные оригинальные выпуски."
 fi
 
-# Stop the temporary test signal before the real programme loop starts.
-if [[ -n "$FFMPEG_PID" ]]; then
-  kill "$FFMPEG_PID" 2>/dev/null || true
-  wait "$FFMPEG_PID" 2>/dev/null || true
-  FFMPEG_PID=""
-fi
-
+# One FFmpeg publisher handles the entire playlist, avoiding RTMP disconnects between programmes.
 PROGRAM_READY=0
 if [[ -s "$PROGRAM_FILE" ]] && ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$PROGRAM_FILE" >/dev/null 2>&1; then
   PROGRAM_READY=1
 fi
-
-if (( PROGRAM_READY )) || compgen -G "$ORIGINAL_DIR/*.mp4" >/dev/null; then
-  echo "Starting the scheduled broadcast loop."
-  if (( PROGRAM_READY )); then
-    echo "Licensed programme: Pepper & Carrot Episode 6 (CC BY-SA 4.0)."
+PLAYLIST_FILE="/tmp/multik-tv-broadcast.concat"
+: > "$PLAYLIST_FILE"
+if (( PROGRAM_READY )); then
+  printf "file '%s'\\n" "$PROGRAM_FILE" >> "$PLAYLIST_FILE"
+fi
+ORIGINAL_COUNT=0
+for original_show in "$ORIGINAL_DIR"/*.mp4; do
+  [[ -f "$original_show" ]] || continue
+  if ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$original_show" >/dev/null 2>&1; then
+    printf "file '%s'\\n" "$original_show" >> "$PLAYLIST_FILE"
+    ORIGINAL_COUNT=$((ORIGINAL_COUNT + 1))
   else
-    echo "Licensed download unavailable; running original channel-made programmes."
+    echo "ОШИБКА: повреждённый выпуск пропущен: ${original_show##*/}"
   fi
-  echo "Weather show: every day at ${WEATHER_TIME} (${TZ})."
-  WEATHER_PLAYED_DATE=""
+done
+if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
+  echo "Starting continuous broadcast playlist: licensed_items=$PROGRAM_READY, original_items=$ORIGINAL_COUNT."
+  echo "Один FFmpeg-передатчик будет воспроизводить все выпуски подряд без переподключения между ними."
   while kill -0 "$SRS_PID" 2>/dev/null; do
-    TODAY="$(date +%F)"
-    NOW="$(date +%H:%M)"
-    if [[ "$NOW" > "$WEATHER_TIME" || "$NOW" == "$WEATHER_TIME" ]]; then
-      if [[ "$WEATHER_PLAYED_DATE" != "$TODAY" ]]; then
-        if play_weather_show; then
-          WEATHER_PLAYED_DATE="$TODAY"
-        fi
-      fi
-    fi
-
-    if (( PROGRAM_READY )); then
-      play_channel_ident || echo "WARNING: channel ident failed; continuing to programme."
-      echo "В эфире: Пеппер и Кэррот, эпизод 6 (CC BY-SA 4.0)."
-      ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$PROGRAM_FILE" \
-        -map 0:v:0 -map 0:a:0? \
-        -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='Pepper and Carrot Ep. 6 | Morevna Project | David Revoy | Gregoire Lourme | CC BY-SA 4.0':fontcolor=white:fontsize=15:box=1:boxcolor=black@0.55:boxborderw=7:x=12:y=h-th-12" \
-        -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 -b:v 1600k -maxrate 1600k -bufsize 3200k \
-        -c:a aac -b:a 128k -ar 44100 -ac 2 -f flv rtmp://127.0.0.1/live/multiktv || echo "Основной ролик завершился с ошибкой; повторю цикл."
-    fi
-    for original_show in "$ORIGINAL_DIR"/*.mp4; do
-      [[ -f "$original_show" ]] || continue
-      echo "В эфире авторская передача: ${original_show##*/}."
-      play_channel_ident || echo "WARNING: channel ident failed; continuing to programme."
-      ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$original_show" \
-        -map 0:v:0 -map 0:a:0? -c:v libx264 -preset veryfast -tune zerolatency \
-        -pix_fmt yuv420p -r 25 -g 50 -b:v 1100k -maxrate 1100k -bufsize 2200k \
-        -c:a aac -b:a 64k -ar 44100 -ac 2 -f flv rtmp://127.0.0.1/live/multiktv || echo "Авторский выпуск завершился с ошибкой; перехожу к следующему."
-    done
-    sleep 3
+    write_health "live" "Continuous programme playlist is being published"
+    ffmpeg -hide_banner -nostdin -loglevel warning -re -stream_loop -1 \
+      -f concat -safe 0 -i "$PLAYLIST_FILE" \
+      -map 0:v:0 -map 0:a:0? \
+      -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=25" \
+      -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 \
+      -b:v 1300k -maxrate 1300k -bufsize 2600k \
+      -c:a aac -b:a 96k -ar 44100 -ac 2 \
+      -f flv rtmp://127.0.0.1/live/multiktv
+    result=$?
+    write_health "recovering" "Publisher exited with code $result; restarting the same playlist"
+    echo "ОШИБКА: FFmpeg передатчик завершился с кодом $result; повторный запуск через 2 секунды."
+    sleep 2
   done
 else
-  echo "Keeping the technical test signal as the only output."
-  wait "$FFMPEG_PID" || true
+  write_health "error" "No valid programme files are available"
+  echo "ОШИБКА: нет ни одного проверенного видео. Тестовый сигнал не запускается."
+  while kill -0 "$SRS_PID" 2>/dev/null; do sleep 5; done
 fi
 
 wait "$SRS_PID"
