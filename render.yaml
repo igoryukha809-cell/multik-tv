@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: multik-tv-test-stream-yltl
+    name: multik-tv-test-stream
     runtime: docker
     plan: free
     region: frankfurt
