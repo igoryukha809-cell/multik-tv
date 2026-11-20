@@ -38,6 +38,10 @@ class RenderBlueprintTests(unittest.TestCase):
         self.assertIn("Asia/Krasnoyarsk", (ROOT / "render.yaml").read_text(encoding="utf-8"))
         self.assertIn("curl jq", dockerfile)
         self.assertIn("rtmp://127.0.0.1/live/multiktv", startup)
+        self.assertIn("play_channel_ident() {", startup)
+        self.assertIn("ВМЕСТЕ ИНТЕРЕСНЕЕ", startup)
+        self.assertIn("aevalsrc=", startup)
+        self.assertGreaterEqual(startup.count("play_channel_ident"), 4)
 
     def test_render_start_script_has_valid_shell_syntax_and_matching_hls_output(self):
         startup = ROOT / "stream-server" / "render-start.sh"
