@@ -48,7 +48,9 @@ jobs:
         run: python -m unittest discover -s scripts -p 'test_*.py' -v
 
       - name: Check shell script syntax
-        run: bash -n stream-server/playlist/loop.sh
+        run: |
+          bash -n stream-server/playlist/loop.sh
+          bash -n stream-server/render-start.sh
 
       - name: Validate Docker Compose configuration
         working-directory: stream-server
@@ -56,6 +58,9 @@ jobs:
 
       - name: Build FFmpeg playlist image
         run: docker build --tag multik-tv-playlist:ci stream-server/playlist
+
+      - name: Build cloud HLS broadcast image
+        run: docker build --file stream-server/Dockerfile --tag multik-tv-render:ci stream-server
 
       - name: Confirm required server files
         run: |
