@@ -29,49 +29,77 @@ const player=document.getElementById('player');
 const test=document.getElementById('testSignal');
 const statusEl=document.getElementById('status');
 const details=document.getElementById('details');
-fitButton.addEventListener('click',()=>{const crop=player.classList.toggle('crop');fitButton.textContent=crop?'Заполнить экран: вкл.':'Заполнить экран: выкл.';fitButton.setAttribute('aria-pressed',String(crop));});
+const placeholder=document.getElementById('placeholder');
+let hlsEngine=null;
+let fallbackStarted=false;
+fitButton.addEventListener('click',()=>{
+ const crop=player.classList.toggle('crop');
+ fitButton.textContent=crop?'Заполнить экран: вкл.':'Заполнить экран: выкл.';
+ fitButton.setAttribute('aria-pressed',String(crop));
+});
 player.addEventListener('playing',()=>{statusEl.textContent='🟢 Видеопоток воспроизводится.';});
 player.addEventListener('waiting',()=>{statusEl.textContent='🟡 Буферизация видеопотока…';});
-player.addEventListener('error',()=>{statusEl.textContent='🔴 Не удалось воспроизвести видеопоток. Прямой эфир OFFLINE.';});
+player.addEventListener('error',()=>{if(!fallbackStarted) showTestSignal('Поток недоступен. Показываем тестовую заставку.');});
+function showTestSignal(message){
+ if(fallbackStarted)return;
+ fallbackStarted=true;
+ if(hlsEngine){hlsEngine.destroy();hlsEngine=null;}
+ player.pause(); player.removeAttribute('src'); player.load(); player.classList.add('hidden');
+ const configUrl=new URL('./broadcast.json',location.href);
+ fetch(configUrl,{cache:'no-store'}).then(r=>r.json()).then(config=>{
+  if(config.testSignalUrl){
+   const url=new URL(config.testSignalUrl,location.href);
+   if(url.protocol==='https:'){test.src=url.href;test.classList.remove('hidden');placeholder.classList.add('hidden');}
+  }
+ }).catch(()=>{});
+ statusEl.textContent='🟡 '+message+' Настоящий эфир пока не подтверждён.';
+ details.textContent='Тестовая заставка — не прямой эфир.';
+}
+function showPlayer(){
+ if(fallbackStarted)return;
+ player.classList.remove('hidden'); test.classList.add('hidden'); placeholder.classList.add('hidden');
+}
 (async()=>{
- const placeholder=document.getElementById('placeholder');
- try {
+ try{
   const [configResponse,stateResponse]=await Promise.all([
    fetch('./broadcast.json',{cache:'no-store'}),
    fetch('./broadcast/status.json',{cache:'no-store'})
   ]);
-  if(!configResponse.ok) throw Error('Не удалось загрузить конфигурацию канала');
+  if(!configResponse.ok)throw Error('Не удалось загрузить конфигурацию канала');
   const config=await configResponse.json();
-  const state=stateResponse.ok?await stateResponse.json():{streaming:false,state:'unknown'};
-  if(state.streaming===true && config.streamUrl){
+  const state=stateResponse.ok?await stateResponse.json():{streaming:false};
+  if(config.streamUrl){
    const url=new URL(config.streamUrl,location.href);
-   if(url.protocol!=='https:') throw Error('Для публичного эфира требуется HTTPS');
-   player.classList.remove('hidden'); placeholder.classList.add('hidden');
+   if(url.protocol!=='https:')throw Error('Для публичного эфира требуется HTTPS');
+   statusEl.textContent='Проверяем видеосервер…';
+   details.textContent=state.message||'Ожидаем подтверждения видеопотока.';
    if(/\\.m3u8($|[?#])/i.test(url.href)){
-    if(player.canPlayType('application/vnd.apple.mpegurl')) player.src=url.href;
-    else {
+    if(player.canPlayType('application/vnd.apple.mpegurl')){
+     showPlayer(); player.src=url.href;
+     player.addEventListener('loadedmetadata',()=>{statusEl.textContent='🟢 HLS-поток найден. Нажми Play для просмотра.';details.textContent='Сервер передаёт видеосигнал.';},{once:true});
+     player.addEventListener('error',()=>showTestSignal('HLS-поток не ответил.'),{once:true});
+    }else{
      const module=await import('https://cdn.jsdelivr.net/npm/hls.js@1.5.20/+esm');
-     if(!module.default.isSupported()) throw Error('Браузер не поддерживает HLS');
-     const engine=new module.default({enableWorker:true});
-     engine.loadSource(url.href); engine.attachMedia(player);
-     engine.on(module.default.Events.ERROR,(_,data)=>{if(data.fatal){statusEl.textContent='🔴 Ошибка видеопотока. Эфир OFFLINE.';details.textContent='Проверьте видеосервер и HLS-плейлист.';engine.destroy();}});
+     if(!module.default.isSupported())throw Error('Браузер не поддерживает HLS');
+     showPlayer();
+     hlsEngine=new module.default({enableWorker:true,manifestLoadingMaxRetry:1,manifestLoadingTimeOut:10000,levelLoadingMaxRetry:1});
+     hlsEngine.loadSource(url.href); hlsEngine.attachMedia(player);
+     hlsEngine.on(module.default.Events.MANIFEST_PARSED,()=>{
+      statusEl.textContent='🟢 HLS-поток найден. Нажми Play для просмотра.';
+      details.textContent='Видеосервер передаёт поток. Статус: '+(state.state||'проверяется')+'.';
+     });
+     hlsEngine.on(module.default.Events.ERROR,(_,data)=>{
+      if(data.fatal)showTestSignal('Видеосервер пока недоступен.');
+     });
+     setTimeout(()=>{if(!player.readyState&&!fallbackStarted)showTestSignal('Не удалось получить HLS-манифест.');},20000);
     }
-   } else player.src=url.href;
-   statusEl.textContent='Источник найден. Нажми Play для проверки воспроизведения.';
-   details.textContent='Состояние канала: '+(state.state||'online')+'.';
-  } else if(config.testSignalUrl) {
-   const url=new URL(config.testSignalUrl,location.href);
-   if(url.protocol!=='https:') throw Error('Тестовый экран должен использовать HTTPS');
-   test.src=url.href; test.classList.remove('hidden'); placeholder.classList.add('hidden');
-   statusEl.textContent='🟡 Работает только тестовая заставка. Настоящий прямой эфир OFFLINE.';
-   details.textContent=state.message||'Видеоплейлист пуст. Прямой эфир не подключён.';
-  } else {
-   statusEl.textContent='🔴 Эфир не запущен. Видеосигнал отсутствует.';
-   details.textContent=state.message||'Ожидается подключение видеосервера.';
+   }else{
+    showPlayer();player.src=url.href;
+    player.addEventListener('loadedmetadata',()=>{statusEl.textContent='🟢 Источник видео найден. Нажми Play.';},{once:true});
+    player.addEventListener('error',()=>showTestSignal('Видеофайл недоступен.'),{once:true});
+   }
+  }else{
+   showTestSignal('Адрес видеосервера не настроен.');
   }
- } catch(error) {
-  statusEl.textContent='🔴 Эфир не запущен. '+error.message;
-  details.textContent='Состояние: ожидание видеосигнала.';
- }
-})();
-</script></body></html>
+ }catch(error){showTestSignal(error.message);}
+})();</script></body></html>
