@@ -7,10 +7,13 @@
   "scheduledPrograms": {
     "weather": {
       "title": "Погода с Мультиком",
-      "time": "10:00",
+      "time": "after_each_programme_cycle",
       "timezone": "Europe/Moscow",
       "source": "Open-Meteo",
-      "generatedBy": "FFmpeg"
+      "generatedBy": "FFmpeg",
+      "scheduleMode": "repeating",
+      "durationSeconds": 96,
+      "description": "Eight city weather cards, approximately 96 seconds, appended after the six original educational programmes in each continuous playlist cycle."
     },
     "originalShows": [
       {
@@ -57,7 +60,7 @@
       }
     ]
   },
-  "note": "Статус прямого эфира определяется фактическим воспроизведением HLS-потока на видеосервере, а не статическим отчётом проверки расписания. Авторские познавательные выпуски создаются при сборке сервера и воспроизводятся непрерывной последовательностью. Времена расписания указаны по Москве (Europe/Moscow).",
+  "note": "Эфирный плейлист воспроизводит авторские познавательные передачи, затем погодный выпуск примерно на 96 секунд, после чего повторяет цикл. Погодные данные Open-Meteo запрашиваются при запуске видеосервера. Это повторяющийся цикл, а не отдельный ежедневный запуск в фиксированное время. Статус прямого эфира определяется фактическим продвижением HLS-сегментов и воспроизведением плеера.",
   "maintenance": {
     "daily": true,
     "start": "02:00",
