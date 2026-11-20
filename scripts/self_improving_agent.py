@@ -62,13 +62,16 @@ def main() -> int:
         results.append({"check": "Python unit tests present", "ok": False,
                         "error": "No scripts/test_*.py tests were found."})
 
-    compose = ROOT / "docker-compose.yml"
-    if compose.exists():
-        results.append(run("Docker Compose config",
+    compose_candidates = [ROOT / "docker-compose.yml", ROOT / "compose.yml",
+                         ROOT / "stream-server" / "docker-compose.yml",
+                         ROOT / "stream-server" / "compose.yml"]
+    compose = next((path for path in compose_candidates if path.exists()), None)
+    if compose is not None:
+        results.append(run(f"Docker Compose config: {compose.relative_to(ROOT)}",
                            ["docker", "compose", "-f", str(compose), "config", "--quiet"]))
     else:
         results.append({"check": "Docker Compose file", "ok": False,
-                        "error": "docker-compose.yml not found"})
+                        "error": "No supported Compose file found"})
 
     report = {"agent": "Multik TV Self-Audit Agent", "version": 1,
               "timestamp_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
