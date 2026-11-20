@@ -11,7 +11,7 @@ on:
       - 'broadcast.json'
       - 'render.yaml'
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 permissions:
   contents: read
