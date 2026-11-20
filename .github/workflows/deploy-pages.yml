@@ -43,6 +43,10 @@ jobs:
             echo "Checking $page"
             curl --fail --silent --show-error --retry 5 --retry-delay 3 "$SITE_URL$page" -o /dev/null
           done
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 "$SITE_URL/live.html" -o /tmp/live.html
+          grep -q 'id="maintenance"' /tmp/live.html
+          grep -q '.screen:before' /tmp/live.html
+          echo "Live page contains the maintenance slate and a non-collapsing 16:9 viewport."
           curl --fail --silent --show-error --retry 5 --retry-delay 3 "$SITE_URL/broadcast/status.json" -o /tmp/broadcast-status.json
           python - <<'PY'
           import json
