@@ -10,12 +10,12 @@ ROOT = Path(__file__).resolve().parents[1]
 class RenderBlueprintTests(unittest.TestCase):
     def test_blueprint_declares_one_free_web_service_and_real_health_document(self):
         config = (ROOT / "render.yaml").read_text(encoding="utf-8")
-        self.assertEqual(len(re.findall(r"(?m)^\\s*- type:\\s*web\\s*$", config)), 1)
-        self.assertRegex(config, r"(?m)^\\s*plan:\\s*free\\s*$")
-        self.assertRegex(config, r"(?m)^\\s*rootDir:\\s*stream-server\\s*$")
-        self.assertRegex(config, r"(?m)^\\s*healthCheckPath:\\s*/broadcast/health\\.json\\s*$")
-        self.assertRegex(config, r"(?m)^\\s*autoDeploy:\\s*true\\s*$")
-        self.assertNotRegex(config, r"(?m)^\\s*(?:- type:\\s*(?:worker|private_service|keyvalue|pserv)|disk:|numInstances:)")
+        self.assertEqual(len(re.findall(r"(?m)^\s*- type:\s*web\s*$", config)), 1)
+        self.assertRegex(config, r"(?m)^\s*plan:\s*free\s*$")
+        self.assertRegex(config, r"(?m)^\s*rootDir:\s*stream-server\s*$")
+        self.assertRegex(config, r"(?m)^\s*healthCheckPath:\s*/broadcast/health\.json\s*$")
+        self.assertRegex(config, r"(?m)^\s*autoDeploy:\s*true\s*$")
+        self.assertNotRegex(config, r"(?m)^\s*(?:- type:\s*(?:worker|private_service|keyvalue|pserv)|disk:|numInstances:)")
 
     def test_startup_builds_a_single_continuous_playlist(self):
         dockerfile = (ROOT / "stream-server" / "Dockerfile").read_text(encoding="utf-8")
