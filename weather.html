@@ -29,11 +29,21 @@ function card(city,d){
  days.time.forEach((date,i)=>{const item=document.createElement("div");item.className="day";const dt=new Date(date+"T12:00:00");item.textContent=dt.toLocaleDateString("ru-RU",{weekday:"short"})+": "+icon(days.weather_code[i])+" "+fmt(days.temperature_2m_min[i])+"…"+fmt(days.temperature_2m_max[i])+"° · дождь "+(days.precipitation_probability_max[i]??0)+"%";forecast.append(item)});
  el.append(h,temp,desc,detail,forecast);return el;
 }
+async function fetchJsonWithRetry(url){
+ let lastError;
+ for(let attempt=0;attempt<2;attempt++){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+  try{const response=await fetch(url,{cache:"no-store",signal:controller.signal});if(!response.ok)throw Error("HTTP "+response.status);return await response.json()}
+  catch(error){lastError=error}
+  finally{clearTimeout(timer)}
+ }
+ throw lastError||Error("Погодный сервис не ответил");
+}
 async function load(){
  const status=document.getElementById("status"),container=document.getElementById("cities"),button=document.getElementById("refresh");
  button.disabled=true;status.className="status";status.textContent="Получаем свежие данные…";
  const urlFor=c=>"https://api.open-meteo.com/v1/forecast?latitude="+c.lat+"&longitude="+c.lon+"&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=3&timezone=auto";
- const results=await Promise.allSettled(cities.map(async c=>{const r=await fetch(urlFor(c),{cache:"no-store"});if(!r.ok)throw Error("HTTP "+r.status);return {city:c,data:await r.json()}}));
+ const results=await Promise.allSettled(cities.map(async c=>({city:c,data:await fetchJsonWithRetry(urlFor(c))})));
  container.replaceChildren();let ok=0;
  results.forEach((r,i)=>{if(r.status==="fulfilled"){ok++;container.append(card(r.value.city,r.value.data))}else{const e=document.createElement("article");e.className="city";e.textContent=cities[i].name+": не удалось получить прогноз. Попробуйте обновить страницу.";container.append(e)}});
  const now=new Date();document.getElementById("updated").textContent="Обновлено: "+now.toLocaleString("ru-RU");
