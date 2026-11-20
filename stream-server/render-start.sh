@@ -300,8 +300,10 @@ generate_weather_show() {
 
     if ffmpeg -hide_banner -nostdin -loglevel error \
       -f lavfi -i "color=c=0x14558B:s=1280x720:r=25:d=12" \
+      -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
       -vf "drawtext=fontfile=${WEATHER_FONT}:textfile=${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
-      -an -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 -movflags +faststart "$clip"; then
+      -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
+      -c:a aac -b:a 48k -ar 44100 -ac 2 -shortest -movflags +faststart "$clip"; then
       printf "file '%s'\n" "$clip" >> "$concat_file"
       count=$((count + 1))
     else
@@ -347,6 +349,16 @@ else
   echo "Не удалось создать авторские передачи; проверяю доступные оригинальные выпуски."
 fi
 
+# Generate weather with a silent audio track so concat can safely combine it
+# with the programme files. It airs after every complete originals block.
+WEATHER_READY=0
+if generate_weather_show && [[ -s "$WEATHER_VIDEO" ]] && ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$WEATHER_VIDEO" >/dev/null 2>&1; then
+  WEATHER_READY=1
+  echo "Погодный выпуск подготовлен и включён в повторяющийся эфирный цикл."
+else
+  echo "Погодный выпуск недоступен; продолжаю без него, не прерывая основной эфир."
+fi
+
 # One FFmpeg publisher handles the entire playlist, avoiding RTMP disconnects between programmes.
 PROGRAM_READY=0
 if [[ -s "$PROGRAM_FILE" ]] && ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$PROGRAM_FILE" >/dev/null 2>&1; then
@@ -367,6 +379,9 @@ for original_show in "$ORIGINAL_DIR"/*.mp4; do
     echo "ОШИБКА: повреждённый выпуск пропущен: ${original_show##*/}"
   fi
 done
+if (( WEATHER_READY )); then
+  printf "file '%s'\\n" "$WEATHER_VIDEO" >> "$PLAYLIST_FILE"
+fi
 if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
   echo "Starting continuous broadcast playlist: licensed_items=$PROGRAM_READY, original_items=$ORIGINAL_COUNT."
   echo "Собираю единый MP4-файл, чтобы FFmpeg не перезапускал RTMP при переходе между выпусками."
