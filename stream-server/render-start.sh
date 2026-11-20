@@ -460,7 +460,9 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
     fi
 
     if kill -0 "$FFMPEG_PID" 2>/dev/null; then kill "$FFMPEG_PID" 2>/dev/null || true; fi
-    wait "$FFMPEG_PID" || [[ "$result" -ne 0 ]] || result=$?
+    wait_result=0
+    wait "$FFMPEG_PID" || wait_result=$?
+    if (( result == 0 )); then result=$wait_result; fi
     FFMPEG_PID=""
     write_health "recovering" "Watchdog detected publisher or HLS failure; automatic restart scheduled"
     echo "WATCHDOG: publisher stopped (code $result); retrying in \${restart_delay}s."
