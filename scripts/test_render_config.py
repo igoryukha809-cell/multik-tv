@@ -35,7 +35,7 @@ class RenderBlueprintTests(unittest.TestCase):
         self.assertIn('WEATHER_TIME="${WEATHER_TIME:-10:00}"', startup)
         self.assertIn("WEATHER_PLAYED_DATE", startup)
         self.assertIn("Погода с Мультиком", startup)
-        self.assertIn("Europe/Berlin", (ROOT / "render.yaml").read_text(encoding="utf-8"))
+        self.assertIn("Asia/Krasnoyarsk", (ROOT / "render.yaml").read_text(encoding="utf-8"))
         self.assertIn("curl jq", dockerfile)
         self.assertIn("rtmp://127.0.0.1/live/multiktv", startup)
 
