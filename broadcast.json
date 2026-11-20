@@ -1,8 +1,8 @@
 {
   "channelName": "МУЛЬТИК ТВ",
   "status": "test_signal",
-  "streamUrl": "https://multik-tv-test-stream.onrender.com/live/multiktv.m3u8",
+  "streamUrl": "https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8",
   "testSignalUrl": "https://igoryukha809-cell.github.io/multik-tv/test-signal.html",
   "testSignal": true,
-  "note": "Плейлист пока пуст. На странице показывается только собственная техническая заставка; это не прямой эфир. HLS-адрес не считается подтверждённым до успешной проверки реального потока."
+  "note": "Сейчас подключён технический тестовый поток Render. Он проверяет HLS-плеер, но не является подтверждением постоянной программы канала."
 }
