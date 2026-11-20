@@ -1,27 +1,26 @@
-# Настройка входа МУЛЬТИК ТВ по электронной почте
+# Вход в МУЛЬТИК ТВ через Logto
 
-Страница входа: `login.html`. Используется Supabase Auth и одноразовая ссылка (magic link): пользователь вводит почту, получает письмо и подтверждает вход по ссылке. Пароль не нужен.
+Основной вход сайта выполняется через Logto SPA. Приложение Logto: `gvfs0kxuu7rtdeqi3z0zm`, endpoint `https://v74j2v.logto.app`.
 
-## Настройка проекта
+## Настройки приложения Logto
 
-1. Владелец проекта создаёт проект Supabase. Если для аккаунта или оплаты нужны подтверждения, их выполняет взрослый администратор.
-2. В Supabase откройте Authentication → Sign In / Providers → Email и включите вход по электронной почте.
-3. В Authentication → URL Configuration задайте Site URL:
-   `https://igoryukha809-cell.github.io/multik-tv/`
-   и добавьте Redirect URL:
-   `https://igoryukha809-cell.github.io/multik-tv/access-keys.html`
-4. В Project Settings → API скопируйте Project URL и публичный anon/publishable key.
-5. Откройте файл `admin-config.js` в GitHub и замените значения-заполнители:
-   - `SUPABASE_URL` — Project URL;
-   - `SUPABASE_ANON_KEY` — публичный anon/publishable key.
-6. В Railway для сервиса `multik-tv-access-api` задайте те же значения переменных `SUPABASE_URL` и `SUPABASE_ANON_KEY`. Секреты не присылайте в чат.
-7. Проверьте настройки SMTP/отправки писем в Supabase. Для реального использования может понадобиться собственный SMTP-провайдер; учитывайте его лимиты и возможную оплату.
-8. Откройте `login.html`, введите свою почту и запросите ссылку. Завершение входа перенаправит на `access-keys.html`.
+- Тип приложения: Single-page application → Pure JavaScript.
+- Redirect URI: `https://igoryukha809-cell.github.io/multik-tv/access-keys.html`
+- Post sign-out redirect URI: `https://igoryukha809-cell.github.io/multik-tv/`
+- В Logto Console откройте API resources и создайте ресурс с URI:
+  `https://multik-tv-access-api-production.up.railway.app`
 
-## Безопасность
+## Настройки Railway
 
-- В браузере разрешён только публичный anon/publishable key. Никогда не помещайте `service_role` key в сайт, GitHub или чат.
-- Сервер сверяет подтверждённый email с `ADMIN_EMAIL`; одна регистрация не даёт административный доступ.
-- Не отключайте подтверждение email и не выдавайте админские права всем зарегистрированным пользователям.
-- До настройки Supabase и переменных Railway вход не сможет отправлять письма и проверять серверную сессию.
-- Вход по почте защищает доступ к менеджеру ключей; он сам по себе не запускает круглосуточный видеоканал.
+Для сервиса `multik-tv-access-api` задайте:
+- `LOGTO_ENDPOINT=https://v74j2v.logto.app`
+- `LOGTO_API_RESOURCE=https://multik-tv-access-api-production.up.railway.app`
+- `ADMIN_EMAIL` — подтверждённая почта администратора (существующая переменная).
+
+Не присылайте секреты или коды подтверждения в чат. Endpoint, app ID и API resource — публичная конфигурация SPA.
+
+## Проверка
+
+Браузер получает access token для API resource. Сервер проверяет подпись JWT через Logto JWKS, issuer, audience и срок действия, затем запрашивает подтверждённую почту через Logto UserInfo endpoint и сравнивает её с ADMIN_EMAIL. Простая регистрация не выдаёт права администратора.
+
+Supabase-проверка остаётся резервной на сервере, пока Logto не включён переменными Railway. Старые пользователи Supabase автоматически не переносятся в Logto.
