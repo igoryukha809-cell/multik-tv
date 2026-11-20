@@ -1,9 +1,9 @@
 {
   "channelName": "МУЛЬТИК ТВ",
-  "status": "test_signal",
+  "status": "server_managed",
   "streamUrl": "https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8",
   "testSignalUrl": "https://igoryukha809-cell.github.io/multik-tv/test-signal.html",
-  "testSignal": true,
+  "testSignal": false,
   "scheduledPrograms": {
     "weather": {
       "title": "Погода с Мультиком",
@@ -33,10 +33,31 @@
         "format": "original educational short",
         "generatedBy": "FFmpeg",
         "language": "ru"
+      },
+      {
+        "title": "Путешествие капли",
+        "durationSeconds": 36,
+        "format": "original educational short",
+        "generatedBy": "FFmpeg",
+        "language": "ru"
+      },
+      {
+        "title": "Мир насекомых",
+        "durationSeconds": 36,
+        "format": "original educational short",
+        "generatedBy": "FFmpeg",
+        "language": "ru"
+      },
+      {
+        "title": "Изобретения вокруг нас",
+        "durationSeconds": 36,
+        "format": "original educational short",
+        "generatedBy": "FFmpeg",
+        "language": "ru"
       }
     ]
   },
-  "note": "Все времена телепрограммы, погодного выпуска и профилактики указаны по московскому времени (Europe/Moscow). Профилактика ежедневно с 02:00 до 07:00. Статус остаётся test_signal до подтверждения успешного развёртывания и проверки HLS. Авторские познавательные выпуски создаются сервером автоматически и идут в ротации после лицензированной программы.",
+  "note": "Статус прямого эфира определяется фактическим воспроизведением HLS-потока на видеосервере, а не статическим отчётом проверки расписания. Авторские познавательные выпуски создаются при сборке сервера и воспроизводятся непрерывной последовательностью. Времена расписания указаны по Москве (Europe/Moscow).",
   "maintenance": {
     "daily": true,
     "start": "02:00",
