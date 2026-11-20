@@ -29,7 +29,14 @@ class RenderBlueprintTests(unittest.TestCase):
         self.assertIn("PROGRAM_VIDEO_URL", startup)
         self.assertIn("creativecommons.org/licenses/by-sa/4.0", credits)
         self.assertIn("PROGRAM SOURCE UNAVAILABLE - TEST SIGNAL", startup)
-        self.assertIn("Starting the licensed program loop.", startup)
+        self.assertIn("Starting the scheduled broadcast loop.", startup)
+        self.assertIn("generate_weather_show()", startup)
+        self.assertIn("api.open-meteo.com", startup)
+        self.assertIn('WEATHER_TIME="${WEATHER_TIME:-10:00}"', startup)
+        self.assertIn("WEATHER_PLAYED_DATE", startup)
+        self.assertIn("Погода с Мультиком", startup)
+        self.assertIn("Europe/Berlin", (ROOT / "render.yaml").read_text(encoding="utf-8"))
+        self.assertIn("curl jq", dockerfile)
         self.assertIn("rtmp://127.0.0.1/live/multiktv", startup)
 
     def test_render_start_script_has_valid_shell_syntax_and_matching_hls_output(self):
