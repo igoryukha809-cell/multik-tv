@@ -117,6 +117,63 @@ if [[ -n "$DOWNLOAD_PID" ]]; then
 fi
 
 
+
+download_dialogue_cartoon() {
+  local slug="$1" title="$2" source_url="$3" subtitle_url="$4" credit="$5"
+  local raw="${ORIGINAL_DIR}/${slug}.source"
+  local srt="${ORIGINAL_DIR}/${slug}.ru.srt"
+  local output="${ORIGINAL_DIR}/00-dialogue-${slug}.mp4"
+
+  if [[ -s "$output" ]] && ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$output" >/dev/null 2>&1; then
+    echo "Уже подготовлен выпуск с диалогами: $title"
+    return 0
+  fi
+
+  echo "Загружаю открытый мультфильм с русскими субтитрами: $title"
+  if ! curl -fL --retry 3 --retry-delay 3 --connect-timeout 20 --max-time 1200 \
+      -A "MultikTV/1.0 (open-license broadcast)" "$source_url" -o "$raw"; then
+    echo "Не удалось скачать $title; пропускаю выпуск."
+    rm -f "$raw"
+    return 1
+  fi
+  if ! curl -fL --retry 3 --retry-delay 3 --connect-timeout 20 --max-time 120 \
+      -A "MultikTV/1.0 (open-license broadcast)" "$subtitle_url" -o "$srt"; then
+    echo "Не удалось получить русские субтитры для $title; выпуск не добавлен."
+    rm -f "$raw" "$srt"
+    return 1
+  fi
+  if ! ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$raw" >/dev/null 2>&1; then
+    echo "Файл $title не прошёл проверку; пропускаю."
+    rm -f "$raw" "$srt"
+    return 1
+  fi
+
+  if ffmpeg -hide_banner -nostdin -loglevel warning -y -i "$raw" \
+      -vf "subtitles=$srt:force_style='FontName=DejaVu Sans,FontSize=22,Outline=2,Shadow=1,MarginV=30',scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,drawtext=fontfile=$WEATHER_FONT:text='$credit':fontcolor=white:fontsize=14:box=1:boxcolor=black@0.55:boxborderw=6:x=12:y=h-th-10" \
+      -map 0:v:0 -map 0:a:0? -c:v libx264 -preset veryfast -crf 24 -pix_fmt yuv420p \
+      -c:a aac -b:a 112k -ar 44100 -ac 2 -movflags +faststart "$output"; then
+    echo "Готово: $title (оригинальная английская озвучка, русские субтитры)."
+    rm -f "$raw" "$srt"
+    return 0
+  fi
+
+  echo "Не удалось подготовить видео $title; пропускаю выпуск."
+  rm -f "$raw" "$srt" "$output"
+  return 1
+}
+
+prepare_dialogue_cartoon_library() {
+  mkdir -p "$ORIGINAL_DIR"
+  download_dialogue_cartoon "elephants-dream" "Слоновья мечта" \
+    "https://commons.wikimedia.org/wiki/Special:Redirect/file/Elephants_Dream.ogv" \
+    "https://commons.wikimedia.org/w/index.php?title=TimedText:Elephants_Dream.ogv.ru.srt&action=raw" \
+    "(c) 2006 Blender Foundation / Netherlands Media Art Institute / elephantsdream.org | CC BY 2.5" || true
+  download_dialogue_cartoon "sintel" "Синтель" \
+    "https://commons.wikimedia.org/wiki/Special:Redirect/file/Sintel_movie_-_Blender_Fondation.ogv" \
+    "https://commons.wikimedia.org/w/index.php?title=TimedText:Sintel_movie_-_Blender_Fondation.ogv.ru.srt&action=raw" \
+    "(c) Blender Foundation | sintel.org | CC BY 3.0" || true
+}
+
 generate_weather_show() {
   local entry city lat lon url json txt clip temp feels wind humidity rain low high code condition
   local count=0
@@ -219,6 +276,8 @@ play_weather_show() {
     -an -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 \
     -b:v 1200k -maxrate 1200k -bufsize 2400k -f flv rtmp://127.0.0.1/live/multiktv
 }
+
+prepare_dialogue_cartoon_library
 
 if bash /usr/local/srs/generate-original-programs.sh "$ORIGINAL_DIR" "$WEATHER_FONT"; then
   echo "Авторские познавательные передачи подготовлены."
