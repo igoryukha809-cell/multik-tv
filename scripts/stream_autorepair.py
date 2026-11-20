@@ -21,9 +21,15 @@ def main():
             lines=[x.strip() for x in body.decode('utf-8','replace').splitlines() if x.strip() and not x.startswith('#')]
             if not lines: report['diagnosis'].append('HLS playlist has no media segments')
             else:
-                url=urllib.parse.urljoin(BASE+'/live/multiktv.m3u8',lines[-1]); sc,sb=get(url)
-                report['checks'].append({'latest_segment_http':sc,'bytes':len(sb)})
-                if sc!=200 or len(sb)<188: report['diagnosis'].append('Latest HLS segment unavailable or too small')
+                playable=False; attempts=[]
+                for segment in reversed(lines[-5:]):
+                    url=urllib.parse.urljoin(BASE+'/live/multiktv.m3u8',segment)
+                    try: sc,sb=get(url)
+                    except Exception as e: sc,sb=0,str(e).encode()
+                    attempts.append({'segment':segment,'http':sc,'bytes':len(sb)})
+                    if sc==200 and len(sb)>=188: playable=True; break
+                report['checks'].append({'recent_segments':attempts})
+                if not playable: report['diagnosis'].append('None of the five newest HLS segments could be downloaded as a media segment')
     except Exception as e: report['diagnosis'].append(type(e).__name__+': '+str(e))
     report['ok']=not report['diagnosis']; print(json.dumps(report,ensure_ascii=False,indent=2))
     if not report['ok']:
