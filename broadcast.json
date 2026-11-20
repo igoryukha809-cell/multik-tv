@@ -13,12 +13,12 @@
       "generatedBy": "FFmpeg"
     }
   },
-  "note": "Профилактика ежедневно с 02:00 до 07:00 по московскому времени (Europe/Moscow). Время телепрограммы и погодного выпуска остаётся по Красноярску (Asia/Krasnoyarsk, UTC+7). Статус остаётся test_signal до подтверждения успешного развёртывания и проверки HLS.",
+  "note": "Профилактика ежедневно с 02:00 до 07:00 по Красноярскому времени (Asia/Krasnoyarsk, UTC+7). Время телепрограммы и погодного выпуска также указано по Красноярску. Статус остаётся test_signal до подтверждения успешного развёртывания и проверки HLS.",
   "maintenance": {
     "daily": true,
     "start": "02:00",
     "end": "07:00",
-    "timezone": "Europe/Moscow",
-    "reference": "Published maintenance window of TV channel МУЛЬТ"
+    "timezone": "Asia/Krasnoyarsk",
+    "reference": "Daily maintenance window aligned to the channel's Krasnoyarsk broadcast time"
   }
 }
