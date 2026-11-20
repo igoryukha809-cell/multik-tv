@@ -18,6 +18,26 @@ a{color:#ffe17a}button{background:#ffdf65;color:#171b2c;border:0;border-radius:1
 <section class="panel"><h2>Следующие необходимые шаги</h2><ol><li>Добавить только русскоязычные мультфильмы, на публичный показ которых получено разрешение.</li><li>Получить разрешённые видеофайлы или потоковые URL.</li><li>Подключить постоянно работающий видеосервер. Бесплатный статический GitHub Pages этого не заменяет.</li></ol></section>
 <section class="panel"><h2>Смотреть мультфильмы</h2><p><a href="online-catalog.html">Открыть каталог русских мультфильмов</a></p><p><a href="free-broadcast.html">Открыть локальный пульт воспроизведения</a></p><p><a href="index.html">На главную</a></p></section>
 <script>
-(async()=>{try{const r=await fetch('broadcast/status.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error('status unavailable');const s=await r.json();const labels={not_configured:'Эфир пока не настроен',playlist_has_errors:'В расписании есть ошибки',playlist_ready_server_required:'Плейлист проверен; нужен видеосервер'};document.getElementById('state').textContent=labels[s.state]||'Статус: '+s.state;document.getElementById('message').textContent=s.message||'Нет дополнительной информации.';const count=Number.isFinite(s.itemsChecked)?s.itemsChecked:'неизвестно';const errors=Array.isArray(s.errors)?s.errors:[];document.getElementById('details').textContent='Записей в расписании: '+count+'. Ошибок проверки: '+errors.length+'. Видеотрансляция: '+(s.streaming===true?'подтверждена системой':'не запущена / не подтверждена')+'.';document.getElementById('checked').textContent=s.checkedAt?'Последняя автоматическая проверка: '+s.checkedAt+' UTC':'Автоматическая проверка ещё не выполнялась';}catch(e){document.getElementById('state').textContent='Статус пока недоступен';document.getElementById('message').textContent='Не удалось загрузить broadcast/status.json. Проверь публикацию сайта и запуск проверки GitHub Actions.';document.getElementById('details').textContent='Данные расписания и состояние трансляции неизвестны.';}})();
+const HEALTH_URL='https://multik-tv-test-stream-yltl.onrender.com/broadcast/health.json';
+const $=id=>document.getElementById(id);
+async function checkChannel(){
+ $('state').textContent='Проверяем видеосервер…';
+ try{
+  const response=await fetch(HEALTH_URL+'?ts='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  const health=await response.json();
+  const live=health.status==='live'&&health.streaming===true;
+  $('state').textContent=live?'🟢 Эфир подтверждён сервером':'🔴 Эфир не подтверждён: '+(health.status||'неизвестно');
+  $('message').textContent=health.detail||'Сервер ответил, но не подтвердил действующий видеопоток.';
+  $('details').textContent='Состояние сервера: '+health.status+'. Передача видео: '+(health.streaming===true?'подтверждена':'не подтверждена')+'.';
+  $('checked').textContent='Проверено: '+(health.updatedAt||new Date().toISOString())+' · автоматическое обновление каждые 15 секунд.';
+ }catch(error){
+  $('state').textContent='⚪ Статус видеосервера недоступен';
+  $('message').textContent='Не удалось получить актуальное состояние сервера: '+error.message+'. Статический отчёт расписания не считается подтверждением эфира.';
+  $('details').textContent='Плеер и видеопоток пока не подтверждены. Открой страницу прямого эфира для отдельной проверки.';
+  $('checked').textContent='Последняя попытка: '+new Date().toLocaleString('ru-RU');
+ }
+}
+checkChannel();setInterval(checkChannel,15000);
 </script>
 </main></body></html>
