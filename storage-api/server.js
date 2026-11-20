@@ -83,8 +83,10 @@ async function adminAuth(req, res, next) {
         audience: LOGTO_API_RESOURCE,
         algorithms: ["RS256"]
       });
+      const userinfoToken = String(req.headers["x-logto-userinfo-token"] || "").trim();
+      if (!userinfoToken) return res.status(401).json({ error: "Не получен токен профиля Logto. Войдите повторно." });
       const infoResponse = await fetch(LOGTO_ENDPOINT + "/oidc/me", {
-        headers: { Authorization: "Bearer " + supplied }
+        headers: { Authorization: "Bearer " + userinfoToken }
       });
       if (!infoResponse.ok) return res.status(401).json({ error: "Logto не подтвердил профиль пользователя." });
       const user = await infoResponse.json();
@@ -131,7 +133,7 @@ app.use((req, res, next) => {
   if (origin && ORIGINS.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
-    res.setHeader("Access-Control-Allow-Headers", "Authorization,Content-Type");
+    res.setHeader("Access-Control-Allow-Headers", "Authorization,Content-Type,X-Logto-Userinfo-Token");
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
   }
   if (req.method === "OPTIONS") return res.sendStatus(204);
