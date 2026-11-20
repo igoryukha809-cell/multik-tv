@@ -49,6 +49,27 @@ jobs:
                 "license": "CC BY 3.0",
                 "language": "Русский и английский",
                 "source": "https://invisiblenetwork.ai/watch/archive/ia/AmazingSentence"
+              },
+              {
+                "title": "Космос рядом",
+                "credit": "Авторская познавательная передача МУЛЬТИК ТВ",
+                "license": "Оригинальный выпуск канала",
+                "language": "Русский",
+                "source": "generated-on-stream-server"
+              },
+              {
+                "title": "Удивительная природа",
+                "credit": "Авторская познавательная передача МУЛЬТИК ТВ",
+                "license": "Оригинальный выпуск канала",
+                "language": "Русский",
+                "source": "generated-on-stream-server"
+              },
+              {
+                "title": "Мир океанов",
+                "credit": "Авторская познавательная передача МУЛЬТИК ТВ",
+                "license": "Оригинальный выпуск канала",
+                "language": "Русский",
+                "source": "generated-on-stream-server"
               }
             ]
           }
