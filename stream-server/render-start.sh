@@ -386,9 +386,9 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
     result=0
     ffmpeg -hide_banner -nostdin -loglevel info -report -re -stream_loop -1 -i "$COMBINED_FILE" \
       -map 0:v:0 -map 0:a:0? \
-      -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=25" \
-      -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 \
-      -b:v 1300k -maxrate 1300k -bufsize 2600k \
+      -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20" \
+      -c:v libx264 -preset ultrafast -tune zerolatency -threads 1 -pix_fmt yuv420p -r 20 -g 40 \
+      -b:v 450k -maxrate 450k -bufsize 900k \
       -c:a aac -b:a 96k -ar 44100 -ac 2 \
       -f flv rtmp://127.0.0.1/live/multiktv &
     FFMPEG_PID=$!
