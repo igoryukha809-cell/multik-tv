@@ -9,6 +9,7 @@ import { randomUUID, randomBytes, createHash, timingSafeEqual } from "node:crypt
 import { S3Client, ListObjectsV2Command, DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const app = express();
 app.disable("x-powered-by");
@@ -20,6 +21,10 @@ const TOKEN = process.env.UPLOAD_API_TOKEN || "";
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
 const SUPABASE_URL = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "";
+const LOGTO_ENDPOINT = (process.env.LOGTO_ENDPOINT || "").replace(/\/$/, "");
+const LOGTO_ISSUER = LOGTO_ENDPOINT ? LOGTO_ENDPOINT + "/oidc" : "";
+const LOGTO_API_RESOURCE = (process.env.LOGTO_API_RESOURCE || "").trim();
+const LOGTO_JWKS = LOGTO_ENDPOINT ? createRemoteJWKSet(new URL(LOGTO_ENDPOINT + "/oidc/jwks")) : null;
 const DATA_DIR = process.env.DATA_DIR || "./data";
 const ACCESS_KEYS_FILE = process.env.ACCESS_KEYS_FILE || path.join(DATA_DIR, "access-keys.json");
 await fs.mkdir(path.dirname(ACCESS_KEYS_FILE), { recursive: true });
@@ -70,21 +75,40 @@ function safeEqual(a, b) {
 }
 async function adminAuth(req, res, next) {
   const supplied = (req.headers.authorization || "").replace(/^Bearer /, "");
-  if (!supplied || !ADMIN_EMAIL || !SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    return res.status(401).json({ error: "Вход по почте ещё не настроен." });
-  }
+  if (!supplied || !ADMIN_EMAIL) return res.status(401).json({ error: "Вход администратора ещё не настроен." });
   try {
+    if (LOGTO_ENDPOINT && LOGTO_API_RESOURCE && LOGTO_JWKS) {
+      const { payload } = await jwtVerify(supplied, LOGTO_JWKS, {
+        issuer: LOGTO_ISSUER,
+        audience: LOGTO_API_RESOURCE,
+        algorithms: ["RS256"]
+      });
+      const infoResponse = await fetch(LOGTO_ENDPOINT + "/oidc/me", {
+        headers: { Authorization: "Bearer " + supplied }
+      });
+      if (!infoResponse.ok) return res.status(401).json({ error: "Logto не подтвердил профиль пользователя." });
+      const user = await infoResponse.json();
+      if (!user.email || user.email.toLowerCase() !== ADMIN_EMAIL || user.email_verified !== true) {
+        return res.status(403).json({ error: "Эта подтверждённая почта не имеет прав администратора." });
+      }
+      req.adminUser = { id: payload.sub, email: user.email };
+      return next();
+    }
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return res.status(401).json({ error: "Настройте Logto или Supabase Auth на сервере." });
     const response = await fetch(SUPABASE_URL + "/auth/v1/user", {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + supplied }
     });
-    if (!response.ok) return res.status(401).json({ error: "Сессия входа недействительна. Войдите по ссылке из письма." });
+    if (!response.ok) return res.status(401).json({ error: "Сессия входа недействительна. Войдите снова." });
     const user = await response.json();
     if (!user.email || user.email.toLowerCase() !== ADMIN_EMAIL || !user.email_confirmed_at) {
       return res.status(403).json({ error: "Эта подтверждённая почта не имеет прав администратора." });
     }
     req.adminUser = { id: user.id, email: user.email };
     next();
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (LOGTO_ENDPOINT && LOGTO_API_RESOURCE) return res.status(401).json({ error: "Токен Logto недействителен или не предназначен для этого API." });
+    next(err);
+  }
 }
 const BUCKET = process.env.B2_BUCKET || process.env.AWS_S3_BUCKET || "";
 const ENDPOINT = process.env.B2_ENDPOINT || process.env.AWS_S3_ENDPOINT || "";
@@ -152,7 +176,7 @@ app.get("/health", (_req, res) => res.json({
   ok: true,
   storage: "backblaze-b2",
   configured,
-  accessKeyManager: Boolean(ADMIN_EMAIL && SUPABASE_URL && SUPABASE_ANON_KEY),
+  accessKeyManager: Boolean(ADMIN_EMAIL && ((LOGTO_ENDPOINT && LOGTO_API_RESOURCE) || (SUPABASE_URL && SUPABASE_ANON_KEY))),
   bucketConfigured: Boolean(BUCKET),
   credentialsConfigured: Boolean(ACCESS_KEY && SECRET_KEY)
 }));
