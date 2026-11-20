@@ -420,7 +420,11 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
             live/*) segment_url="http://127.0.0.1:${HTTP_PORT}/${segment}" ;;
             *) segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment#./}" ;;
           esac
-          if curl -fsS --connect-timeout 2 --max-time 4 "$segment_url" -o /dev/null; then
+          segment_probe="$(curl -sS --connect-timeout 2 --max-time 4 -o /dev/null -w '%{http_code} %{size_download}' "$segment_url" 2>&1 || true)"
+          segment_http="${segment_probe%% *}"
+          segment_size="${segment_probe#* }"
+          echo "WATCHDOG: startup segment probe path=$segment_path result=$segment_probe"
+          if [[ "$segment_http" == "200" && "$segment_size" =~ ^[0-9]+$ ]] && (( segment_size >= 188 )); then
             write_health "live" "HLS manifest and a finalized media segment are reachable"
             echo "LIVE: HLS manifest and finalized media segment confirmed: $segment"
             live_confirmed=1
