@@ -389,8 +389,33 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
       -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 \
       -b:v 1300k -maxrate 1300k -bufsize 2600k \
       -c:a aac -b:a 96k -ar 44100 -ac 2 \
-      -f flv rtmp://127.0.0.1/live/multiktv || result=$?
-    write_health "recovering" "Publisher exited with code $result; restarting the continuous MP4"
+      -f flv rtmp://127.0.0.1/live/multiktv &
+    FFMPEG_PID=$!
+
+    # Confirm actual HLS output before reporting LIVE.
+    manifest_url="http://127.0.0.1:${HTTP_PORT}/live/multiktv.m3u8"
+    manifest_file="/tmp/multik-tv-live-check.m3u8"
+    live_confirmed=0
+    for attempt in $(seq 1 30); do
+      if ! kill -0 "$SRS_PID" 2>/dev/null || ! kill -0 "$FFMPEG_PID" 2>/dev/null; then
+        break
+      fi
+      if curl -fsS --connect-timeout 2 --max-time 4 "$manifest_url" -o "$manifest_file"; then
+        segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
+        if [[ -n "$segment" && "$segment" != *"/"* && "$segment" == *.ts ]] &&
+           curl -fsS --connect-timeout 2 --max-time 4 "http://127.0.0.1:${HTTP_PORT}/live/${segment}" -o /dev/null; then
+          write_health "live" "HLS manifest and media segment are reachable"
+          echo "LIVE: HLS manifest and media segment confirmed."
+          live_confirmed=1
+          break
+        fi
+      fi
+      sleep 2
+    done
+
+    wait "$FFMPEG_PID" || result=$?
+    FFMPEG_PID=""
+    write_health "recovering" "Publisher stopped with code $result; restarting the continuous MP4"
     echo "ОШИБКА: FFmpeg передатчик завершился с кодом $result; повторный запуск через 2 секунды."
     sleep 2
   done
