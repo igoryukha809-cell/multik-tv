@@ -3,13 +3,16 @@
   "version": "1.1.0",
   "private": true,
   "type": "module",
-  "scripts": { "start": "node server.js" },
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.900.0",
     "@aws-sdk/lib-storage": "^3.900.0",
     "@aws-sdk/s3-request-presigner": "^3.900.0",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "jose": "^6.1.0"
   }
 }
