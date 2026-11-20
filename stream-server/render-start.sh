@@ -410,7 +410,10 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
         # Probe recent entries from newest to oldest and accept the first finalized segment.
         while IFS= read -r segment; do
           # Normalize HLS playlist line endings and whitespace before parsing the URI.
-          segment="${segment//
+          segment="$(printf '%s' "$segment" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+          # Remove URI fragments for checks, but preserve query parameters for SRS hls_ctx.
+          segment="${segment%%#*}"
+          segment_path="${segment%%\?*}"
           [[ -n "$segment_path" && "$segment_path" == *.ts ]] || continue
           # Keep SRS HLS context query parameters (for example hls_ctx) when fetching.
           case "$segment" in
@@ -452,7 +455,8 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
         fi
         if curl -fsS --connect-timeout 2 --max-time 4 "$manifest_url" -o "$manifest_file"; then
           segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
-          segment="${segment//
+          segment="$(printf '%s' "$segment" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+          segment="${segment%%#*}"
           segment_path="${segment%%\?*}"
           if [[ -n "$segment_path" ]]; then
             # Keep the full URI query string: SRS may require hls_ctx to serve a segment.
