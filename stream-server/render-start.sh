@@ -255,7 +255,7 @@ generate_weather_show() {
     clip="${WEATHER_DIR}/weather-${count}.mp4"
     url="https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_min,temperature_2m_max,precipitation_probability_max&forecast_days=1&timezone=auto"
 
-    if ! curl -fsSL --retry 4 --retry-delay 5 --connect-timeout 10 --max-time 35 "$url" -o "$json"; then
+    if ! curl -fsSL --retry 1 --retry-delay 8 --retry-max-time 25 --connect-timeout 8 --max-time 20 "$url" -o "$json"; then
       echo "Погода для ${city} временно недоступна; пропускаю город."
       continue
     fi
@@ -380,7 +380,7 @@ for original_show in "$ORIGINAL_DIR"/*.mp4; do
   fi
 done
 if (( WEATHER_READY )); then
-  printf "file '%s'\\n" "$WEATHER_VIDEO" >> "$PLAYLIST_FILE"
+  printf "file '%s'\n" "$WEATHER_VIDEO" >> "$PLAYLIST_FILE"
 fi
 if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
   echo "Starting continuous broadcast playlist: licensed_items=$PROGRAM_READY, original_items=$ORIGINAL_COUNT."
