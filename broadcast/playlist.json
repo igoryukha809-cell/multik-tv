@@ -1,6 +1,15 @@
 {
   "channel": "МУЛЬТИК ТВ",
   "timezone": "Europe/Moscow",
-  "note": "Все времена плейлиста и эфирного расписания указаны по московскому времени (Europe/Moscow). Добавляй только общедоступные HTTPS-ссылки на видео, права на публичный показ которых подтверждены. Пустой список означает, что эфир не настроен.",
-  "items": []
+  "note": "Видеоматериалы включаются только при подтверждённом праве публичного показа. Время расписания — Europe/Moscow. Дополнительно сервер создаёт собственные короткие познавательные выпуски при каждом запуске.",
+  "items": [
+    {
+      "title": "Pepper & Carrot — Episode 6: The Potion Contest (русская версия)",
+      "url": "https://commons.wikimedia.org/wiki/Special:Redirect/file/Morevna_Project_-_Pepper%26Carrot_%28animated_comic%29_-_Episode_6_-_The_Potion_Contest_%28Russian_variant%29.webm",
+      "rightsConfirmed": true,
+      "license": "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)",
+      "attribution": "Pepper & Carrot: Episode 6 — David Revoy (original artwork and story), Nikolai Mamashev (direction/animation), Morevna Project; CC BY-SA 4.0. Русская версия.",
+      "rightsEvidence": "https://morevnaproject.org/about/ — Morevna Project указывает CC BY-SA для эпизодов; https://morevnaproject.org/animated-shorts/ — официальный каталог; карточка выпуска Episode 6."
+    }
+  ]
 }
