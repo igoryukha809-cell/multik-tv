@@ -229,7 +229,7 @@ prepare_dialogue_cartoon_library() {
 }
 
 generate_weather_show() {
-  local entry city lat lon url json txt clip temp feels wind humidity rain low high code condition source cache_file cache_source cache_time now
+  local entry city lat lon url json txt clip speech spoken temp feels wind humidity rain low high code condition source cache_file cache_source cache_time now temp_say wind_say feels_say
   local count=0
   local city_index=0
   local concat_file="${WEATHER_DIR}/concat.txt"
@@ -341,7 +341,7 @@ generate_weather_show() {
     }
 
     {
-      printf 'МУЛЬТИК ТВ  |  ПОГОДА С МУЛЬТИКОМ\n'
+      printf 'КАНАЛ  |  ПРОГНОЗ ПОГОДЫ\n'
       printf '%s\n' "$city"
       printf 'Сейчас: %s °C  |  %s\n' "$temp" "$condition"
       [[ -z "$feels" ]] || printf 'Ощущается как: %s °C\n' "$feels"
@@ -351,12 +351,46 @@ generate_weather_show() {
       printf 'Источник: %s  |  Обновлено: %s\n' "$source" "$(date '+%H:%M %Z')"
     } > "$txt"
 
-    if ffmpeg -hide_banner -nostdin -loglevel error \
-      -f lavfi -i "color=c=0x14558B:s=1280x720:r=25:d=12" \
-      -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
-      -vf "drawtext=fontfile=${WEATHER_FONT}:textfile=${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
-      -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
-      -c:a aac -b:a 48k -ar 44100 -ac 2 -shortest -movflags +faststart "$clip"; then
+    # Russian synthetic voice presents only values taken from the selected forecast source.
+    temp_say="$(printf '%.0f' "$temp" 2>/dev/null || printf '%s' "$temp")"
+    wind_say="$(printf '%.0f' "$wind" 2>/dev/null || printf '%s' "$wind")"
+    feels_say=""
+    if [[ -n "$feels" ]]; then
+      feels_say=" По ощущениям ${feels} градусов."
+    fi
+    spoken="Здравствуйте! В эфире прогноз погоды. ${city}. Сейчас ${temp_say} градусов, ${condition}.${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов."
+    if [[ "$rain" != "—" ]]; then
+      spoken+=" Вероятность осадков ${rain} процентов."
+    fi
+    printf '%s\n' "$spoken" > "${WEATHER_DIR}/weather-${count}.speech.txt"
+    speech="${WEATHER_DIR}/weather-${count}.wav"
+    if ! espeak-ng -v ru -s 142 -p 42 -a 165 -w "$speech" "$spoken" 2>/dev/null; then
+      echo "Не удалось синтезировать голос ведущего для ${city}; использую резервную тишину."
+      speech=""
+    fi
+
+    if [[ -n "$speech" ]]; then
+      if ffmpeg -hide_banner -nostdin -loglevel error \
+        -f lavfi -i "color=c=0x14558B:s=1280x720:r=25:d=40" -i "$speech" \
+        -vf "drawtext=fontfile=${WEATHER_FONT}:textfile=${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
+        -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
+        -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest -movflags +faststart "$clip"; then
+        :
+      else
+        echo "Не удалось собрать погодный экран с голосом для ${city}."
+        continue
+      fi
+    else
+      if ! ffmpeg -hide_banner -nostdin -loglevel error \
+        -f lavfi -i "color=c=0x14558B:s=1280x720:r=25:d=12" \
+        -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
+        -vf "drawtext=fontfile=${WEATHER_FONT}:textfile=${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
+        -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
+        -c:a aac -b:a 48k -ar 44100 -ac 2 -shortest -movflags +faststart "$clip"; then
+        echo "Не удалось собрать резервный погодный экран для ${city}."
+        continue
+      fi
+    fi
       printf "file '%s'\n" "$clip" >> "$concat_file"
       count=$((count + 1))
     else
