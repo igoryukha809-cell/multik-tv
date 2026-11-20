@@ -4,5 +4,14 @@
   "streamUrl": "https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8",
   "testSignalUrl": "https://igoryukha809-cell.github.io/multik-tv/test-signal.html",
   "testSignal": true,
-  "note": "Сейчас подключён технический тестовый поток Render. Он проверяет HLS-плеер, но не является подтверждением постоянной программы канала."
+  "scheduledPrograms": {
+    "weather": {
+      "title": "Погода с Мультиком",
+      "time": "10:00",
+      "timezone": "Europe/Berlin",
+      "source": "Open-Meteo",
+      "generatedBy": "FFmpeg"
+    }
+  },
+  "note": "В код облачного FFmpeg-потока добавлен ежедневный погодный выпуск на 10:00 по времени Europe/Berlin. Статус остаётся test_signal до подтверждения успешного развёртывания и проверки HLS."
 }
