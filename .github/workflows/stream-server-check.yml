@@ -50,6 +50,9 @@ jobs:
       - name: Compile runtime auto-repair agent
         run: python -m py_compile scripts/stream_autorepair.py
 
+      - name: Compile AI repair agent
+        run: python -m py_compile scripts/ai_stream_repair.py
+
       - name: Check shell script syntax
         run: |
           bash -n stream-server/playlist/loop.sh
