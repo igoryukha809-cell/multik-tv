@@ -11,3 +11,7 @@ services:
     envVars:
       - key: PORT
         value: "10000"
+      - key: BROADCAST_TZ
+        value: Europe/Berlin
+      - key: WEATHER_TIME
+        value: "10:00"
