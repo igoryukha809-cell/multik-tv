@@ -409,7 +409,310 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
         # The newest HLS entry may still be open while SRS writes it.
         # Probe recent entries from newest to oldest and accept the first finalized segment.
         while IFS= read -r segment; do
-          # SRS may append query parameters to segment URIs; strip them before extension/path checks.
+          # Normalize HLS playlist line endings and whitespace before parsing the URI.
+          segment="${segment//
+          [[ -n "$segment_path" && "$segment_path" == *.ts ]] || continue
+          # Keep SRS HLS context query parameters (for example hls_ctx) when fetching.
+          case "$segment" in
+            http://*|https://*) segment_url="$segment" ;;
+            /*) segment_url="http://127.0.0.1:${HTTP_PORT}${segment}" ;;
+            live/*) segment_url="http://127.0.0.1:${HTTP_PORT}/${segment}" ;;
+            *) segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment#./}" ;;
+          esac
+          segment_probe="$(curl -sS --connect-timeout 2 --max-time 4 -o /dev/null -w '%{http_code} %{size_download}' "$segment_url" 2>&1 || true)"
+          segment_http="${segment_probe%% *}"
+          segment_size="${segment_probe#* }"
+          echo "WATCHDOG: startup segment probe path=$segment_path result=$segment_probe"
+          if [[ "$segment_http" == "200" && "$segment_size" =~ ^[0-9]+$ ]] && (( segment_size >= 188 )); then
+            write_health "live" "HLS manifest and a finalized media segment are reachable"
+            echo "LIVE: HLS manifest and finalized media segment confirmed: $segment"
+            live_confirmed=1
+            break
+          fi
+        done < <(awk '!/^#/ && NF {a[++n]=$0} END {for(i=n;i>0;i--) print a[i]}' "$manifest_file" | head -n 5)
+        (( live_confirmed )) && break
+      fi
+      sleep 2
+    done
+
+    if (( live_confirmed )); then
+      restart_delay=2
+      last_segment=""
+      last_change=$SECONDS
+      advancing_segments=0
+      health_live=0
+      echo "WATCHDOG: verifying consecutive HLS segment progress before declaring LIVE."
+      while kill -0 "$FFMPEG_PID" 2>/dev/null; do
+        if ! kill -0 "$SRS_PID" 2>/dev/null; then
+          echo "CRITICAL: SRS exited; stopping publisher and requesting platform restart."
+          kill "$FFMPEG_PID" 2>/dev/null || true
+          wait "$FFMPEG_PID" 2>/dev/null || true
+          FFMPEG_PID=""
+          exit 1
+        fi
+        if curl -fsS --connect-timeout 2 --max-time 4 "$manifest_url" -o "$manifest_file"; then
+          segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
+          segment="${segment//
+          segment_path="${segment%%\?*}"
+          if [[ -n "$segment_path" ]]; then
+            # Keep the full URI query string: SRS may require hls_ctx to serve a segment.
+            case "$segment" in
+              http://*|https://*) segment_url="$segment" ;;
+              /*) segment_url="http://127.0.0.1:${HTTP_PORT}${segment}" ;;
+              live/*) segment_url="http://127.0.0.1:${HTTP_PORT}/${segment}" ;;
+              *) segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment#./}" ;;
+            esac
+            segment_bytes="$(curl -fsS --connect-timeout 2 --max-time 4 "$segment_url" -o /dev/null -w '%{size_download}' 2>/dev/null || echo 0)"
+            if [[ "$segment_bytes" =~ ^[0-9]+$ ]] && (( segment_bytes >= 188 )); then
+              if [[ "$segment_path" != "$last_segment" ]]; then
+                last_segment="$segment_path"
+                last_change=$SECONDS
+                advancing_segments=$((advancing_segments + 1))
+                echo "WATCHDOG: confirmed advancing media segment $advancing_segments."
+                if (( advancing_segments >= 2 && health_live == 0 )); then
+                  write_health "live" "HLS playlist advanced through multiple downloadable media segments"
+                  echo "LIVE: continuous HLS progress confirmed by multiple finalized segments."
+                  health_live=1
+                fi
+              fi
+            else
+              echo "WATCHDOG: newest HLS media segment is not downloadable or is too small."
+            fi
+          fi
+          if (( SECONDS - last_change >= 30 )); then
+            echo "WATCHDOG: HLS segment stalled for 30 seconds (no new downloadable segment); restarting FFmpeg."
+            result=124
+            break
+          fi
+        elif (( SECONDS - last_change >= 30 )); then
+          echo "WATCHDOG: HLS manifest unavailable for 30 seconds; restarting FFmpeg."
+          result=125
+          break
+        fi
+        sleep 5
+      done
+    else
+      echo "WATCHDOG: HLS did not become playable within 90 seconds; restarting FFmpeg."
+      result=126
+    fi
+
+    if kill -0 "$FFMPEG_PID" 2>/dev/null; then kill "$FFMPEG_PID" 2>/dev/null || true; fi
+    wait_result=0
+    wait "$FFMPEG_PID" || wait_result=$?
+    if (( result == 0 )); then result=$wait_result; fi
+    FFMPEG_PID=""
+    echo "PUBLISHER_EXIT: code=$result; recent FFmpeg diagnostics follow."
+    for ffmpeg_log in /usr/local/srs/ffmpeg-*.log; do
+      [[ -f "$ffmpeg_log" ]] || continue
+      tail -n 80 "$ffmpeg_log" || true
+    done
+    write_health "recovering" "Watchdog detected publisher or HLS failure; automatic restart scheduled"
+    echo "WATCHDOG: publisher stopped (code $result); retrying in ${restart_delay}s."
+    sleep "$restart_delay"
+    if (( restart_delay < 30 )); then
+      restart_delay=$((restart_delay * 2))
+      (( restart_delay > 30 )) && restart_delay=30
+    fi
+  done
+else
+  write_health "error" "No valid programme files are available"
+  echo "ОШИБКА: нет ни одного проверенного видео. Тестовый сигнал не запускается."
+  while kill -0 "$SRS_PID" 2>/dev/null; do sleep 5; done
+fi
+
+wait "$SRS_PID"
+\r'/}"
+          segment="${segment#"${segment%%[![:space:]]*}"}"
+          segment="${segment%"${segment##*[![:space:]]}"}"
+          # Remove URI fragments for checks, but preserve query parameters for SRS hls_ctx.
+          segment="${segment%%#*}"
+          segment_path="${segment%%\?*}"
+          [[ -n "$segment_path" && "$segment_path" == *.ts ]] || continue
+          # Keep SRS HLS context query parameters (for example hls_ctx) when fetching.
+          case "$segment" in
+            http://*|https://*) segment_url="$segment" ;;
+            /*) segment_url="http://127.0.0.1:${HTTP_PORT}${segment}" ;;
+            live/*) segment_url="http://127.0.0.1:${HTTP_PORT}/${segment}" ;;
+            *) segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment#./}" ;;
+          esac
+          segment_probe="$(curl -sS --connect-timeout 2 --max-time 4 -o /dev/null -w '%{http_code} %{size_download}' "$segment_url" 2>&1 || true)"
+          segment_http="${segment_probe%% *}"
+          segment_size="${segment_probe#* }"
+          echo "WATCHDOG: startup segment probe path=$segment_path result=$segment_probe"
+          if [[ "$segment_http" == "200" && "$segment_size" =~ ^[0-9]+$ ]] && (( segment_size >= 188 )); then
+            write_health "live" "HLS manifest and a finalized media segment are reachable"
+            echo "LIVE: HLS manifest and finalized media segment confirmed: $segment"
+            live_confirmed=1
+            break
+          fi
+        done < <(awk '!/^#/ && NF {a[++n]=$0} END {for(i=n;i>0;i--) print a[i]}' "$manifest_file" | head -n 5)
+        (( live_confirmed )) && break
+      fi
+      sleep 2
+    done
+
+    if (( live_confirmed )); then
+      restart_delay=2
+      last_segment=""
+      last_change=$SECONDS
+      advancing_segments=0
+      health_live=0
+      echo "WATCHDOG: verifying consecutive HLS segment progress before declaring LIVE."
+      while kill -0 "$FFMPEG_PID" 2>/dev/null; do
+        if ! kill -0 "$SRS_PID" 2>/dev/null; then
+          echo "CRITICAL: SRS exited; stopping publisher and requesting platform restart."
+          kill "$FFMPEG_PID" 2>/dev/null || true
+          wait "$FFMPEG_PID" 2>/dev/null || true
+          FFMPEG_PID=""
+          exit 1
+        fi
+        if curl -fsS --connect-timeout 2 --max-time 4 "$manifest_url" -o "$manifest_file"; then
+          segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
+          segment="${segment%%#*}"
+          segment_path="${segment%%\?*}"
+          if [[ -n "$segment_path" ]]; then
+            # Keep the full URI query string: SRS may require hls_ctx to serve a segment.
+            case "$segment" in
+              http://*|https://*) segment_url="$segment" ;;
+              /*) segment_url="http://127.0.0.1:${HTTP_PORT}${segment}" ;;
+              live/*) segment_url="http://127.0.0.1:${HTTP_PORT}/${segment}" ;;
+              *) segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment#./}" ;;
+            esac
+            segment_bytes="$(curl -fsS --connect-timeout 2 --max-time 4 "$segment_url" -o /dev/null -w '%{size_download}' 2>/dev/null || echo 0)"
+            if [[ "$segment_bytes" =~ ^[0-9]+$ ]] && (( segment_bytes >= 188 )); then
+              if [[ "$segment_path" != "$last_segment" ]]; then
+                last_segment="$segment_path"
+                last_change=$SECONDS
+                advancing_segments=$((advancing_segments + 1))
+                echo "WATCHDOG: confirmed advancing media segment $advancing_segments."
+                if (( advancing_segments >= 2 && health_live == 0 )); then
+                  write_health "live" "HLS playlist advanced through multiple downloadable media segments"
+                  echo "LIVE: continuous HLS progress confirmed by multiple finalized segments."
+                  health_live=1
+                fi
+              fi
+            else
+              echo "WATCHDOG: newest HLS media segment is not downloadable or is too small."
+            fi
+          fi
+          if (( SECONDS - last_change >= 30 )); then
+            echo "WATCHDOG: HLS segment stalled for 30 seconds (no new downloadable segment); restarting FFmpeg."
+            result=124
+            break
+          fi
+        elif (( SECONDS - last_change >= 30 )); then
+          echo "WATCHDOG: HLS manifest unavailable for 30 seconds; restarting FFmpeg."
+          result=125
+          break
+        fi
+        sleep 5
+      done
+    else
+      echo "WATCHDOG: HLS did not become playable within 90 seconds; restarting FFmpeg."
+      result=126
+    fi
+
+    if kill -0 "$FFMPEG_PID" 2>/dev/null; then kill "$FFMPEG_PID" 2>/dev/null || true; fi
+    wait_result=0
+    wait "$FFMPEG_PID" || wait_result=$?
+    if (( result == 0 )); then result=$wait_result; fi
+    FFMPEG_PID=""
+    echo "PUBLISHER_EXIT: code=$result; recent FFmpeg diagnostics follow."
+    for ffmpeg_log in /usr/local/srs/ffmpeg-*.log; do
+      [[ -f "$ffmpeg_log" ]] || continue
+      tail -n 80 "$ffmpeg_log" || true
+    done
+    write_health "recovering" "Watchdog detected publisher or HLS failure; automatic restart scheduled"
+    echo "WATCHDOG: publisher stopped (code $result); retrying in ${restart_delay}s."
+    sleep "$restart_delay"
+    if (( restart_delay < 30 )); then
+      restart_delay=$((restart_delay * 2))
+      (( restart_delay > 30 )) && restart_delay=30
+    fi
+  done
+else
+  write_health "error" "No valid programme files are available"
+  echo "ОШИБКА: нет ни одного проверенного видео. Тестовый сигнал не запускается."
+  while kill -0 "$SRS_PID" 2>/dev/null; do sleep 5; done
+fi
+
+wait "$SRS_PID"
+\r'/}"
+          segment="${segment#"${segment%%[![:space:]]*}"}"
+          segment="${segment%"${segment##*[![:space:]]}"}"
+          segment="${segment%%#*}"
+          segment_path="${segment%%\?*}"
+          if [[ -n "$segment_path" ]]; then
+            # Keep the full URI query string: SRS may require hls_ctx to serve a segment.
+            case "$segment" in
+              http://*|https://*) segment_url="$segment" ;;
+              /*) segment_url="http://127.0.0.1:${HTTP_PORT}${segment}" ;;
+              live/*) segment_url="http://127.0.0.1:${HTTP_PORT}/${segment}" ;;
+              *) segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment#./}" ;;
+            esac
+            segment_bytes="$(curl -fsS --connect-timeout 2 --max-time 4 "$segment_url" -o /dev/null -w '%{size_download}' 2>/dev/null || echo 0)"
+            if [[ "$segment_bytes" =~ ^[0-9]+$ ]] && (( segment_bytes >= 188 )); then
+              if [[ "$segment_path" != "$last_segment" ]]; then
+                last_segment="$segment_path"
+                last_change=$SECONDS
+                advancing_segments=$((advancing_segments + 1))
+                echo "WATCHDOG: confirmed advancing media segment $advancing_segments."
+                if (( advancing_segments >= 2 && health_live == 0 )); then
+                  write_health "live" "HLS playlist advanced through multiple downloadable media segments"
+                  echo "LIVE: continuous HLS progress confirmed by multiple finalized segments."
+                  health_live=1
+                fi
+              fi
+            else
+              echo "WATCHDOG: newest HLS media segment is not downloadable or is too small."
+            fi
+          fi
+          if (( SECONDS - last_change >= 30 )); then
+            echo "WATCHDOG: HLS segment stalled for 30 seconds (no new downloadable segment); restarting FFmpeg."
+            result=124
+            break
+          fi
+        elif (( SECONDS - last_change >= 30 )); then
+          echo "WATCHDOG: HLS manifest unavailable for 30 seconds; restarting FFmpeg."
+          result=125
+          break
+        fi
+        sleep 5
+      done
+    else
+      echo "WATCHDOG: HLS did not become playable within 90 seconds; restarting FFmpeg."
+      result=126
+    fi
+
+    if kill -0 "$FFMPEG_PID" 2>/dev/null; then kill "$FFMPEG_PID" 2>/dev/null || true; fi
+    wait_result=0
+    wait "$FFMPEG_PID" || wait_result=$?
+    if (( result == 0 )); then result=$wait_result; fi
+    FFMPEG_PID=""
+    echo "PUBLISHER_EXIT: code=$result; recent FFmpeg diagnostics follow."
+    for ffmpeg_log in /usr/local/srs/ffmpeg-*.log; do
+      [[ -f "$ffmpeg_log" ]] || continue
+      tail -n 80 "$ffmpeg_log" || true
+    done
+    write_health "recovering" "Watchdog detected publisher or HLS failure; automatic restart scheduled"
+    echo "WATCHDOG: publisher stopped (code $result); retrying in ${restart_delay}s."
+    sleep "$restart_delay"
+    if (( restart_delay < 30 )); then
+      restart_delay=$((restart_delay * 2))
+      (( restart_delay > 30 )) && restart_delay=30
+    fi
+  done
+else
+  write_health "error" "No valid programme files are available"
+  echo "ОШИБКА: нет ни одного проверенного видео. Тестовый сигнал не запускается."
+  while kill -0 "$SRS_PID" 2>/dev/null; do sleep 5; done
+fi
+
+wait "$SRS_PID"
+\r'/}"
+          segment="${segment#"${segment%%[![:space:]]*}"}"
+          segment="${segment%"${segment##*[![:space:]]}"}"
+          # Remove URI fragments for checks, but preserve query parameters for SRS hls_ctx.
           segment="${segment%%#*}"
           segment_path="${segment%%\?*}"
           [[ -n "$segment_path" && "$segment_path" == *.ts ]] || continue
