@@ -311,10 +311,22 @@ generate_weather_show() {
     fi
   done
 
-  (( count > 0 )) || {
-    echo "Не удалось получить ни одного погодного прогноза."
-    return 1
-  }
+  if (( count == 0 )); then
+    # Never invent forecast values. Preserve the scheduled slot with an honest fallback slate.
+    echo "Прогнозы недоступны; создаю погодную заставку без выдуманных данных."
+    clip="${WEATHER_DIR}/weather-unavailable.mp4"
+    if ! ffmpeg -hide_banner -nostdin -loglevel error \
+      -f lavfi -i "color=c=0x14558B:s=1280x720:r=25:d=12" \
+      -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
+      -vf "drawtext=fontfile=${WEATHER_FONT}:text='ПОГОДА':fontcolor=white:fontsize=68:x=(w-text_w)/2:y=190,drawtext=fontfile=${WEATHER_FONT}:text='ДАННЫЕ ПРОГНОЗА ВРЕМЕННО НЕДОСТУПНЫ':fontcolor=0xffe27d:fontsize=34:x=(w-text_w)/2:y=310,drawtext=fontfile=${WEATHER_FONT}:text='Попробуем обновить их в следующем эфирном цикле':fontcolor=white:fontsize=25:x=(w-text_w)/2:y=390" \
+      -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
+      -c:a aac -b:a 48k -ar 44100 -ac 2 -shortest -movflags +faststart "$clip"; then
+      echo "Не удалось создать резервную погодную заставку."
+      return 1
+    fi
+    printf "file '%s'\\n" "$clip" >> "$concat_file"
+    count=1
+  fi
 
   ffmpeg -hide_banner -nostdin -loglevel error -f concat -safe 0 -i "$concat_file" \
     -c copy -movflags +faststart "$WEATHER_VIDEO"
