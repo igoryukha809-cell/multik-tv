@@ -618,7 +618,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
       while kill -0 "$FFMPEG_PID" 2>/dev/null; do
         current_date="$(date +%F)"
         current_clock="$(date '+%H:%M')"
-        if (( WEATHER_READY )) && [[ "$current_date" != "$LAST_WEATHER_DATE" && "$current_clock" >= "$WEATHER_TIME" ]]; then
+        if (( WEATHER_READY )) && [[ "$current_date" != "$LAST_WEATHER_DATE" && ( "$current_clock" == "$WEATHER_TIME" || "$current_clock" > "$WEATHER_TIME" ) ]]; then
           echo "SCHEDULE: Moscow time $WEATHER_TIME reached; preparing today's weather while the main programme remains on air."
           if generate_weather_show && [[ -s "$WEATHER_VIDEO" ]] && ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$WEATHER_VIDEO" >/dev/null 2>&1; then
             result=127
