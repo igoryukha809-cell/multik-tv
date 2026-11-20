@@ -32,17 +32,10 @@ def main():
                 if not playable: report['diagnosis'].append('None of the five newest HLS segments could be downloaded as a media segment')
     except Exception as e: report['diagnosis'].append(type(e).__name__+': '+str(e))
     report['ok']=not report['diagnosis']; print(json.dumps(report,ensure_ascii=False,indent=2))
+    with open('stream-diagnosis.json','w',encoding='utf-8') as f: json.dump(report,f,ensure_ascii=False,indent=2)
     if not report['ok']:
-        key=os.getenv('RENDER_API_KEY'); sid=os.getenv('RENDER_SERVICE_ID')
-        action='not requested: RENDER_API_KEY is not configured'
-        if key and sid:
-            req=urllib.request.Request('https://api.render.com/v1/services/'+sid+'/deploys',data=b'{"clearCache":false}',headers={'Authorization':'Bearer '+key,'Content-Type':'application/json'},method='POST')
-            try:
-                with urllib.request.urlopen(req,timeout=20) as r: action='redeploy requested: '+r.read().decode()
-            except Exception as e: action='redeploy failed: '+str(e)
-        print('RECOVERY: '+action)
         summary=os.getenv('GITHUB_STEP_SUMMARY','/tmp/stream-check.md')
-        with open(summary,'a',encoding='utf-8') as f: f.write('## Runtime diagnosis\n\n```json\n'+json.dumps(report,ensure_ascii=False,indent=2)+'\n```\n\n'+action+'\n')
+        with open(summary,'a',encoding='utf-8') as f: f.write('## Runtime diagnosis\n\n```json\n'+json.dumps(report,ensure_ascii=False,indent=2)+'\n```\n')
         return 1
     print('STREAM_OK: health, HLS and latest segment passed'); return 0
 if __name__=='__main__': sys.exit(main())
