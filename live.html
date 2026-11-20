@@ -77,7 +77,7 @@
 <button id="maintenanceSound" class="maintenance-sound" type="button" aria-pressed="false">♫ Включить звук</button>
 </div></div><div class="placeholder hidden" id="placeholder"><div class="logo">🌈</div><h2>МУЛЬТИК ТВ</h2><p>Проверяем источник…</p></div><iframe id="testSignal" title="Тестовая заставка МУЛЬТИК ТВ" class="hidden" allow="autoplay"></iframe><video id="player" controls playsinline class="hidden"></video><div class="channel-watermark" aria-label="Логотип МУЛЬТИК ТВ"><svg viewBox="0 0 360 150" role="img" aria-label="МУЛЬТИК ТВ"><defs><linearGradient id="wmrain" x1="0" x2="1"><stop stop-color="#ff3838"/><stop offset=".2" stop-color="#ffb52e"/><stop offset=".4" stop-color="#54d84d"/><stop offset=".6" stop-color="#28b8ff"/><stop offset=".8" stop-color="#a14cff"/><stop offset="1" stop-color="#ff56ac"/></linearGradient></defs><path d="M15 108 Q180 -20 345 108" fill="none" stroke="url(#wmrain)" stroke-width="13" stroke-linecap="round"/><rect x="119" y="5" width="122" height="78" rx="23" fill="#087fe5" stroke="#fff" stroke-width="5"/><rect x="130" y="15" width="100" height="57" rx="17" fill="#bcecff"/><circle cx="158" cy="42" r="9" fill="#172a5b"/><circle cx="199" cy="42" r="9" fill="#172a5b"/><path d="M164 58 Q180 74 197 58" fill="none" stroke="#e83d60" stroke-width="6" stroke-linecap="round"/><path d="M148 7 L137 0 M213 7 L224 0" stroke="#087fe5" stroke-width="6" stroke-linecap="round"/><text x="180" y="119" text-anchor="middle" font-family="Arial,sans-serif" font-size="48" font-weight="1000" stroke="#10265f" stroke-width="9" paint-order="stroke" fill="url(#wmrain)">МУЛЬТИК</text><rect x="141" y="124" width="78" height="24" rx="10" fill="#087fe5" stroke="#fff" stroke-width="2"/><text x="180" y="143" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" font-weight="900" fill="#fff">ТВ</text></svg></div></div>
 <p class="status" id="status" role="status">Проверяем наличие сигнала…</p>
-<div class="player-tools"><button id="fitMode" type="button" aria-pressed="false">Заполнить экран: выкл.</button></div>
+<div class="player-tools"><button id="soundMode" type="button" aria-pressed="false">🔊 Включить звук</button><button id="fitMode" type="button" aria-pressed="false">Заполнить экран: выкл.</button></div>
 <p class="muted">Режим заполнения увеличивает видео и обрезает края. Он помогает убрать чёрные поля, если они находятся по краям кадра, но может обрезать часть изображения. Чёрные полосы, уже встроенные в сам файл, автоматически определить и удалить без обрезки невозможно.</p>
 <p class="muted">Тестовая заставка проверяет отображение плеера. Она не является прямой трансляцией и не заменяет видеосервер.</p></section>
 <section class="panel"><h2>Информация о вещании</h2><p id="details" class="muted">Загружаем состояние канала…</p><p class="muted">В программе используется открытая анимация «Пеппер и Кэррот», эпизод 6. Авторы, музыка, лицензия и исходная страница указаны в <a href="credits.html">титрах и сведениях о лицензии</a>.</p></section>
@@ -110,7 +110,29 @@ updateMaintenanceSchedule();
 setInterval(updateMaintenanceSchedule,1000);
 
 const fitButton=document.getElementById('fitMode');
+const soundModeButton=document.getElementById('soundMode');
 const player=document.getElementById('player');
+// TV-style startup: start the live stream automatically, muted first because
+// mobile browsers block audible autoplay until the viewer interacts.
+player.autoplay=true; player.playsInline=true; player.preload='auto'; player.muted=true;
+async function startAutomaticPlayback(){
+ try{await player.play(); statusEl.textContent='🟢 Эфир запущен автоматически. Звук можно включить кнопкой ниже.';}
+ catch(error){statusEl.textContent='Поток найден. Нажмите «Включить звук» или Play, чтобы начать просмотр.';}
+}
+function selectRussianAudioTrack(){
+ try{
+  if(hlsEngine&&Array.isArray(hlsEngine.audioTracks)){
+   const idx=hlsEngine.audioTracks.findIndex(t=>/^ru([,_-]|$)/i.test(t.lang||t.language||'')||/русск/i.test(t.name||''));
+   if(idx>=0)hlsEngine.audioTrack=idx;
+  }else if(player.audioTracks&&player.audioTracks.length){
+   for(let i=0;i<player.audioTracks.length;i++)if(/^ru([,_-]|$)/i.test(player.audioTracks[i].language||'')){player.audioTracks[i].enabled=true;break;}
+  }
+ }catch(error){/* Browser exposes no selectable language tracks. */}
+}
+soundModeButton.addEventListener('click',async()=>{
+ if(player.muted){player.muted=false;soundModeButton.textContent='🔇 Выключить звук';soundModeButton.setAttribute('aria-pressed','true');try{await player.play();}catch(error){statusEl.textContent='Нажмите Play в самом плеере.';}}
+ else{player.muted=true;soundModeButton.textContent='🔊 Включить звук';soundModeButton.setAttribute('aria-pressed','false');}
+});
 const test=document.getElementById('testSignal');
 const statusEl=document.getElementById('status');
 const details=document.getElementById('details');
@@ -228,7 +250,7 @@ const connectionWatchdog=setTimeout(()=>{
    if(/\.m3u8($|[?#])/i.test(url.href)){
     if(player.canPlayType('application/vnd.apple.mpegurl')){
      showPlayer(); player.src=url.href;
-     player.addEventListener('loadedmetadata',()=>{clearTimeout(connectionWatchdog);statusEl.textContent='🟢 HLS-поток найден. Нажми Play для просмотра.';details.textContent='Сервер передаёт видеосигнал.';},{once:true});
+     player.addEventListener('loadedmetadata',()=>{clearTimeout(connectionWatchdog);selectRussianAudioTrack();details.textContent='Сервер передаёт поток. Плеер запускает его автоматически без звука; при наличии русской аудиодорожки она выбирается первой.';startAutomaticPlayback();},{once:true});
      player.addEventListener('error',()=>showTestSignal('HLS-поток не ответил.'),{once:true});
     }else{
      const module=await import('https://cdn.jsdelivr.net/npm/hls.js@1.5.20/+esm');
@@ -237,10 +259,11 @@ const connectionWatchdog=setTimeout(()=>{
      hlsEngine=new module.default({enableWorker:true,manifestLoadingMaxRetry:1,manifestLoadingTimeOut:10000,levelLoadingMaxRetry:1});
      hlsEngine.loadSource(url.href); hlsEngine.attachMedia(player);
      hlsEngine.on(module.default.Events.MANIFEST_PARSED,()=>{
-      clearTimeout(connectionWatchdog);
-      statusEl.textContent='🟢 HLS-поток найден. Нажми Play для просмотра.';
-      details.textContent='Видеосервер передаёт поток. Статус: '+(state.state||'проверяется')+'.';
+      clearTimeout(connectionWatchdog);selectRussianAudioTrack();
+      details.textContent='Видеосервер передаёт поток. Русская дорожка выбирается автоматически, если сервер её предоставляет.';
+      startAutomaticPlayback();
      });
+hlsEngine.on(module.default.Events.AUDIO_TRACKS_UPDATED,selectRussianAudioTrack);
      hlsEngine.on(module.default.Events.ERROR,(_,data)=>{
       if(data.fatal)showTestSignal('Видеосервер пока недоступен.');
      });
@@ -248,7 +271,7 @@ const connectionWatchdog=setTimeout(()=>{
     }
    }else{
     showPlayer();player.src=url.href;
-    player.addEventListener('loadedmetadata',()=>{statusEl.textContent='🟢 Источник видео найден. Нажми Play.';},{once:true});
+    player.addEventListener('loadedmetadata',()=>{selectRussianAudioTrack();startAutomaticPlayback();},{once:true});
     player.addEventListener('error',()=>showTestSignal('Видеофайл недоступен.'),{once:true});
    }
   }else{
