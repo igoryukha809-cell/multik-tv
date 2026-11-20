@@ -13,11 +13,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Wake and check HLS manifest
+      - uses: actions/checkout@v4
+      - name: Check configured broadcast state
         shell: bash
         run: |
           set -euo pipefail
-          url="https://multik-tv-test-stream.onrender.com/live/multiktv.m3u8"
+          if [ "$(jq -r '.streaming' broadcast/status.json)" != "true" ]; then
+            echo "Channel is intentionally OFFLINE; test signal only. No live stream is configured."
+            exit 0
+          fi
+          url="$(jq -r '.streamUrl // empty' broadcast.json)"
+          if [ -z "$url" ]; then
+            echo "::error::Broadcast status says online but no streamUrl is configured."
+            exit 1
+          fi
           for attempt in {1..10}; do
             code="$(curl -L -sS --max-time 30 -o /tmp/stream.m3u8 -w '%{http_code}' "$url" || true)"
             if [ "$code" = "200" ] && grep -q '^#EXTM3U' /tmp/stream.m3u8; then
@@ -25,7 +34,7 @@ jobs:
               head -n 20 /tmp/stream.m3u8
               exit 0
             fi
-            echo "Attempt $attempt: HTTP $code; waiting for free instance to wake."
+            echo "Attempt $attempt: HTTP $code; waiting for stream."
             sleep 15
           done
           echo "::error::HLS manifest did not become available after retries."
