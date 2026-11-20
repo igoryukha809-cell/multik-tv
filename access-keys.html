@@ -34,7 +34,7 @@ import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2
 import {SUPABASE_URL,SUPABASE_ANON_KEY} from "./admin-config.js";
 const configured=!SUPABASE_URL.includes("YOUR_PROJECT")&&!SUPABASE_ANON_KEY.includes("YOUR_SUPABASE");
 const supabase=configured?createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
-const API="https://multik-tv-storage-api.onrender.com";
+const API="https://multik-tv-access-api-production.up.railway.app";
 const $=id=>document.getElementById(id);
 let adminToken="";
 async function connectSession(){if(!configured){showStatus("Сначала владелец проекта должен заполнить admin-config.js и переменные сервера по инструкции auth-setup.md.","error");$("login").hidden=false;return;}const {data:{session}}=await supabase.auth.getSession();if(!session){showStatus("Сначала войдите по подтверждённой ссылке из письма.");$("login").hidden=false;return;}adminToken=session.access_token;try{await loadKeys();$("manager").hidden=false;$("listPanel").hidden=false;$("logout").hidden=false;$("login").hidden=true;showStatus("Вход выполнен. Проверка администратора пройдена.","success");}catch(e){adminToken="";$("manager").hidden=true;$("listPanel").hidden=true;showStatus(e.message,"error");}}
