@@ -25,15 +25,53 @@
 <footer class="muted">МУЛЬТИК ТВ · Страница прямого эфира</footer>
 <script>
 const fitButton=document.getElementById('fitMode');
-const playerElement=document.getElementById('player');
-fitButton.addEventListener('click',()=>{const crop=playerElement.classList.toggle('crop');fitButton.textContent=crop?'Заполнить экран: вкл.':'Заполнить экран: выкл.';fitButton.setAttribute('aria-pressed',String(crop));});
-playerElement.addEventListener('playing',()=>{document.getElementById('status').textContent='🟢 Видеопоток воспроизводится.';});
-playerElement.addEventListener('waiting',()=>{document.getElementById('status').textContent='🟡 Буферизация видеопотока…';});
-playerElement.addEventListener('error',()=>{document.getElementById('status').textContent='🔴 Не удалось воспроизвести поток. Проверь доступность HLS-сервера и его плейлист.';});
-(async()=>{const status=document.getElementById('status'),details=document.getElementById('details'),player=document.getElementById('player'),test=document.getElementById('testSignal'),placeholder=document.getElementById('placeholder');
-try{const r=await fetch('./broadcast.json',{cache:'no-store'});if(!r.ok)throw Error('Конфигурация не найдена');const c=await r.json();
-if(c.streamUrl){const u=new URL(c.streamUrl,location.href);if(u.protocol!=='https:')throw Error('Разрешены только HTTPS-потоки');player.classList.remove('hidden');placeholder.classList.add('hidden');if(/\.m3u8($|[?#])/i.test(u.href)){if(player.canPlayType('application/vnd.apple.mpegurl')){player.src=u.href;}else{const hls=await import('https://cdn.jsdelivr.net/npm/hls.js@1.5.20/+esm');if(hls.default.isSupported()){const engine=new hls.default({enableWorker:true});engine.loadSource(u.href);engine.attachMedia(player);engine.on(hls.default.Events.ERROR,(_,data)=>{if(data.fatal){status.textContent='Ошибка HLS-потока. Сервер может быть недоступен.';details.textContent='Проверь адрес потока и состояние видеосервера.';engine.destroy();}});}else{throw Error('Этот браузер не поддерживает HLS-воспроизведение.');}}}else{player.src=u.href;}status.textContent='Источник видеопотока указан. Нажми Play; наличие работающего сигнала проверяется плеером.';details.textContent='Канал: '+(c.channelName||'МУЛЬТИК ТВ')+'. Адрес источника загружен.';}
-else if(c.testSignalUrl){const u=new URL(c.testSignalUrl,location.href);if(u.protocol!=='https:')throw Error('Тестовый источник должен использовать HTTPS');test.src=u.href;test.classList.remove('hidden');placeholder.classList.add('hidden');status.textContent='🟡 Работает тестовая заставка. Настоящий эфир OFFLINE.';details.textContent='Тестовый источник подключён к плееру. Видеосервер и прямой эфир не запущены.';}
-else throw Error('Источник пока не настроен.');
-}catch(e){status.textContent='🔴 Эфир не запущен. '+e.message;details.textContent='Статус: ожидание видеосигнала.';}})();
+const player=document.getElementById('player');
+const test=document.getElementById('testSignal');
+const statusEl=document.getElementById('status');
+const details=document.getElementById('details');
+fitButton.addEventListener('click',()=>{const crop=player.classList.toggle('crop');fitButton.textContent=crop?'Заполнить экран: вкл.':'Заполнить экран: выкл.';fitButton.setAttribute('aria-pressed',String(crop));});
+player.addEventListener('playing',()=>{statusEl.textContent='🟢 Видеопоток воспроизводится.';});
+player.addEventListener('waiting',()=>{statusEl.textContent='🟡 Буферизация видеопотока…';});
+player.addEventListener('error',()=>{statusEl.textContent='🔴 Не удалось воспроизвести видеопоток. Прямой эфир OFFLINE.';});
+(async()=>{
+ const placeholder=document.getElementById('placeholder');
+ try {
+  const [configResponse,stateResponse]=await Promise.all([
+   fetch('./broadcast.json',{cache:'no-store'}),
+   fetch('./broadcast/status.json',{cache:'no-store'})
+  ]);
+  if(!configResponse.ok) throw Error('Не удалось загрузить конфигурацию канала');
+  const config=await configResponse.json();
+  const state=stateResponse.ok?await stateResponse.json():{streaming:false,state:'unknown'};
+  if(state.streaming===true && config.streamUrl){
+   const url=new URL(config.streamUrl,location.href);
+   if(url.protocol!=='https:') throw Error('Для публичного эфира требуется HTTPS');
+   player.classList.remove('hidden'); placeholder.classList.add('hidden');
+   if(/\\.m3u8($|[?#])/i.test(url.href)){
+    if(player.canPlayType('application/vnd.apple.mpegurl')) player.src=url.href;
+    else {
+     const module=await import('https://cdn.jsdelivr.net/npm/hls.js@1.5.20/+esm');
+     if(!module.default.isSupported()) throw Error('Браузер не поддерживает HLS');
+     const engine=new module.default({enableWorker:true});
+     engine.loadSource(url.href); engine.attachMedia(player);
+     engine.on(module.default.Events.ERROR,(_,data)=>{if(data.fatal){statusEl.textContent='🔴 Ошибка видеопотока. Эфир OFFLINE.';details.textContent='Проверьте видеосервер и HLS-плейлист.';engine.destroy();}});
+    }
+   } else player.src=url.href;
+   statusEl.textContent='Источник найден. Нажми Play для проверки воспроизведения.';
+   details.textContent='Состояние канала: '+(state.state||'online')+'.';
+  } else if(config.testSignalUrl) {
+   const url=new URL(config.testSignalUrl,location.href);
+   if(url.protocol!=='https:') throw Error('Тестовый экран должен использовать HTTPS');
+   test.src=url.href; test.classList.remove('hidden'); placeholder.classList.add('hidden');
+   statusEl.textContent='🟡 Работает только тестовая заставка. Настоящий прямой эфир OFFLINE.';
+   details.textContent=state.message||'Видеоплейлист пуст. Прямой эфир не подключён.';
+  } else {
+   statusEl.textContent='🔴 Эфир не запущен. Видеосигнал отсутствует.';
+   details.textContent=state.message||'Ожидается подключение видеосервера.';
+  }
+ } catch(error) {
+  statusEl.textContent='🔴 Эфир не запущен. '+error.message;
+  details.textContent='Состояние: ожидание видеосигнала.';
+ }
+})();
 </script></body></html>
