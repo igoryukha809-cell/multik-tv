@@ -1,0 +1,34 @@
+# Реестр открытой анимации для МУЛЬТИК ТВ
+
+Этот список — подборка кандидатов для будущего эфира, а не готовый серверный плейлист. Перед публичной ретрансляцией нужно скачать официальный файл, сохранить копию страницы лицензии и выполнить её условия. Не меняйте аудио/видео и не удаляйте титры без проверки условий.
+
+## 1. «The Deadline» / «Дедлайн» (2018)
+
+- Русская версия указана на официальной странице.
+- Лицензия: Creative Commons Attribution 4.0 (CC BY 4.0).
+- Авторы, указанные на странице: Ilya Goryuch — original comic; Tamara Khudyakova — animation; Stas Kholodilin — voicing and sound design.
+- Атрибуция для титров: «The Deadline» — Ilya Goryuch, Tamara Khudyakova, Stas Kholodilin; Morevna Project; CC BY 4.0.
+- Официальная страница и лицензия: https://morevnaproject.org/shorts/deadline/
+- Публичная версия: https://morevnaproject.org/2018/08/05/the-deadline-animated-short-released/
+
+## 2. «Amazing Sentence» / «Удивительное предложение» (2011)
+
+- Языки: русский и английский (сведения каталога).
+- Лицензия копии в каталоге: CC BY 3.0.
+- Указанный автор/руководитель: Konstantin Dmitriev. В титрах перечислены художники и аниматоры: Andrej Idubalin, Nastja Majzhegisheva, Danil Maksimov, Aziz Murzaev, Vlad Rusmanov, Dima Popov.
+- Атрибуция: «Amazing Sentence» — Konstantin Dmitriev and the credited animation team; CC BY 3.0.
+- Страница с описанием лицензии и кредитами: https://invisiblenetwork.ai/watch/archive/ia/AmazingSentence
+- Страница проекта: https://morevnaproject.org/2011/06/19/amazing-sentence/
+
+## 3. «Pepper & Carrot Motion Comic: Episode 6» / «Пеппер и Кэррот: эпизод 6»
+
+- На официальной странице указана лицензия Creative Commons Attribution-ShareAlike 4.0 (CC BY-SA 4.0); опубликована русская версия.
+- Атрибуция: «Pepper & Carrot Motion Comic: Episode 6» — David Revoy (original artwork and story), Nikolai Mamashev (direction/animation), Morevna Project; CC BY-SA 4.0.
+- Официальная страница и лицензия: https://morevnaproject.org/pepper-and-carrot/episode-6/
+- Важно: до добавления в серверный плейлист отдельно перепроверьте условия для звуковой дорожки и сохраните подтверждение правообладателя/лицензии. Не делайте ремикс и не заменяйте музыку.
+
+## Техническое ограничение плейлиста
+
+Серверный отправитель читает локальные видеофайлы из `stream-server/media/` и необязательный `playlist.txt`. Публичные страницы и ссылки на YouTube/каталог не являются прямыми видеофайлами и не подходят как источник для FFmpeg. Сейчас `broadcast/playlist.json` намеренно пуст: ни один файл ещё не размещён на сервере и не прошёл отдельную проверку.
+
+Не выставляйте `rightsConfirmed: true` только потому, что ролик можно бесплатно посмотреть. Для включения в общий эфир нужны официальный файл, подтверждённая лицензия/разрешение и корректная атрибуция. Публичный доступ к ролику на сайте правообладателя сам по себе не означает, что его можно ретранслировать с другого сервера.
