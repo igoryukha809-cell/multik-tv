@@ -358,13 +358,13 @@ generate_weather_show() {
     if [[ -n "$feels" ]]; then
       feels_say=" По ощущениям ${feels} градусов."
     fi
-    spoken="Здравствуйте! В эфире прогноз погоды. ${city}. Сейчас ${temp_say} градусов, ${condition}.${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов."
+    spoken="Привет, друзья! Это Соня, и мы узнаем погоду! ${city}. Сейчас ${temp_say} градусов, ${condition}.${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов. Отличного вам дня!"
     if [[ "$rain" != "—" ]]; then
       spoken+=" Вероятность осадков ${rain} процентов."
     fi
     printf '%s\n' "$spoken" > "${WEATHER_DIR}/weather-${count}.speech.txt"
     speech="${WEATHER_DIR}/weather-${count}.wav"
-    if ! espeak-ng -v ru -s 142 -p 42 -a 165 -w "$speech" "$spoken" 2>/dev/null; then
+    if ! espeak-ng -v ru+f3 -s 150 -p 66 -a 165 -w "$speech" "$spoken" 2>/dev/null; then
       echo "Не удалось синтезировать голос ведущего для ${city}; использую резервную тишину."
       speech=""
     fi
