@@ -1,0 +1,32 @@
+name: Check МУЛЬТИК ТВ HLS stream
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  check-stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wake and check HLS manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://multik-tv-test-stream.onrender.com/live/multiktv.m3u8"
+          for attempt in {1..10}; do
+            code="$(curl -L -sS --max-time 30 -o /tmp/stream.m3u8 -w '%{http_code}' "$url" || true)"
+            if [ "$code" = "200" ] && grep -q '^#EXTM3U' /tmp/stream.m3u8; then
+              echo "HLS manifest is available."
+              head -n 20 /tmp/stream.m3u8
+              exit 0
+            fi
+            echo "Attempt $attempt: HTTP $code; waiting for free instance to wake."
+            sleep 15
+          done
+          echo "::error::HLS manifest did not become available after retries."
+          exit 1
