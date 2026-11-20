@@ -1,0 +1,36 @@
+name: Stream runtime auto-diagnostics
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: stream-runtime-autodiagnostics
+  cancel-in-progress: true
+jobs:
+  runtime-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check live status and actual HLS segment
+        id: probe
+        continue-on-error: true
+        env:
+          STREAM_BASE_URL: https://multik-tv-test-stream-yltl.onrender.com
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: srv-dbvdipmk1f9s73c8g10g
+        run: python3 scripts/stream_autorepair.py
+      - name: Create or update diagnostic issue
+        if: steps.probe.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          body="$(cat "$GITHUB_STEP_SUMMARY")"
+          issue="$(gh issue list --state open --search 'in:title Эфир недоступен авто-диагностика' --json number --jq '.[0].number // empty')"
+          if [ -n "$issue" ]; then gh issue comment "$issue" --body "$body"; else gh issue create --title 'Эфир недоступен — авто-диагностика' --body "$body"; fi
+      - name: Mark check failed
+        if: steps.probe.outcome == 'failure'
+        run: exit 1
