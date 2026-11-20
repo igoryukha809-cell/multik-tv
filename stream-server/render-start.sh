@@ -393,9 +393,6 @@ generate_weather_show() {
     fi
       printf "file '%s'\n" "$clip" >> "$concat_file"
       count=$((count + 1))
-    else
-      echo "Не удалось создать погодный экран для ${city}."
-    fi
   done
 
   if (( count == 0 )); then
