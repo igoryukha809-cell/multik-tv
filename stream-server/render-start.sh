@@ -324,7 +324,7 @@ generate_weather_show() {
       echo "Не удалось создать резервную погодную заставку."
       return 1
     fi
-    printf "file '%s'\\n" "$clip" >> "$concat_file"
+    printf "file '%s'\n" "$clip" >> "$concat_file"
     count=1
   fi
 
