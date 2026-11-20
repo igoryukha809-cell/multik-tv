@@ -253,40 +253,55 @@ generate_weather_show() {
     json="${WEATHER_DIR}/weather-${count}.json"
     txt="${WEATHER_DIR}/weather-${count}.txt"
     clip="${WEATHER_DIR}/weather-${count}.mp4"
-    url="https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_min,temperature_2m_max,precipitation_probability_max&forecast_days=1&timezone=auto"
+    source="MET Norway"
+    url="https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
+    weather_ua="${WEATHER_USER_AGENT:-MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)}"
 
-    if ! curl -fsSL --retry 1 --retry-delay 8 --retry-max-time 25 --connect-timeout 8 --max-time 20 "$url" -o "$json"; then
-      echo "Погода для ${city} временно недоступна; пропускаю город."
-      continue
+    # Primary provider: MET Norway, global coverage. Keep the request rate low
+    # and identify the application as required by the provider.
+    if curl -fsSL --retry 1 --retry-delay 3 --connect-timeout 8 --max-time 20 \
+      -H "User-Agent: ${weather_ua}" -H "Accept: application/json" "$url" -o "$json"; then
+      temp="$(jq -r '.properties.timeseries[0].data.instant.details.air_temperature // empty' "$json")"
+      feels="$(jq -r '.properties.timeseries[0].data.instant.details.air_temperature // empty' "$json")"
+      wind="$(jq -r '.properties.timeseries[0].data.instant.details.wind_speed // empty' "$json")"
+      humidity="$(jq -r '.properties.timeseries[0].data.instant.details.relative_humidity // empty' "$json")"
+      code="$(jq -r '.properties.timeseries[0].data.next_1_hours.summary.symbol_code // .properties.timeseries[0].data.next_6_hours.summary.symbol_code // empty' "$json")"
+      rain="—"; low="—"; high="—"
+      case "$code" in
+        *clearsky*) condition="Ясно" ;;
+        *fair*) condition="Преимущественно ясно" ;;
+        *partlycloudy*) condition="Переменная облачность" ;;
+        *cloudy*) condition="Облачно" ;;
+        *fog*) condition="Туман" ;;
+        *lightrain*|*rain*) condition="Дождь" ;;
+        *sleet*) condition="Мокрый снег" ;;
+        *snow*) condition="Снег" ;;
+        *thunder*) condition="Гроза" ;;
+        *) condition="Условия уточняются" ;;
+      esac
+    else
+      echo "MET Norway недоступен для ${city}; переключаюсь на wttr.in."
+      source="wttr.in"
+      url="https://wttr.in/${lat},${lon}?format=j1"
+      if ! curl -fsSL --retry 1 --retry-delay 2 --connect-timeout 8 --max-time 20 \
+        -H "User-Agent: MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)" "$url" -o "$json"; then
+        echo "Оба погодных источника недоступны для ${city}; пропускаю город."
+        continue
+      fi
+      temp="$(jq -r '.current_condition[0].temp_C // empty' "$json")"
+      feels="$(jq -r '.current_condition[0].FeelsLikeC // empty' "$json")"
+      wind="$(jq -r '.current_condition[0].windspeedKmph // empty' "$json")"
+      humidity="$(jq -r '.current_condition[0].humidity // empty' "$json")"
+      condition="$(jq -r '.current_condition[0].weatherDesc[0].value // "Условия уточняются"' "$json")"
+      rain="$(jq -r '.weather[0].hourly[0].chanceofrain // "—"' "$json")"
+      low="$(jq -r '.weather[0].mintempC // "—"' "$json")"
+      high="$(jq -r '.weather[0].maxtempC // "—"' "$json")"
     fi
 
-    temp="$(jq -r '.current.temperature_2m // empty' "$json")"
-    feels="$(jq -r '.current.apparent_temperature // empty' "$json")"
-    wind="$(jq -r '.current.wind_speed_10m // empty' "$json")"
-    humidity="$(jq -r '.current.relative_humidity_2m // empty' "$json")"
-    code="$(jq -r '.current.weather_code // -1' "$json")"
-    rain="$(jq -r '.daily.precipitation_probability_max[0] // 0' "$json")"
-    low="$(jq -r '.daily.temperature_2m_min[0] // empty' "$json")"
-    high="$(jq -r '.daily.temperature_2m_max[0] // empty' "$json")"
-
     [[ -n "$temp" && -n "$feels" && -n "$wind" && -n "$humidity" ]] || {
-      echo "Неполные погодные данные для ${city}; пропускаю город."
+      echo "Неполные погодные данные от ${source} для ${city}; пропускаю город."
       continue
     }
-
-    case "$code" in
-      0) condition="Ясно" ;;
-      1) condition="Преимущественно ясно" ;;
-      2) condition="Переменная облачность" ;;
-      3) condition="Пасмурно" ;;
-      45|48) condition="Туман" ;;
-      51|53|55|56|57) condition="Морось" ;;
-      61|63|65|66|67) condition="Дождь" ;;
-      71|73|75|77|85|86) condition="Снег" ;;
-      80|81|82) condition="Кратковременный дождь" ;;
-      95|96|99) condition="Гроза" ;;
-      *) condition="Переменная погода" ;;
-    esac
 
     {
       printf 'МУЛЬТИК ТВ  |  ПОГОДА С МУЛЬТИКОМ\n'
