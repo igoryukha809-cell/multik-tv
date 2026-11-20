@@ -7,13 +7,13 @@
   "scheduledPrograms": {
     "weather": {
       "title": "Погода с Мультиком",
-      "time": "after_each_programme_cycle",
+      "time": "10:00",
       "timezone": "Europe/Moscow",
       "source": "MET Norway Locationforecast 2.0 (primary), wttr.in (fallback)",
       "generatedBy": "FFmpeg",
-      "scheduleMode": "repeating",
+      "scheduleMode": "daily",
       "durationSeconds": 192,
-      "description": "Sixteen city weather cards, approximately 192 seconds, including cities across western Russia, Siberia and the Far East. Global forecast from MET Norway with wttr.in fallback; if both providers are unavailable, an explicitly labelled no-data card is used. Provider attribution is shown on each forecast card."
+      "description": "Daily weather programme at 10:00 Europe/Moscow, prepared from fresh forecast data immediately before transmission. Sixteen Russian cities; Open-Meteo is the fallback provider. If providers are unavailable, an explicitly labelled no-data card is used."
     },
     "originalShows": [
       {
@@ -60,7 +60,7 @@
       }
     ]
   },
-  "note": "The continuous playlist plays six original educational programmes, then a weather segment of approximately 192 seconds with 16 Russian cities, and repeats. Weather forecasts use MET Norway as the primary source and wttr.in as a fallback; if both are unavailable, the channel shows a clearly labelled no-data card. This is a repeating cycle, not a separate daily start at a fixed time. Live status is determined by actual HLS segment progress and player playback.",
+  "note": "The continuous playlist repeats the channel's original educational programmes. The weather programme is excluded from that loop and airs once daily at 10:00 Europe/Moscow. The forecast is generated while the main programme remains on air, then switched into the live HLS stream. Weather uses MET Norway as the primary source, Open-Meteo as fallback, and wttr.in as a final fallback; if all are unavailable, the channel shows a clearly labelled no-data card.",
   "maintenance": {
     "daily": true,
     "start": "02:00",
