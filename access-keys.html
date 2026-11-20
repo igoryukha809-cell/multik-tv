@@ -11,7 +11,7 @@
 <main class="wrap">
 <section class="panel">
 <h2>Вход по электронной почте</h2>
-<p class="muted">Используется подтверждённая сессия Supabase. Если вы ещё не вошли, получите одноразовую ссылку на почту.</p>
+<p class="muted">Используется подтверждённая сессия Logto. Если вы ещё не вошли, перейдите на защищённую страницу входа.</p>
 <div id="status" role="status" class="notice">Проверяем вход…</div>
 <button id="login" class="secondary" hidden>Войти по почте</button>
 <button id="logout" class="secondary" hidden>Выйти</button>
@@ -30,18 +30,16 @@
 <p><a href="./admin.html">← Вернуться в админ-панель</a></p>
 </main>
 <script type="module">
-import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-import {SUPABASE_URL,SUPABASE_ANON_KEY} from "./admin-config.js?v=20261120-3";
-const configured=!SUPABASE_URL.includes("YOUR_PROJECT")&&!SUPABASE_ANON_KEY.includes("YOUR_SUPABASE");
-const supabase=configured?createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
-const API="https://multik-tv-access-api-production.up.railway.app";
+import LogtoClient from "https://cdn.jsdelivr.net/npm/@logto/browser@3.1.2/+esm";
+import {LOGTO_ENDPOINT,LOGTO_APP_ID,LOGTO_API_RESOURCE,LOGTO_REDIRECT_URI,LOGTO_POST_LOGOUT_URI} from "./logto-config.js";
+const API=LOGTO_API_RESOURCE;
+const logtoClient=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE],scopes:["email"]});
 const $=id=>document.getElementById(id);
 let adminToken="";
-function safeAuthError(value){const map={otp_expired:"Срок действия ссылки истёк или она уже использована. Запросите новое письмо и откройте самую свежую ссылку один раз.",access_denied:"Supabase отклонил вход. Проверьте настройки URL перенаправления и запросите новую ссылку.",invalid_request:"Ссылка входа недействительна. Запросите новое письмо."};return map[value]||"Не удалось подтвердить вход. Запросите новую ссылку и проверьте настройки Supabase Auth.";}
-async function connectSession(){if(!configured){showStatus("Сначала владелец проекта должен заполнить admin-config.js и переменные сервера по инструкции auth-setup.md.","error");$("login").hidden=false;return;}try{const url=new URL(location.href);const queryError=url.searchParams.get("error_code")||url.searchParams.get("error");const hash=new URLSearchParams(url.hash.replace(/^#/,""));const authError=queryError||hash.get("error_code")||hash.get("error");if(authError){const description=url.searchParams.get("error_description")||hash.get("error_description");showStatus(safeAuthError(authError)+(description?" Подробности: "+decodeURIComponent(description.replace(/\\+/g," ")):""),"error");$("login").hidden=false;return;}const {data,error}=await supabase.auth.getSession();if(error)throw error;const session=data.session;if(!session){showStatus("Сессия не найдена. Запросите новое письмо для входа и откройте самую свежую ссылку.", "error");$("login").hidden=false;return;}adminToken=session.access_token;try{await loadKeys();$("manager").hidden=false;$("listPanel").hidden=false;$("logout").hidden=false;$("login").hidden=true;showStatus("Вход выполнен. Проверка администратора пройдена.","success");}catch(e){adminToken="";$("manager").hidden=true;$("listPanel").hidden=true;showStatus(e.message,"error");}}catch(e){adminToken="";const code=e.code||e.name||"";showStatus(safeAuthError(code), "error");$("login").hidden=false;}}
+async function connectSession(){try{const params=new URLSearchParams(location.search);if(params.has("code")||params.has("error"))await logtoClient.handleSignInCallback(location.href);const authenticated=await logtoClient.isAuthenticated();if(!authenticated){showStatus("Войдите через Logto, чтобы открыть управление ключами.","error");$("login").hidden=false;return;}adminToken=await logtoClient.getAccessToken(LOGTO_API_RESOURCE);await loadKeys();$("manager").hidden=false;$("listPanel").hidden=false;$("logout").hidden=false;$("login").hidden=true;showStatus("Вход выполнен. Проверка администратора пройдена.","success");}catch(e){adminToken="";$("manager").hidden=true;$("listPanel").hidden=true;showStatus("Не удалось подтвердить вход через Logto. Проверьте настройки API и повторите вход.","error");$("login").hidden=false;console.error("Logto sign-in failed:",e);}}
 // getSession() ниже запускает обработку callback URL; не вызываем getSession повторно из onAuthStateChange.
 $("login").addEventListener("click",()=>location.href="./login.html");
-$("logout").addEventListener("click",async()=>{await supabase.auth.signOut();location.reload();});
+$("logout").addEventListener("click",()=>logtoClient.signOut(LOGTO_POST_LOGOUT_URI));
 function showStatus(message,kind="notice"){const el=$("status");el.className="notice "+kind;el.textContent=message;}
 async function request(path,options={}){const response=await fetch(API+path,{...options,headers:{"Authorization":"Bearer "+adminToken,"Content-Type":"application/json",...(options.headers||{})}});const data=await response.json().catch(()=>({error:"Сервер вернул неверный ответ."}));if(!response.ok)throw new Error(data.error||"Ошибка запроса.");return data;}
 async function loadKeys(){const data=await request("/api/admin/keys");$("keys").replaceChildren();if(!data.length){$("keys").textContent="Пока ключей нет.";return;}for(const item of data){const row=document.createElement("div");row.className="keyrow"+(item.revokedAt?" revoked":"");const left=document.createElement("div");const name=document.createElement("b");name.textContent=item.label;const meta=document.createElement("div");meta.innerHTML='<small></small>';meta.firstChild.textContent=item.scope+" · создан: "+new Date(item.createdAt).toLocaleString("ru-RU")+(item.lastUsedAt?" · использован: "+new Date(item.lastUsedAt).toLocaleString("ru-RU"):"");left.append(name,document.createElement("br"),meta);const right=document.createElement("div");right.className="row";const badge=document.createElement("span");badge.className="pill";badge.textContent=item.revokedAt?"Отключён":(item.scope==="upload"?"Загрузка":"API");right.append(badge);if(!item.revokedAt){const btn=document.createElement("button");btn.className="danger";btn.textContent="Отключить";btn.addEventListener("click",async()=>{if(!confirm("Отключить этот ключ?"))return;try{await request("/api/admin/keys/"+encodeURIComponent(item.id),{method:"DELETE"});await loadKeys();}catch(e){showStatus(e.message,"error");}});right.append(btn);}row.append(left,right);$("keys").append(row);}}
