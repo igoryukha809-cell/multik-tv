@@ -19,12 +19,12 @@ class RenderBlueprintTests(unittest.TestCase):
         config = (ROOT / "render.yaml").read_text(encoding="utf-8")
         self.assertRegex(config, r"(?m)^\s*healthCheckPath:\s*/live/multiktv\.m3u8\s*$")
 
-    def test_container_starts_a_labelled_test_signal_not_a_real_program(self):
+    def test_container_downloads_and_streams_licensed_program_with_test_fallback(self):
         dockerfile = (ROOT / "stream-server" / "Dockerfile").read_text(encoding="utf-8")
         startup = (ROOT / "stream-server" / "render-start.sh").read_text(encoding="utf-8")
         self.assertIn('CMD ["/usr/local/srs/render-start.sh"]', dockerfile)
         self.assertIn('HTTP_PORT="${PORT:-10000}"', startup)
-        self.assertIn("TECHNICAL TEST SIGNAL - NOT A LIVE PROGRAM", startup)
+        self.assertIn("PROGRAM_VIDEO_URL", startup)\n        self.assertIn("creativecommons.org/licenses/by-sa/4.0", (ROOT / "broadcast" / "credits-pepper-carrot-episode-6.md").read_text(encoding="utf-8"))\n        self.assertIn("PROGRAM SOURCE UNAVAILABLE - TEST SIGNAL", startup)\n        self.assertIn("Starting the licensed program loop.", startup)
         self.assertIn("rtmp://127.0.0.1/live/multiktv", startup)
 
 
