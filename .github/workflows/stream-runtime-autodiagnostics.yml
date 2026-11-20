@@ -6,6 +6,9 @@ on:
       - 'scripts/**'
       - 'stream-server/**'
       - '.github/workflows/stream-runtime-autodiagnostics.yml'
+      - 'live.html'
+      - 'broadcast.json'
+      - 'render.yaml'
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
