@@ -12,6 +12,6 @@ services:
       - key: PORT
         value: "10000"
       - key: BROADCAST_TZ
-        value: Asia/Krasnoyarsk
+        value: Europe/Moscow
       - key: WEATHER_TIME
         value: "10:00"
