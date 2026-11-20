@@ -1,12 +1,10 @@
 {
   "channel": "МУЛЬТИК ТВ",
-  "state": "test_signal",
-  "checkedAt": "2026-11-20T06:53:00Z",
+  "state": "not_configured",
+  "checkedAt": "2026-11-20T12:45:16Z",
   "activeItem": null,
   "itemsChecked": 0,
-  "sourcesChecked": 0,
-  "sourceChecks": [],
   "errors": [],
-  "message": "Плейлист пуст. Показывается только собственная тестовая заставка; настоящей видеотрансляции пока нет.",
+  "message": "Плейлист пуст. Автопроверка работает, но видеотрансляции нет.",
   "streaming": false
 }
