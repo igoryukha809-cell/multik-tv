@@ -30,7 +30,20 @@ jobs:
         continue-on-error: true
         env:
           STREAM_BASE_URL: https://multik-tv-test-stream-yltl.onrender.com
-        run: python3 scripts/stream_autorepair.py
+        run: |
+          set +e
+          python3 scripts/stream_autorepair.py 2>&1 | tee /tmp/stream-diagnosis.txt
+          result=${PIPESTATUS[0]}
+          {
+            echo '## Автоматическая диагностика видеопотока'
+            echo
+            echo '- Проверка завершилась с кодом: '"$result"
+            echo
+            echo '```text'
+            cat /tmp/stream-diagnosis.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$result"
       - name: Ask AI to diagnose and propose a minimal repair
         id: ai
         if: steps.probe.outcome == 'failure'
@@ -65,6 +78,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           body="$(cat "$GITHUB_STEP_SUMMARY")"
+          if [ -z "$body" ]; then body='Автоматическая проверка обнаружила сбой видеопотока. Подробности: откройте журнал запуска GitHub Actions.'; fi
           issue="$(gh issue list --state open --search 'in:title Эфир недоступен авто-диагностика' --json number --jq '.[0].number // empty')"
           if [ -n "$issue" ]; then gh issue comment "$issue" --body "$body"; else gh issue create --title 'Эфир недоступен — авто-диагностика' --body "$body"; fi
       - name: Mark check failed
