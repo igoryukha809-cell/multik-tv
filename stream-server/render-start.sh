@@ -458,7 +458,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
               live_confirmed=1
               break
             fi
-          done < <(find "$HEALTH_DIR/live" -maxdepth 1 -type f -name 'multiktv-*.ts' -printf '%T@ %f\\n' 2>/dev/null | sort -nr | head -n 5 | cut -d' ' -f2-)
+          done < <(find "$HEALTH_DIR/live" -maxdepth 1 -type f -name 'multiktv-*.ts' -printf '%T@ %f\n' 2>/dev/null | sort -nr | head -n 5 | cut -d' ' -f2-)
         fi
         (( live_confirmed )) && break
       fi
@@ -487,7 +487,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
           segment_path="${segment%%\\?*}"
           if [[ -z "$segment_path" ]]; then
             # The HLS manifest may lag the segment writer; inspect finalized local TS files.
-            segment="$(find "$HEALTH_DIR/live" -maxdepth 1 -type f -name 'multiktv-*.ts' -printf '%T@ %f\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
+            segment="$(find "$HEALTH_DIR/live" -maxdepth 1 -type f -name 'multiktv-*.ts' -printf '%T@ %f\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
             if [[ -n "$segment" ]]; then
               segment_path="/live/$segment"
               echo "WATCHDOG: filesystem fallback progress check: $segment"
