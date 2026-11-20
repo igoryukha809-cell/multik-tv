@@ -73,7 +73,7 @@ function showPlayer(){
    if(url.protocol!=='https:')throw Error('Для публичного эфира требуется HTTPS');
    statusEl.textContent='Проверяем видеосервер…';
    details.textContent=state.message||'Ожидаем подтверждения видеопотока.';
-   if(/\\.m3u8($|[?#])/i.test(url.href)){
+   if(/\.m3u8($|[?#])/i.test(url.href)){
     if(player.canPlayType('application/vnd.apple.mpegurl')){
      showPlayer(); player.src=url.href;
      player.addEventListener('loadedmetadata',()=>{statusEl.textContent='🟢 HLS-поток найден. Нажми Play для просмотра.';details.textContent='Сервер передаёт видеосигнал.';},{once:true});
