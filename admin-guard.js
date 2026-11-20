@@ -10,7 +10,8 @@ try{
  const client=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE],scopes:["email"]});
  if(!await client.isAuthenticated()){message.textContent="Для доступа войдите в учётную запись администратора.";throw new Error("AUTH_REQUIRED");}
  const token=await client.getAccessToken(LOGTO_API_RESOURCE);
- const response=await fetch(LOGTO_API_RESOURCE+"/api/admin/keys",{headers:{Authorization:"Bearer "+token}});
+ const userinfoToken=await client.getAccessToken();
+ const response=await fetch(LOGTO_API_RESOURCE+"/api/admin/keys",{headers:{Authorization:"Bearer "+token,"X-Logto-Userinfo-Token":userinfoToken}});
  if(!response.ok){message.textContent=response.status===401||response.status===403?"У этой учётной записи нет прав администратора.":"Не удалось проверить права доступа.";throw new Error("ACCESS_DENIED");}
  overlay.remove();
 }catch(error){
