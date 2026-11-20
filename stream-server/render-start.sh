@@ -315,7 +315,13 @@ play_weather_show() {
     -b:v 1200k -maxrate 1200k -bufsize 2400k -f flv rtmp://127.0.0.1/live/multiktv
 }
 
-prepare_dialogue_cartoon_library
+# External film downloads are opt-in. Wikimedia currently rate-limits this host (HTTP 429),
+# so do not block the channel's own programme schedule on third-party downloads.
+if [[ "${ENABLE_EXTERNAL_CARTOONS:-false}" == "true" ]]; then
+  prepare_dialogue_cartoon_library
+else
+  echo "External cartoon downloads are disabled; using the six original channel-made programmes."
+fi
 
 if bash /usr/local/srs/generate-original-programs.sh "$ORIGINAL_DIR" "$WEATHER_FONT"; then
   echo "Авторские познавательные передачи подготовлены."
