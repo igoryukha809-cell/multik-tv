@@ -1,16 +1,45 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#7132a8"><title>Погода на МУЛЬТИК ТВ</title><link rel="stylesheet" href="styles.css">
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#287ec4"><title>Погода на МУЛЬТИК ТВ</title><link rel="stylesheet" href="styles.css">
 <style>
-main{max-width:1000px;margin:auto;padding:16px}.hero{background:linear-gradient(135deg,#287ec4,#7146b5);color:white;border-radius:24px;padding:24px}.cities{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:18px 0}.city{background:#fff;color:#30215b;border-radius:16px;padding:16px;text-decoration:none;box-shadow:0 5px 15px #35136b22}.city b{display:block;font-size:18px;margin-bottom:5px}.panel{background:#fff;color:#30215b;padding:20px;border-radius:18px;margin-top:16px;line-height:1.6}.pill{display:inline-block;background:#fff0c2;color:#714400;border-radius:30px;padding:7px 12px;font-weight:800}
-</style></head><body><header><div class="logo">🌈 МУЛЬТИК ТВ</div><p>Погода в городах России</p></header><main>
-<section class="hero"><span class="pill">ПОГОДНЫЙ РАЗДЕЛ</span><h1>🌤️ Выбери свой город</h1><p>Прогнозы открываются на Яндекс Погоде. Выбери город, чтобы увидеть актуальную температуру, осадки, ветер и прогноз.</p><p><b>Главный город выпуска: Барнаул</b></p></section>
-<section class="cities" id="cities"></section>
-<section class="panel"><h2>📺 Отдельная передача «Погода с Мультиком»</h2><p>Ежедневный выпуск с ведущим — Мультиком, добрым мультяшным метеоведущим. Продолжительность: примерно 2 минуты 30 секунд. Формат: приветствие, погода в Барнауле, обзор крупных городов, полезный совет и прощание.</p><p><a href="weather-show.html">Открыть страницу передачи и сценарий выпуска →</a></p></section>
-<section class="panel"><h2>Источник и обновление</h2><p>Все ссылки ведут на соответствующие страницы Яндекс Погоды. Числа здесь намеренно не подставляются вручную: текущие значения должны браться из актуального прогноза.</p><p>Для автоматического вывода погодных данных прямо на сайте или в эфирной графике нужен API-ключ Яндекс Погоды. Ключ нельзя публиковать в открытом HTML-коде; его подключают через защищённый сервер. <a href="https://yandex.ru/dev/weather/doc/ru/concepts/api" target="_blank" rel="noopener">Документация API</a>.</p></section>
-<p><a href="index.html">← На главную МУЛЬТИК ТВ</a></p></main><footer>Погодный раздел МУЛЬТИК ТВ · Источник прогнозов: Яндекс Погода</footer>
+main{max-width:1100px;margin:auto;padding:16px}.hero{background:linear-gradient(135deg,#287ec4,#7146b5);color:white;border-radius:24px;padding:24px}.hero h1{margin:.35em 0}.muted{opacity:.82}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.toolbar button,.toolbar a{border:0;border-radius:12px;padding:11px 15px;background:#ffe17b;color:#30215b;font-weight:850;text-decoration:none;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px;margin:18px 0}.city{background:white;color:#30215b;border-radius:18px;padding:17px;box-shadow:0 5px 18px #25134b18}.city h2{font-size:19px;margin:0}.temp{font-size:38px;font-weight:950;margin:8px 0}.desc{font-weight:800}.details{font-size:13px;line-height:1.8;color:#635b7b}.days{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.day{background:#f1effa;border-radius:10px;padding:8px 10px;font-size:12px}.status{padding:12px 15px;border-radius:12px;background:#f1effa;color:#3b315e}.error{background:#fff0ed;color:#9b332b}.note{background:#fff8df;border-radius:14px;padding:14px;color:#70571e}.stamp{font-size:12px;color:#e9e4ff}
+</style></head><body><header><div class="logo">🌈 МУЛЬТИК ТВ</div><p>Актуальная погода в городах России</p></header><main>
+<section class="hero"><span>ПОГОДНЫЙ СЕРВИС · ДАННЫЕ ОБНОВЛЯЮТСЯ АВТОМАТИЧЕСКИ</span><h1>🌤️ Какая погода сегодня?</h1><p>Температура, ощущается как, ветер, влажность и прогноз на ближайшие дни.</p><div class="toolbar"><button id="refresh" type="button">↻ Обновить данные</button><a href="weather-show.html">📺 Смотреть «Погода с Мультиком»</a></div><p class="stamp" id="updated">Загружаем прогноз…</p></section>
+<div class="status" id="status" role="status" aria-live="polite">Подключаемся к погодному сервису…</div>
+<section class="grid" id="cities" aria-live="polite"></section>
+<section class="note"><b>Источник данных:</b> Open-Meteo. Прогнозы формируются на основе погодных моделей национальных метеослужб. Данные обновляются при повторном запросе. <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · <a href="https://open-meteo.com/en/docs" target="_blank" rel="noopener">описание API</a>. Для некоммерческого использования ключ API не требуется; при коммерческом использовании могут действовать отдельные условия.</section>
+<p><a href="index.html">← На главную МУЛЬТИК ТВ</a></p></main><footer>Погодный сервис МУЛЬТИК ТВ · Данные Open-Meteo</footer>
 <script>
 const cities=[
-["Барнаул","barnaul"],["Москва","moscow"],["Санкт-Петербург","saint-petersburg"],["Новосибирск","novosibirsk"],["Екатеринбург","yekaterinburg"],["Казань","kazan"],["Нижний Новгород","nizhny-novgorod"],["Самара","samara"],["Омск","omsk"],["Челябинск","chelyabinsk"],["Красноярск","krasnoyarsk"],["Пермь","perm"],["Уфа","ufa"],["Воронеж","voronezh"],["Волгоград","volgograd"],["Ростов-на-Дону","rostov-na-donu"],["Краснодар","krasnodar"],["Сочи","sochi"],["Иркутск","irkutsk"],["Томск","tomsk"],["Кемерово","kemerovo"],["Тюмень","tyumen"],["Хабаровск","khabarovsk"],["Владивосток","vladivostok"],["Якутск","yakutsk"],["Мурманск","murmansk"],["Калининград","kaliningrad"],["Саратов","saratov"],["Тула","tula"],["Ярославль","yaroslavl"],["Белгород","belgorod"],["Барнаул","barnaul"]
+{name:"Барнаул",lat:53.35,lon:83.76,main:true},{name:"Москва",lat:55.75,lon:37.62},
+{name:"Санкт-Петербург",lat:59.94,lon:30.31},{name:"Новосибирск",lat:55.03,lon:82.92},
+{name:"Екатеринбург",lat:56.84,lon:60.61},{name:"Казань",lat:55.80,lon:49.11},
+{name:"Красноярск",lat:56.01,lon:92.87},{name:"Владивосток",lat:43.12,lon:131.89}
 ];
-document.getElementById("cities").innerHTML=cities.filter((c,i,a)=>a.findIndex(x=>x[1]===c[1])===i).map(c=>'<a class="city" target="_blank" rel="noopener" href="https://yandex.ru/pogoda/ru/'+c[1]+'"><b>📍 '+c[0]+'</b><span>Открыть прогноз на Яндексе ↗</span></a>').join("");
+const codeText=c=>({0:"Ясно",1:"Преимущественно ясно",2:"Переменная облачность",3:"Пасмурно",45:"Туман",48:"Изморозь и туман",51:"Лёгкая морось",53:"Морось",55:"Сильная морось",61:"Небольшой дождь",63:"Дождь",65:"Сильный дождь",71:"Небольшой снег",73:"Снег",75:"Сильный снег",80:"Кратковременный дождь",81:"Ливень",82:"Сильный ливень",95:"Гроза",96:"Гроза с градом",99:"Сильная гроза"}[c]||"Переменная погода");
+const icon=c=>c===0?"☀️":c<=2?"🌤️":c===3?"☁️":c<=48?"🌫️":c<=67?"🌧️":c<=77?"❄️":c<=82?"🌦️": "⛈️";
+const fmt=n=>Math.round(n);
+function card(city,d){
+ const c=d.current, days=d.daily;
+ const el=document.createElement("article");el.className="city";
+ const h=document.createElement("h2");h.textContent=(city.main?"⭐ ":"📍 ")+city.name;
+ const temp=document.createElement("div");temp.className="temp";temp.textContent=fmt(c.temperature_2m)+"°C";
+ const desc=document.createElement("div");desc.className="desc";desc.textContent=icon(c.weather_code)+" "+codeText(c.weather_code);
+ const detail=document.createElement("div");detail.className="details";detail.textContent="Ощущается как "+fmt(c.apparent_temperature)+"°C · Ветер "+fmt(c.wind_speed_10m)+" км/ч · Влажность "+c.relative_humidity_2m+"% · Осадки "+Number(c.precipitation||0).toFixed(1)+" мм";
+ const forecast=document.createElement("div");forecast.className="days";
+ days.time.forEach((date,i)=>{const item=document.createElement("div");item.className="day";const dt=new Date(date+"T12:00:00");item.textContent=dt.toLocaleDateString("ru-RU",{weekday:"short"})+": "+icon(days.weather_code[i])+" "+fmt(days.temperature_2m_min[i])+"…"+fmt(days.temperature_2m_max[i])+"° · дождь "+(days.precipitation_probability_max[i]??0)+"%";forecast.append(item)});
+ el.append(h,temp,desc,detail,forecast);return el;
+}
+async function load(){
+ const status=document.getElementById("status"),container=document.getElementById("cities"),button=document.getElementById("refresh");
+ button.disabled=true;status.className="status";status.textContent="Получаем свежие данные…";
+ const urlFor=c=>"https://api.open-meteo.com/v1/forecast?latitude="+c.lat+"&longitude="+c.lon+"&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=3&timezone=auto";
+ const results=await Promise.allSettled(cities.map(async c=>{const r=await fetch(urlFor(c),{cache:"no-store"});if(!r.ok)throw Error("HTTP "+r.status);return {city:c,data:await r.json()}}));
+ container.replaceChildren();let ok=0;
+ results.forEach((r,i)=>{if(r.status==="fulfilled"){ok++;container.append(card(r.value.city,r.value.data))}else{const e=document.createElement("article");e.className="city";e.textContent=cities[i].name+": не удалось получить прогноз. Попробуйте обновить страницу.";container.append(e)}});
+ const now=new Date();document.getElementById("updated").textContent="Обновлено: "+now.toLocaleString("ru-RU");
+ status.textContent=ok===cities.length?"🟢 Прогноз загружен для всех городов. Автообновление — каждые 15 минут.":"🟡 Данные загружены для "+ok+" из "+cities.length+" городов. Можно повторить запрос.";
+ if(!ok){status.className="status error";status.textContent="🔴 Погодный сервис временно недоступен. Проверьте подключение и повторите запрос."}
+ button.disabled=false;
+}
+document.getElementById("refresh").addEventListener("click",load);load();setInterval(load,900000);
 </script></body></html>
