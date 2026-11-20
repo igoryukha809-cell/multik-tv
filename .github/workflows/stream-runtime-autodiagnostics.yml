@@ -1,5 +1,11 @@
 name: Stream runtime auto-diagnostics
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - 'stream-server/**'
+      - '.github/workflows/stream-runtime-autodiagnostics.yml'
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
