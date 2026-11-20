@@ -406,13 +406,14 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
       fi
       if ! kill -0 "$FFMPEG_PID" 2>/dev/null; then break; fi
       if curl -fsS --connect-timeout 2 --max-time 4 "$manifest_url" -o "$manifest_file"; then
-        segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
+        segment="$(awk '!/^#/ && NF {first=$0; exit} END {print first}' "$manifest_file")"
         if [[ -n "$segment" && "$segment" == *.ts ]]; then
-          if [[ "$segment" == http://* || "$segment" == https://* ]]; then
-            segment_url="$segment"
-          else
-            segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment#/}"
-          fi
+          case "$segment" in
+            http://*|https://*) segment_url="$segment" ;;
+            /*) segment_url="http://127.0.0.1:${HTTP_PORT}${segment}" ;;
+            live/*) segment_url="http://127.0.0.1:${HTTP_PORT}/${segment}" ;;
+            *) segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment#./}" ;;
+          esac
           if curl -fsS --connect-timeout 2 --max-time 4 "$segment_url" -o /dev/null; then
             write_health "live" "HLS manifest and media segment are reachable"
             echo "LIVE: HLS manifest and media segment confirmed."
