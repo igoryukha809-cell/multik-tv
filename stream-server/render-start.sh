@@ -11,7 +11,7 @@ WEATHER_TIME="${WEATHER_TIME:-10:00}"
 export TZ="${BROADCAST_TZ:-Europe/Moscow}"
 WEATHER_DIR="/tmp/multik-tv-weather"
 WEATHER_VIDEO="/tmp/multik-tv-weather-show.mp4"
-ORIGINAL_DIR="/tmp/multik-tv-originals"
+ORIGINAL_DIR="/usr/local/srs/originals"
 CAPTION_DIR="/usr/local/srs/objs/nginx/html/captions"
 WEATHER_FONT="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 
@@ -323,7 +323,9 @@ else
   echo "External cartoon downloads are disabled; using the six original channel-made programmes."
 fi
 
-if bash /usr/local/srs/generate-original-programs.sh "$ORIGINAL_DIR" "$WEATHER_FONT"; then
+if compgen -G "$ORIGINAL_DIR/*.mp4" >/dev/null; then
+  echo "Готовые авторские передачи найдены в образе сервера; пропускаю долгую генерацию при запуске."
+elif bash /usr/local/srs/generate-original-programs.sh "$ORIGINAL_DIR" "$WEATHER_FONT"; then
   echo "Авторские познавательные передачи подготовлены."
 else
   echo "Не удалось создать авторские передачи; проверяю доступные оригинальные выпуски."
