@@ -12,7 +12,7 @@ h1{margin:0 0 8px;font-size:clamp(30px,6vw,46px)}.muted{color:#665d7c;line-heigh
 .actions{display:flex;gap:8px;flex-wrap:wrap}button,a.btn{border:0;border-radius:12px;padding:11px 15px;background:#7132a8;color:white;font-weight:800;text-decoration:none;cursor:pointer}
 button.secondary{background:#eee8f6;color:#30215b}button.danger{background:#fce8e8;color:#8b2020}
 input{padding:10px;border:1px solid #cfc3df;border-radius:10px;max-width:100%;box-sizing:border-box}label{display:grid;gap:5px;margin:8px 0;color:#30215b;font-weight:700}
-.current{background:#f1e9fb;border-radius:14px;padding:14px;margin-top:12px}.current b{color:#7132a8}
+.current{background:#f1e9fb;border-radius:14px;padding:14px;margin-top:12px}.current b{color:#7132a8}.city-time{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;padding:12px;background:#f7f3fc;border-radius:14px}.city-time label{display:flex;align-items:center;gap:8px;margin:0}.city-time select{padding:10px;border:1px solid #cfc3df;border-radius:10px;background:#fff;color:#30215b;font:inherit}.city-clock{font-weight:900;color:#7132a8;font-variant-numeric:tabular-nums}
 @media(max-width:520px){.item{grid-template-columns:65px 1fr}.item button{grid-column:2;justify-self:start}}
 </style><style>
 .rainbow-bar{height:6px;background:linear-gradient(90deg,#ff5f9e,#ffcf4b,#66d5a7,#53c8ee,#9475e8)}
@@ -24,6 +24,7 @@ input{padding:10px;border:1px solid #cfc3df;border-radius:10px;max-width:100%;bo
 <body><div class="rainbow-bar"></div><div class="sitebar"><a class="sitebrand" href="index.html">🌈 МУЛЬТИК ТВ</a><nav><a href="live.html">Эфир</a><a href="guide.html">Программа</a><a href="online-catalog.html">Мультфильмы</a><a href="studio.html">Студия</a><a href="index.html">Главная</a></nav></div><header><div class="logo">🌈 МУЛЬТИК ТВ</div><p>Твоя программа передач</p></header>
 <main>
 <section class="hero"><div class="muted">РАСПИСАНИЕ КАНАЛА</div><h1>Телепрограмма</h1><div class="now" id="clock">--:--:--</div><p class="muted" id="date"></p>
+<div class="city-time"><label for="citySelect">🌍 Время города <select id="citySelect"><option value="Asia/Krasnoyarsk">Красноярск</option><option value="Europe/Moscow">Москва</option><option value="Europe/Kaliningrad">Калининград</option><option value="Asia/Yekaterinburg">Екатеринбург</option><option value="Asia/Novosibirsk">Новосибирск</option><option value="Asia/Vladivostok">Владивосток</option><option value="Europe/Berlin">Берлин</option><option value="Europe/London">Лондон</option><option value="Asia/Tokyo">Токио</option><option value="America/New_York">Нью-Йорк</option></select></label><span class="city-clock" id="cityClock">--:--:--</span></div>
 <div class="current"><div><b>Сейчас по расписанию:</b> <span id="current">—</span></div><div><b>Далее:</b> <span id="next">—</span></div></div>
 <p class="muted">Расписание — предварительная сетка программ. В сетке указан один открыто лицензированный мультфильм. Фактическое время его показа зависит от доступности видеосервера; остальные пункты — авторские передачи канала, а не готовые видеоматериалы.</p></section>
 <section class="panel"><h2>📺 Программа на сегодня</h2><div class="schedule" id="schedule"></div></section>
@@ -53,14 +54,16 @@ try{const saved=JSON.parse(localStorage.getItem(key));rows=Array.isArray(saved)?
 const $=id=>document.getElementById(id);
 const minutes=t=>{const [h,m]=t.split(":").map(Number);return h*60+m};
 function ordered(){return rows.filter(r=>Array.isArray(r)&&/^([01]\d|2[0-3]):[0-5]\d$/.test(r[0])&&typeof r[1]==="string").sort((a,b)=>a[0].localeCompare(b[0]))}
+function partsAt(date,zone){return new Intl.DateTimeFormat("en-GB",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(date).reduce((o,p)=>(o[p.type]=p.value,o),{})}
+function wallTimeToDate(y,m,d,h,min,zone){let guess=Date.UTC(y,m-1,d,h,min);for(let i=0;i<3;i++){const p=partsAt(new Date(guess),zone),asUtc=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute);guess+=Date.UTC(y,m-1,d,h,min)-asUtc}return new Date(guess)}
 function draw(){
- const list=ordered(),parts=new Intl.DateTimeFormat("ru-RU",{timeZone:"Asia/Krasnoyarsk",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date()),n=Number(parts.find(p=>p.type==="hour").value)*60+Number(parts.find(p=>p.type==="minute").value);
+ const list=ordered(),now=new Date(),parts=partsAt(now,"Asia/Krasnoyarsk"),n=Number(parts.hour)*60+Number(parts.minute);
  $("schedule").replaceChildren();
  let active=-1,next=-1;
  list.forEach((r,i)=>{if(minutes(r[0])<=n)active=i});
  if(active>=0&&active<list.length-1)next=active+1;
  list.forEach((r,i)=>{const el=document.createElement("div");el.className="item"+(i===active?" active":"");
- const t=document.createElement("div");t.className="time";t.textContent=r[0];
+ const t=document.createElement("div");t.className="time";const [hh,mm]=r[0].split(":").map(Number);const eventDate=wallTimeToDate(+parts.year,+parts.month,+parts.day,hh,mm,"Asia/Krasnoyarsk");t.textContent=eventDate.toLocaleTimeString("ru-RU",{timeZone:$("citySelect").value,hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
  const d=document.createElement("div"),s=document.createElement("strong"),sm=document.createElement("small");
  s.textContent=r[1];sm.textContent=r[2]||"Авторская передача МУЛЬТИК ТВ";d.append(s,sm);
  el.append(t,d);if(!base.some(b=>b[0]===r[0]&&b[1]===r[1])){const del=document.createElement("button");del.className="danger";del.textContent="Удалить";del.setAttribute("aria-label","Удалить "+r[1]);del.onclick=()=>{rows=rows.filter((_,j)=>j!==i);save("Передача удалена.")};el.append(del)}
@@ -77,6 +80,7 @@ $("add").onclick=()=>{const time=$("newTime").value,title=$("newTitle").value.tr
 $("reset").onclick=()=>{if(!confirm("Восстановить базовую сетку? Твои добавленные передачи будут удалены."))return;rows=base.map(x=>[...x]);save("Базовая сетка восстановлена.")};
 $("export").onclick=()=>{const blob=new Blob([JSON.stringify({channel:"МУЛЬТИК ТВ",timezone:"Asia/Krasnoyarsk",updatedAt:new Date().toISOString(),items:ordered()},null,2)],{type:"application/json"});
  const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="multik-tv-schedule.json";a.click();URL.revokeObjectURL(url);$("notice").textContent="Резервная копия расписания подготовлена."};
-function tick(){const d=new Date(),opts={timeZone:"Asia/Krasnoyarsk"};$("clock").textContent=d.toLocaleTimeString("ru-RU",{...opts,hour12:false});$("date").textContent=d.toLocaleDateString("ru-RU",{...opts,weekday:"long",day:"numeric",month:"long",year:"numeric"})+" · Красноярское время (UTC+7)";draw()}
+function tick(){const d=new Date(),zone=$("citySelect").value,opts={timeZone:"Asia/Krasnoyarsk"};$("clock").textContent=d.toLocaleTimeString("ru-RU",{...opts,hour12:false});$("date").textContent=d.toLocaleDateString("ru-RU",{...opts,weekday:"long",day:"numeric",month:"long",year:"numeric"})+" · эфирная сетка хранится по Красноярску";$("cityClock").textContent=d.toLocaleTimeString("ru-RU",{timeZone:zone,hour12:false})+" · "+$("citySelect").selectedOptions[0].textContent;draw()}
+$("citySelect").value=localStorage.getItem("multiktv-city-zone")||"Asia/Krasnoyarsk";$("citySelect").addEventListener("change",()=>{localStorage.setItem("multiktv-city-zone",$("citySelect").value);tick()});
 tick();setInterval(tick,15000);
 </script></body></html>
