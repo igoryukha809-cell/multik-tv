@@ -46,7 +46,7 @@ async function load(){
  const results=await Promise.allSettled(cities.map(async c=>({city:c,data:await fetchJsonWithRetry(urlFor(c))})));
  container.replaceChildren();let ok=0;
  results.forEach((r,i)=>{if(r.status==="fulfilled"){ok++;container.append(card(r.value.city,r.value.data))}else{const e=document.createElement("article");e.className="city";e.textContent=cities[i].name+": не удалось получить прогноз. Попробуйте обновить страницу.";container.append(e)}});
- const now=new Date();document.getElementById("updated").textContent="Обновлено: "+now.toLocaleString("ru-RU");
+ const now=new Date();document.getElementById("updated").textContent="Обновлено: "+now.toLocaleString("ru-RU",{timeZone:"Asia/Krasnoyarsk"})+" (Красноярск, UTC+7)";
  status.textContent=ok===cities.length?"🟢 Прогноз загружен для всех городов. Автообновление — каждые 15 минут.":"🟡 Данные загружены для "+ok+" из "+cities.length+" городов. Можно повторить запрос.";
  if(!ok){status.className="status error";status.textContent="🔴 Погодный сервис временно недоступен. Проверьте подключение и повторите запрос."}
  button.disabled=false;
