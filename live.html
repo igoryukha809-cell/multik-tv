@@ -71,7 +71,7 @@
 </svg>
 <div class="maintenance-title">ТЕХНИЧЕСКАЯ ПРОФИЛАКТИКА</div>
 <div class="maintenance-copy">Скоро снова встретимся в эфире!</div>
-<div id="maintenanceSchedule" class="maintenance-note">Ежедневно с 02:00 до 07:00 по Красноярску</div>
+<div id="maintenanceSchedule" class="maintenance-note">Ежедневно с 02:00 до 07:00 по Москве</div>
 <div id="maintenanceDate" class="maintenance-date" aria-live="off"></div>
 <div id="maintenanceCountdown" class="maintenance-countdown"></div>
 <button id="maintenanceSound" class="maintenance-sound" type="button" aria-pressed="false">♫ Включить звук</button>
@@ -89,12 +89,12 @@
 // Отображаем дату и ближайшее окончание/начало окна в московском времени.
 function updateMaintenanceSchedule(){
  const now=new Date();
- const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Krasnoyarsk',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(now).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
+ const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(now).filter(p=>p.type!=='literal').map(p=>[p.type,p.value]));
  const y=Number(parts.year),m=Number(parts.month),d=Number(parts.day),h=Number(parts.hour),mi=Number(parts.minute),se=Number(parts.second);
- const dateLabel=new Intl.DateTimeFormat('ru-RU',{timeZone:'Asia/Krasnoyarsk',day:'numeric',month:'long',year:'numeric'}).format(now);
+ const dateLabel=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Moscow',day:'numeric',month:'long',year:'numeric'}).format(now);
  const dateNode=document.getElementById('maintenanceDate');
  const countNode=document.getElementById('maintenanceCountdown');
- if(dateNode)dateNode.textContent='Дата: '+dateLabel+' · время указано по Красноярску';
+ if(dateNode)dateNode.textContent='Дата: '+dateLabel+' · время указано по Москве';
  const inWindow=h>=2&&h<7;
  let target;
  if(inWindow){target=new Date(Date.UTC(y,m-1,d,0,0,0));}
