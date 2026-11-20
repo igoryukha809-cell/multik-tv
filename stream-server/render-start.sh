@@ -406,8 +406,10 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
       fi
       if ! kill -0 "$FFMPEG_PID" 2>/dev/null; then break; fi
       if curl -fsS --connect-timeout 2 --max-time 4 "$manifest_url" -o "$manifest_file"; then
-        segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
-        if [[ -n "$segment" && "$segment" == *.ts ]]; then
+        # The newest HLS entry may still be open while SRS writes it.
+        # Probe recent entries from newest to oldest and accept the first finalized segment.
+        while IFS= read -r segment; do
+          [[ -n "$segment" && "$segment" == *.ts ]] || continue
           case "$segment" in
             http://*|https://*) segment_url="$segment" ;;
             /*) segment_url="http://127.0.0.1:${HTTP_PORT}${segment}" ;;
@@ -415,12 +417,13 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
             *) segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment#./}" ;;
           esac
           if curl -fsS --connect-timeout 2 --max-time 4 "$segment_url" -o /dev/null; then
-            write_health "live" "HLS manifest and media segment are reachable"
-            echo "LIVE: HLS manifest and media segment confirmed."
+            write_health "live" "HLS manifest and a finalized media segment are reachable"
+            echo "LIVE: HLS manifest and finalized media segment confirmed: $segment"
             live_confirmed=1
             break
           fi
-        fi
+        done < <(awk '!/^#/ && NF {a[++n]=$0} END {for(i=n;i>0;i--) print a[i]}' "$manifest_file" | head -n 5)
+        (( live_confirmed )) && break
       fi
       sleep 2
     done
