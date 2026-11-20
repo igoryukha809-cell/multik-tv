@@ -39,6 +39,16 @@ done
 echo "SRS ready on HTTP port $HTTP_PORT."
 echo "Starting an explicit technical test signal while the open-license program downloads."
 
+play_maintenance_slate() {
+  echo "В эфире: профилактическая заставка после запуска сервера."
+  ffmpeg -hide_banner -nostdin -loglevel warning -re -loop 1 -framerate 25 \
+    -i /usr/local/srs/maintenance.png \
+    -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
+    -vf "drawtext=fontfile=${WEATHER_FONT}:text='УВАЖАЕМЫЕ ЗРИТЕЛИ!':fontcolor=0xffe65a:fontsize=58:x=(w-text_w)/2:y=205:shadowcolor=black@0.35:shadowx=3:shadowy=3,drawtext=fontfile=${WEATHER_FONT}:text='НА КАНАЛЕ ПРОВОДЯТСЯ':fontcolor=white:fontsize=42:x=(w-text_w)/2:y=300,drawtext=fontfile=${WEATHER_FONT}:text='ТЕХНИЧЕСКИЕ РАБОТЫ':fontcolor=0xffe65a:fontsize=54:x=(w-text_w)/2:y=365,drawtext=fontfile=${WEATHER_FONT}:text='ЭФИР СКОРО ВОЗОБНОВИТСЯ':fontcolor=white:fontsize=30:x=(w-text_w)/2:y=455,drawtext=fontfile=${WEATHER_FONT}:text='МУЛЬТИК ТВ  |  ВМЕСТЕ ИНТЕРЕСНЕЕ':fontcolor=0xe5ffef:fontsize=22:x=(w-text_w)/2:y=535" \
+    -t 12 -map 0:v:0 -map 1:a:0 -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 -b:v 1200k -maxrate 1200k -bufsize 2400k \
+    -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest -f flv rtmp://127.0.0.1/live/multiktv
+}
+
 play_channel_ident() {
   echo "В эфире: фирменная заставка МУЛЬТИК ТВ с оригинальной музыкальной темой."
   ffmpeg -hide_banner -nostdin -loglevel warning -re -t 6.5 \
@@ -66,6 +76,7 @@ DOWNLOAD_PID=$!
 
 # Publish a moving test picture immediately; do not leave the HLS endpoint empty
 # while the 122 MB openly licensed episode is being downloaded.
+play_maintenance_slate
 play_channel_ident
 start_test_signal &
 FFMPEG_PID=$!
