@@ -51,7 +51,7 @@ play_channel_ident() {
 }
 
 start_test_signal() {
-  ffmpeg -hide_banner -nostdin -loglevel warning -re \
+  exec ffmpeg -hide_banner -nostdin -loglevel warning -re \
     -f lavfi -i "testsrc2=size=1280x720:rate=25" \
     -f lavfi -i "sine=frequency=440:sample_rate=44100" \
     -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='MULTIK TV':fontcolor=white:fontsize=72:x=(w-text_w)/2:y=(h-text_h)/2-55,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='PROGRAM SOURCE UNAVAILABLE - TEST SIGNAL':fontcolor=yellow:fontsize=24:x=(w-text_w)/2:y=(h-text_h)/2+55" \
@@ -114,13 +114,14 @@ generate_weather_show() {
   )
 
   for entry in "${cities[@]}"; do
+    sleep 2
     IFS='|' read -r city lat lon <<< "$entry"
     json="${WEATHER_DIR}/weather-${count}.json"
     txt="${WEATHER_DIR}/weather-${count}.txt"
     clip="${WEATHER_DIR}/weather-${count}.mp4"
     url="https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_min,temperature_2m_max,precipitation_probability_max&forecast_days=1&timezone=auto"
 
-    if ! curl -fsSL --retry 2 --connect-timeout 10 --max-time 25 "$url" -o "$json"; then
+    if ! curl -fsSL --retry 4 --retry-delay 5 --retry-all-errors --connect-timeout 10 --max-time 35 "$url" -o "$json"; then
       echo "Погода для ${city} временно недоступна; пропускаю город."
       continue
     fi
