@@ -20,7 +20,24 @@
 .maintenance-spark{position:absolute;z-index:0;color:#fff0a6;font-size:clamp(22px,4vw,44px);text-shadow:0 2px 8px #ffcf5a;animation:maintenance-float 4s ease-in-out infinite}
 .maintenance-spark.one{left:8%;top:13%}.maintenance-spark.two{right:9%;top:16%;animation-delay:-1.5s}.maintenance-spark.three{left:13%;bottom:12%;animation-delay:-2.5s}
 @keyframes maintenance-float{50%{transform:translateY(-9px) rotate(15deg)}}
-@media(prefers-reduced-motion:reduce){.maintenance-spark{animation:none}}</style><style>
+@media(prefers-reduced-motion:reduce){.maintenance-spark{animation:none}}
+/* Original animated maintenance ident */
+.maintenance{background-size:100% 100%,100% 100%,100% 100%,180% 180%;animation:maintenance-sky 16s ease-in-out infinite alternate}
+.maintenance:before{animation:maintenance-orbit 24s linear infinite}
+.maintenance-card{animation:maintenance-card-float 5s ease-in-out infinite;will-change:transform}
+.maintenance-brand{box-shadow:0 4px 0 #21114e66}
+.maintenance-brand .brand-orbit{animation:maintenance-spin 7s linear infinite}
+.maintenance-mascot{transform-origin:50% 100%;animation:maintenance-mascot-bob 3.2s ease-in-out infinite}
+.maintenance-note{animation:maintenance-note-glow 2.8s ease-in-out infinite}
+.maintenance-spark{animation-duration:3.5s}
+@keyframes maintenance-sky{to{background-position:0 0,0 0,0 0,100% 100%}}
+@keyframes maintenance-orbit{to{transform:translateY(63%) rotate(360deg)}}
+@keyframes maintenance-card-float{0%,100%{transform:translateY(0) rotate(-.25deg)}50%{transform:translateY(-5px) rotate(.25deg)}}
+@keyframes maintenance-spin{to{transform:rotate(360deg)}}
+@keyframes maintenance-mascot-bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+@keyframes maintenance-note-glow{0%,100%{box-shadow:0 0 0 #9b72dc00}50%{box-shadow:0 0 18px #9b72dc77}}
+@media(prefers-reduced-motion:reduce){.maintenance,.maintenance:before,.maintenance-card,.maintenance-brand .brand-orbit,.maintenance-mascot,.maintenance-spark,.maintenance-note{animation:none!important}}
+</style><style>
 .rainbow-bar{height:6px;background:linear-gradient(90deg,#ff5f9e,#ffcf4b,#66d5a7,#53c8ee,#9475e8)}
 .sitebar{max-width:1120px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fff;color:#292d50;border-radius:0 0 16px 16px;border:1px solid #e7e9f2;font:800 13px system-ui,Arial,sans-serif}
 .sitebrand{font-size:19px;font-weight:1000;color:#6043bd;text-decoration:none;white-space:nowrap}
