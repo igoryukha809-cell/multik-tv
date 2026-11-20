@@ -347,13 +347,13 @@ fi
 PLAYLIST_FILE="/tmp/multik-tv-broadcast.concat"
 : > "$PLAYLIST_FILE"
 if (( PROGRAM_READY )); then
-  printf "file '%s'\\n" "$PROGRAM_FILE" >> "$PLAYLIST_FILE"
+  printf "file '%s'\n" "$PROGRAM_FILE" >> "$PLAYLIST_FILE"
 fi
 ORIGINAL_COUNT=0
 for original_show in "$ORIGINAL_DIR"/*.mp4; do
   [[ -f "$original_show" ]] || continue
   if ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$original_show" >/dev/null 2>&1; then
-    printf "file '%s'\\n" "$original_show" >> "$PLAYLIST_FILE"
+    printf "file '%s'\n" "$original_show" >> "$PLAYLIST_FILE"
     ORIGINAL_COUNT=$((ORIGINAL_COUNT + 1))
   else
     echo "ОШИБКА: повреждённый выпуск пропущен: ${original_show##*/}"
