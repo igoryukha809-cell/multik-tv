@@ -46,7 +46,7 @@ jobs:
           exit "$result"
       - name: Ask AI to diagnose and propose a minimal repair
         id: ai
-        if: steps.probe.outcome == 'failure'
+        if: steps.probe.outcome == 'failure' && secrets.OPENAI_API_KEY != ''
         continue-on-error: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
