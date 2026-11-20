@@ -231,6 +231,7 @@ prepare_dialogue_cartoon_library() {
 generate_weather_show() {
   local entry city lat lon url json txt clip temp feels wind humidity rain low high code condition source cache_file cache_source cache_time now
   local count=0
+  local city_index=0
   local concat_file="${WEATHER_DIR}/concat.txt"
   local cache_dir="/tmp/multik-tv-weather-cache"
   rm -rf "$WEATHER_DIR"
@@ -251,12 +252,13 @@ generate_weather_show() {
   for entry in "${cities[@]}"; do
     sleep 2
     IFS='|' read -r city lat lon <<< "$entry"
+    city_index=$((city_index + 1))
     json="${WEATHER_DIR}/weather-${count}.json"
     txt="${WEATHER_DIR}/weather-${count}.txt"
     clip="${WEATHER_DIR}/weather-${count}.mp4"
-    cache_file="${cache_dir}/weather-${count}.json"
-    cache_source="${cache_dir}/weather-${count}.source"
-    cache_time="${cache_dir}/weather-${count}.timestamp"
+    cache_file="${cache_dir}/weather-${city_index}.json"
+    cache_source="${cache_dir}/weather-${city_index}.source"
+    cache_time="${cache_dir}/weather-${city_index}.timestamp"
     now="$(date +%s)"
     source=""
 
@@ -335,8 +337,8 @@ generate_weather_show() {
       printf '%s\n' "$city"
       printf 'Сейчас: %s °C  |  %s\n' "$temp" "$condition"
       [[ -z "$feels" ]] || printf 'Ощущается как: %s °C\n' "$feels"
-      printf 'Ветер: %s км/ч  |  Влажность: %s%%\n' "$wind" "$humidity"
-      [[ "$rain" == "—" ]] || printf 'Вероятность осадков: %s%%\n' "$rain"
+      printf 'Ветер: %s км/ч  |  Влажность: %s проц.\n' "$wind" "$humidity"
+      [[ "$rain" == "—" ]] || printf 'Вероятность осадков: %s проц.\n' "$rain"
       [[ "$low" == "—" || "$high" == "—" ]] || printf 'Сегодня: %s...%s °C\n' "$low" "$high"
       printf 'Источник: %s  |  Обновлено: %s\n' "$source" "$(date '+%H:%M %Z')"
     } > "$txt"
