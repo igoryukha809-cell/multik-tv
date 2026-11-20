@@ -446,11 +446,27 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
         fi
         if curl -fsS --connect-timeout 2 --max-time 4 "$manifest_url" -o "$manifest_file"; then
           segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
-          if [[ -n "$segment" && "$segment" != "$last_segment" ]]; then
-            last_segment="$segment"
-            last_change=$SECONDS
-          elif (( SECONDS - last_change >= 30 )); then
-            echo "WATCHDOG: HLS segment stalled for 30 seconds; restarting FFmpeg."
+          segment_path="${segment%%\\?*}"
+          segment_path="${segment_path%%#*}"
+          if [[ -n "$segment_path" ]]; then
+            case "$segment_path" in
+              http://*|https://*) segment_url="$segment_path" ;;
+              /*) segment_url="http://127.0.0.1:${HTTP_PORT}${segment_path}" ;;
+              live/*) segment_url="http://127.0.0.1:${HTTP_PORT}/${segment_path}" ;;
+              *) segment_url="http://127.0.0.1:${HTTP_PORT}/live/${segment_path#./}" ;;
+            esac
+            segment_bytes="$(curl -fsS --connect-timeout 2 --max-time 4 "$segment_url" -o /dev/null -w '%{size_download}' 2>/dev/null || echo 0)"
+            if [[ "$segment_bytes" =~ ^[0-9]+$ ]] && (( segment_bytes >= 188 )); then
+              if [[ "$segment_path" != "$last_segment" ]]; then
+                last_segment="$segment_path"
+                last_change=$SECONDS
+              fi
+            else
+              echo "WATCHDOG: newest HLS media segment is not downloadable or is too small."
+            fi
+          fi
+          if (( SECONDS - last_change >= 30 )); then
+            echo "WATCHDOG: no new downloadable HLS segment for 30 seconds; restarting FFmpeg."
             result=124
             break
           fi
