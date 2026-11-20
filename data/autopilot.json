@@ -1,7 +1,7 @@
 {
   "service": "МУЛЬТИК ТВ",
   "mode": "program-guide-only",
-  "updated_at": "2026-11-20T13:25:59.004451+00:00",
+  "updated_at": "2026-11-20T19:13:45.789420+00:00",
   "automation": "GitHub Actions scheduled task",
   "status": "ok",
   "notice": "Автоматическое обновление программы сайта, не видеотрансляция 24/7.",
@@ -27,6 +27,27 @@
       "license": "CC BY 3.0",
       "language": "Русский и английский",
       "source": "https://invisiblenetwork.ai/watch/archive/ia/AmazingSentence"
+    },
+    {
+      "title": "Космос рядом",
+      "credit": "Авторская познавательная передача МУЛЬТИК ТВ",
+      "license": "Оригинальный выпуск канала",
+      "language": "Русский",
+      "source": "generated-on-stream-server"
+    },
+    {
+      "title": "Удивительная природа",
+      "credit": "Авторская познавательная передача МУЛЬТИК ТВ",
+      "license": "Оригинальный выпуск канала",
+      "language": "Русский",
+      "source": "generated-on-stream-server"
+    },
+    {
+      "title": "Мир океанов",
+      "credit": "Авторская познавательная передача МУЛЬТИК ТВ",
+      "license": "Оригинальный выпуск канала",
+      "language": "Русский",
+      "source": "generated-on-stream-server"
     }
   ]
 }
