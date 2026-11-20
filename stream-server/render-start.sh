@@ -413,6 +413,14 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
       sleep 2
     done
 
+    while kill -0 "$FFMPEG_PID" 2>/dev/null; do
+      if ! kill -0 "$SRS_PID" 2>/dev/null; then
+        echo "SRS остановился; завершаю FFmpeg передатчик."
+        kill "$FFMPEG_PID" 2>/dev/null || true
+        break
+      fi
+      sleep 2
+    done
     wait "$FFMPEG_PID" || result=$?
     FFMPEG_PID=""
     write_health "recovering" "Publisher stopped with code $result; restarting the continuous MP4"
