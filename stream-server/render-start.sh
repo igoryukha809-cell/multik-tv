@@ -488,8 +488,12 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
           if [[ -z "$segment_path" ]]; then
             # The HLS manifest may lag the segment writer; inspect finalized local TS files.
             segment="$(find "$HEALTH_DIR/live" -maxdepth 1 -type f -name 'multiktv-*.ts' -printf '%T@ %f\\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2-)"
-            segment_path="/live/$segment"
-            [[ -n "$segment" ]] && echo "WATCHDOG: filesystem fallback progress check: $segment"
+            if [[ -n "$segment" ]]; then
+              segment_path="/live/$segment"
+              echo "WATCHDOG: filesystem fallback progress check: $segment"
+            else
+              segment_path=""
+            fi
           fi
           if [[ -n "$segment_path" ]]; then
             # Keep the full URI query string: SRS may require hls_ctx to serve a segment.
