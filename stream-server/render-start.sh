@@ -229,11 +229,12 @@ prepare_dialogue_cartoon_library() {
 }
 
 generate_weather_show() {
-  local entry city lat lon url json txt clip temp feels wind humidity rain low high code condition
+  local entry city lat lon url json txt clip temp feels wind humidity rain low high code condition source cache_file cache_source cache_time now
   local count=0
   local concat_file="${WEATHER_DIR}/concat.txt"
+  local cache_dir="/tmp/multik-tv-weather-cache"
   rm -rf "$WEATHER_DIR"
-  mkdir -p "$WEATHER_DIR"
+  mkdir -p "$WEATHER_DIR" "$cache_dir"
   : > "$concat_file"
 
   local -a cities=(
@@ -253,16 +254,59 @@ generate_weather_show() {
     json="${WEATHER_DIR}/weather-${count}.json"
     txt="${WEATHER_DIR}/weather-${count}.txt"
     clip="${WEATHER_DIR}/weather-${count}.mp4"
-    source="MET Norway (CC BY 4.0)"
-    url="https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
-    weather_ua="${WEATHER_USER_AGENT:-MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)}"
+    cache_file="${cache_dir}/weather-${count}.json"
+    cache_source="${cache_dir}/weather-${count}.source"
+    cache_time="${cache_dir}/weather-${count}.timestamp"
+    now="$(date +%s)"
+    source=""
 
-    # Primary provider: MET Norway, global coverage. Keep the request rate low
-    # and identify the application as required by the provider.
-    if curl -fsSL --retry 1 --retry-delay 3 --connect-timeout 8 --max-time 20 \
-      -H "User-Agent: ${weather_ua}" -H "Accept: application/json" "$url" -o "$json"; then
+    # MET Norway asks clients outside the Nordic region not to repeat an
+    # identical Locationforecast request more often than every 3 hours.
+    if [[ -s "$cache_file" && -s "$cache_time" && -s "$cache_source" ]]; then
+      cached_at="$(cat "$cache_time")"
+      if [[ "$cached_at" =~ ^[0-9]+$ ]] && (( now - cached_at < 10800 )); then
+        cp "$cache_file" "$json"
+        source="$(cat "$cache_source")"
+        echo "Использую кэш прогноза для ${city} из ${source}."
+      fi
+    fi
+
+    if [[ -z "$source" ]]; then
+      source="MET Norway (CC BY 4.0)"
+      url="https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
+      weather_ua="${WEATHER_USER_AGENT:-MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)}"
+      if curl -fsSL --retry 1 --retry-delay 3 --connect-timeout 8 --max-time 20 \
+        -H "User-Agent: ${weather_ua}" -H "Accept: application/json" "$url" -o "$json"; then
+        cp "$json" "$cache_file"
+        printf '%s' "$source" > "$cache_source"
+        printf '%s' "$now" > "$cache_time"
+      else
+        echo "MET Norway недоступен для ${city}; переключаюсь на wttr.in."
+        source="wttr.in"
+        url="https://wttr.in/${lat},${lon}?format=j1"
+        if ! curl -fsSL --retry 1 --retry-delay 2 --connect-timeout 8 --max-time 20 \
+          -H "User-Agent: MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)" "$url" -o "$json"; then
+          echo "Оба погодных источника недоступны для ${city}; пропускаю город."
+          continue
+        fi
+        cp "$json" "$cache_file"
+        printf '%s' "$source" > "$cache_source"
+        printf '%s' "$now" > "$cache_time"
+      fi
+    fi
+
+    if [[ "$source" == "wttr.in" ]]; then
+      temp="$(jq -r '.current_condition[0].temp_C // empty' "$json")"
+      feels="$(jq -r '.current_condition[0].FeelsLikeC // empty' "$json")"
+      wind="$(jq -r '.current_condition[0].windspeedKmph // empty' "$json")"
+      humidity="$(jq -r '.current_condition[0].humidity // empty' "$json")"
+      condition="$(jq -r '.current_condition[0].weatherDesc[0].value // "Условия уточняются"' "$json")"
+      rain="$(jq -r '.weather[0].hourly[0].chanceofrain // "—"' "$json")"
+      low="$(jq -r '.weather[0].mintempC // "—"' "$json")"
+      high="$(jq -r '.weather[0].maxtempC // "—"' "$json")"
+    else
       temp="$(jq -r '.properties.timeseries[0].data.instant.details.air_temperature // empty' "$json")"
-      feels=""
+      feels="$(jq -r '.properties.timeseries[0].data.instant.details.apparent_air_temperature // empty' "$json")"
       wind="$(jq -r '.properties.timeseries[0].data.instant.details.wind_speed // empty' "$json")"
       humidity="$(jq -r '.properties.timeseries[0].data.instant.details.relative_humidity // empty' "$json")"
       code="$(jq -r '.properties.timeseries[0].data.next_1_hours.summary.symbol_code // .properties.timeseries[0].data.next_6_hours.summary.symbol_code // empty' "$json")"
@@ -279,23 +323,6 @@ generate_weather_show() {
         *thunder*) condition="Гроза" ;;
         *) condition="Условия уточняются" ;;
       esac
-    else
-      echo "MET Norway недоступен для ${city}; переключаюсь на wttr.in."
-      source="wttr.in"
-      url="https://wttr.in/${lat},${lon}?format=j1"
-      if ! curl -fsSL --retry 1 --retry-delay 2 --connect-timeout 8 --max-time 20 \
-        -H "User-Agent: MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)" "$url" -o "$json"; then
-        echo "Оба погодных источника недоступны для ${city}; пропускаю город."
-        continue
-      fi
-      temp="$(jq -r '.current_condition[0].temp_C // empty' "$json")"
-      feels="$(jq -r '.current_condition[0].FeelsLikeC // empty' "$json")"
-      wind="$(jq -r '.current_condition[0].windspeedKmph // empty' "$json")"
-      humidity="$(jq -r '.current_condition[0].humidity // empty' "$json")"
-      condition="$(jq -r '.current_condition[0].weatherDesc[0].value // "Условия уточняются"' "$json")"
-      rain="$(jq -r '.weather[0].hourly[0].chanceofrain // "—"' "$json")"
-      low="$(jq -r '.weather[0].mintempC // "—"' "$json")"
-      high="$(jq -r '.weather[0].maxtempC // "—"' "$json")"
     fi
 
     [[ -n "$temp" && -n "$wind" && -n "$humidity" ]] || {
