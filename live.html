@@ -210,7 +210,7 @@ fitButton.addEventListener('click',()=>{
  fitButton.textContent=crop?'Заполнить экран: вкл.':'Заполнить экран: выкл.';
  fitButton.setAttribute('aria-pressed',String(crop));
 });
-player.addEventListener('playing',()=>{statusEl.textContent='🟢 Видеопоток воспроизводится.';showOnAir({streaming:true,activeItem:{title:'МУЛЬТИК ТВ · Авторская программа'}});});
+player.addEventListener('playing',()=>{clearTimeout(connectionWatchdog);statusEl.textContent='🟢 Видеопоток действительно воспроизводится.';details.textContent='Получены и воспроизводятся видеоданные. Эфир подтверждён самим плеером.';showOnAir({streaming:true,activeItem:{title:'МУЛЬТИК ТВ · Авторская программа'}});});
 player.addEventListener('waiting',()=>{statusEl.textContent='🟡 Буферизация видеопотока…';});
 player.addEventListener('error',()=>{if(!fallbackStarted) showTestSignal('Поток недоступен. Показываем тестовую заставку.');});
 function showTestSignal(message){
@@ -252,7 +252,7 @@ const connectionWatchdog=setTimeout(()=>{
    if(/\.m3u8($|[?#])/i.test(url.href)){
     if(player.canPlayType('application/vnd.apple.mpegurl')){
      showPlayer(); player.src=url.href;
-     player.addEventListener('loadedmetadata',()=>{clearTimeout(connectionWatchdog);selectRussianAudioTrack();details.textContent='Поток получен от видеосервера. Плеер запускает его автоматически без звука; при наличии русской аудиодорожки она выбирается первой.';startAutomaticPlayback();},{once:true});
+     player.addEventListener('loadedmetadata',()=>{selectRussianAudioTrack();details.textContent='Поток получен от видеосервера. Плеер запускает его автоматически без звука; при наличии русской аудиодорожки она выбирается первой.';startAutomaticPlayback();},{once:true});
      player.addEventListener('error',()=>showTestSignal('HLS-поток не ответил.'),{once:true});
     }else{
      const module=await import('https://cdn.jsdelivr.net/npm/hls.js@1.5.20/+esm');
@@ -261,7 +261,7 @@ const connectionWatchdog=setTimeout(()=>{
      hlsEngine=new module.default({enableWorker:true,lowLatencyMode:false,liveSyncDurationCount:4,manifestLoadingMaxRetry:8,manifestLoadingRetryDelay:1000,manifestLoadingMaxRetryTimeout:8000,manifestLoadingTimeOut:15000,levelLoadingMaxRetry:8,levelLoadingRetryDelay:1000,levelLoadingMaxRetryTimeout:8000,fragLoadingMaxRetry:8,fragLoadingRetryDelay:1000,fragLoadingMaxRetryTimeout:8000});
      hlsEngine.loadSource(url.href); hlsEngine.attachMedia(player);
      hlsEngine.on(module.default.Events.MANIFEST_PARSED,()=>{
-      clearTimeout(connectionWatchdog);selectRussianAudioTrack();
+      selectRussianAudioTrack();
       details.textContent='HLS-манифест получен. Ожидаем начало воспроизведения; русская дорожка выбирается автоматически, если сервер её предоставляет.';
       startAutomaticPlayback();
      });
