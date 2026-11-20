@@ -21,6 +21,15 @@ if ! [[ "$HTTP_PORT" =~ ^[0-9]+$ ]]; then
 fi
 
 sed -E "s/^([[:space:]]*listen[[:space:]]+)8080;/\\1${HTTP_PORT};/" conf/multik-tv.conf > conf/render.conf
+
+# Render currently checks the HLS URL as its service health endpoint. Create an
+# empty, valid live playlist before SRS starts so startup is not marked failed
+# while the first real media segments are being generated. SRS replaces it
+# with the real playlist as soon as publishing begins.
+HEALTH_DIR="/usr/local/srs/objs/nginx/html"
+mkdir -p "$HEALTH_DIR/live" "$HEALTH_DIR/broadcast"
+printf '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:5\n#EXT-X-MEDIA-SEQUENCE:0\n' > "$HEALTH_DIR/live/multiktv.m3u8"
+
 ./objs/srs -c conf/render.conf &
 SRS_PID=$!
 FFMPEG_PID=""
@@ -73,7 +82,6 @@ start_test_signal() {
 }
 
 # Publish an honest startup health document. SRS failure exits the container so Render can restart it.
-HEALTH_DIR="/usr/local/srs/objs/nginx/html"
 mkdir -p "$HEALTH_DIR/broadcast"
 write_health() {
   local state="$1" detail="$2" streaming="false"
