@@ -409,6 +409,9 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
         # The newest HLS entry may still be open while SRS writes it.
         # Probe recent entries from newest to oldest and accept the first finalized segment.
         while IFS= read -r segment; do
+          # SRS may append query parameters to segment URIs; strip them before extension/path checks.
+          segment="${segment%%\?*}"
+          segment="${segment%%#*}"
           [[ -n "$segment" && "$segment" == *.ts ]] || continue
           case "$segment" in
             http://*|https://*) segment_url="$segment" ;;
