@@ -55,9 +55,15 @@
 </div>
 <p><a class="back" href="./index.html">← На главную</a></p></main>
 <script type="module">
-import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-import {SUPABASE_URL,SUPABASE_ANON_KEY} from "./admin-config.js";
+import LogtoClient from "https://cdn.jsdelivr.net/npm/@logto/browser@3.1.2/+esm";
+import {LOGTO_ENDPOINT,LOGTO_APP_ID,LOGTO_API_RESOURCE} from "./logto-config.js";
 const gate=document.querySelector("#gate"),tools=document.querySelector("#tools");
-if(SUPABASE_URL.includes("YOUR_PROJECT")||SUPABASE_ANON_KEY.includes("YOUR_SUPABASE"))gate.textContent="Админ-доступ ещё не активирован. Владелец должен подключить Supabase по инструкции admin-setup.md.";
-else{const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {data:{session}}=await sb.auth.getSession();if(!session)gate.innerHTML='Сначала <a href="./login.html">войдите</a> по электронной почте.';else{const {data,error}=await sb.from("admin_users").select("user_id").eq("user_id",session.user.id).maybeSingle();if(error||!data)gate.textContent="У этой учётной записи нет прав администратора.";else{gate.hidden=true;tools.hidden=false;}}}
+try{
+ const client=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE],scopes:["email"]});
+ if(!await client.isAuthenticated()){location.href="./login.html";throw new Error("Выполняется переход ко входу.");}
+ const token=await client.getAccessToken(LOGTO_API_RESOURCE);
+ const response=await fetch(LOGTO_API_RESOURCE+"/api/admin/keys",{headers:{Authorization:"Bearer "+token}});
+ if(!response.ok)throw new Error(response.status===401||response.status===403?"Эта учётная запись не имеет прав администратора.":"Не удалось проверить права доступа.");
+ gate.hidden=true;tools.hidden=false;
+}catch(error){gate.textContent=error.message||"Не удалось проверить права через Logto. Повторите вход.";}
 </script></body></html>
