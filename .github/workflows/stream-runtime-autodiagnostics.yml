@@ -4,7 +4,8 @@ on:
     - cron: '*/5 * * * *'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
   issues: write
 concurrency:
   group: stream-runtime-autodiagnostics
@@ -20,9 +21,35 @@ jobs:
         continue-on-error: true
         env:
           STREAM_BASE_URL: https://multik-tv-test-stream-yltl.onrender.com
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          RENDER_SERVICE_ID: srv-dbvdipmk1f9s73c8g10g
         run: python3 scripts/stream_autorepair.py
+      - name: Ask AI to diagnose and propose a minimal repair
+        id: ai
+        if: steps.probe.outcome == 'failure'
+        continue-on-error: true
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-5.5
+        run: python3 scripts/ai_stream_repair.py
+      - name: Validate AI patch
+        id: validate_ai
+        if: steps.ai.outcome == 'success' && hashFiles('/tmp/ai-repair.patch') != ''
+        run: |
+          python3 -m py_compile scripts/stream_autorepair.py scripts/ai_stream_repair.py
+          bash -n stream-server/render-start.sh
+          python3 -m unittest discover -s scripts -p 'test_*.py' -v
+      - name: Open pull request with validated AI repair
+        if: steps.validate_ai.outcome == 'success'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ github.token }}
+          branch: ai/stream-autorepair
+          delete-branch: true
+          title: 'AI repair: fix stream runtime failure'
+          body: 'Automated, constrained AI-proposed repair. Review the diff and CI results before merging or deploying.'
+          commit-message: 'AI repair: address stream runtime diagnosis'
+          add-paths: |
+            stream-server/render-start.sh
+            scripts/stream_autorepair.py
       - name: Create or update diagnostic issue
         if: steps.probe.outcome == 'failure'
         env:
