@@ -446,7 +446,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
         fi
         if curl -fsS --connect-timeout 2 --max-time 4 "$manifest_url" -o "$manifest_file"; then
           segment="$(awk '!/^#/ && NF {last=$0} END {print last}' "$manifest_file")"
-          segment_path="${segment%%\\?*}"
+          segment_path="${segment%%\?*}"
           segment_path="${segment_path%%#*}"
           if [[ -n "$segment_path" ]]; then
             case "$segment_path" in
@@ -466,7 +466,7 @@ if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
             fi
           fi
           if (( SECONDS - last_change >= 30 )); then
-            echo "WATCHDOG: no new downloadable HLS segment for 30 seconds; restarting FFmpeg."
+            echo "WATCHDOG: HLS segment stalled for 30 seconds (no new downloadable segment); restarting FFmpeg."
             result=124
             break
           fi
