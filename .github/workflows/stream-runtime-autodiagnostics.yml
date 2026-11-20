@@ -32,7 +32,7 @@ jobs:
         run: python3 scripts/ai_stream_repair.py
       - name: Validate AI patch
         id: validate_ai
-        if: steps.ai.outcome == 'success' && hashFiles('/tmp/ai-repair.patch') != ''
+        if: steps.ai.outcome == 'success' && hashFiles('ai-repair.patch') != ''
         run: |
           python3 -m py_compile scripts/stream_autorepair.py scripts/ai_stream_repair.py
           bash -n stream-server/render-start.sh
