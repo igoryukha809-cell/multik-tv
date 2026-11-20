@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Вход — МУЛЬТИК ТВ</title>
 <style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 20% 10%,#283d79,#10162c 55%,#090d19);font:16px system-ui;color:#fff}.panel{width:min(100%,440px);padding:30px;border:1px solid #ffffff25;border-radius:24px;background:#141d35eF;box-shadow:0 20px 70px #0008}h1{margin:0 0 8px;font-size:28px}p{color:#c5cee4;line-height:1.5}label{display:block;margin:22px 0 8px}input,button{width:100%;padding:14px;border-radius:12px;font:inherit}input{border:1px solid #63739a;background:#0c1429;color:white}button{margin-top:14px;border:0;background:#ffcb45;color:#18203a;font-weight:750;cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hint{font-size:13px;color:#9eaccb}.status{min-height:48px;margin-top:14px;color:#ffe08a;overflow-wrap:anywhere}a{color:#ffda73}
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 20% 10%,#283d79,#10162c 55%,#090d19);font:16px system-ui;color:#fff}.panel{width:min(100%,440px);padding:30px;border:1px solid #ffffff25;border-radius:24px;background:#141d35eF;box-shadow:0 20px 70px #0008}h1{margin:0 0 8px;font-size:28px}p{color:#c5cee4;line-height:1.5}label{display:block;margin:22px 0 8px}input,button{width:100%;padding:14px;border-radius:12px;font:inherit}input{border:1px solid #63739a;background:#0c1429;color:white}button{margin-top:14px;border:0;background:#ffcb45;color:#18203a;font-weight:750;cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hint{font-size:13px;color:#9eaccb}.status{min-height:48px;margin-top:14px;color:#ffe08a;overflow-wrap:anywhere;white-space:pre-wrap}a{color:#ffda73}
 </style>
 </head>
 <body><main class="panel">
@@ -17,14 +17,28 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {SUPABASE_URL,SUPABASE_ANON_KEY} from './admin-config.js';
-// Используются общие публичные настройки из admin-config.js. Только anon/publishable key.
 const form=document.querySelector('#login'),email=document.querySelector('#email'),button=document.querySelector('#submit'),status=document.querySelector('#status');
 form.addEventListener('submit',async event=>{
  event.preventDefault();status.textContent='';
  if(SUPABASE_URL.includes('YOUR_PROJECT')||SUPABASE_ANON_KEY.includes('YOUR_SUPABASE')){status.textContent='Сначала настройте Supabase по инструкции auth-setup.md.';return;}
- button.disabled=true;
- try{const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {error}=await supabase.auth.signInWithOtp({email:email.value.trim(),options:{emailRedirectTo:location.origin+location.pathname.replace(/login\.html$/, 'access-keys.html')}});if(error)throw error;status.textContent='Письмо отправлено. Откройте ссылку в письме, чтобы завершить вход.';}
- catch(error){status.textContent='Не удалось отправить ссылку: '+error.message;}
+ button.disabled=true;status.textContent='Отправляем запрос…';
+ try{
+  const supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  const {error}=await supabase.auth.signInWithOtp({email:email.value.trim(),options:{emailRedirectTo:location.origin+location.pathname.replace(/login\.html$/, 'access-keys.html')}});
+  if(error)throw error;
+  status.textContent='Письмо отправлено. Откройте ссылку в письме, чтобы завершить вход.';
+ }catch(error){
+  console.error('Supabase signInWithOtp failed:',error);
+  const details=[
+   error?.name&&`Тип: ${error.name}`,
+   error?.status&&`HTTP: ${error.status}`,
+   error?.code&&`Код: ${error.code}`,
+   error?.message&&`Сообщение: ${error.message}`,
+   error?.details&&`Подробности: ${error.details}`,
+   error?.hint&&`Подсказка: ${error.hint}`
+  ].filter(Boolean);
+  status.textContent='Не удалось отправить ссылку. Диагностика:\n'+(details.join('\n')||String(error));
+ }
  finally{button.disabled=false;}
 });
 </script>
