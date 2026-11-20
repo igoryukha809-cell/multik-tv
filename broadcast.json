@@ -1,8 +1,8 @@
 {
   "channelName": "МУЛЬТИК ТВ",
-  "status": "test_signal",
-  "streamUrl": "https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8",
+  "status": "pending_verification",
+  "streamUrl": "https://multik-tv-test-stream.onrender.com/live/multiktv.m3u8",
   "testSignalUrl": "https://igoryukha809-cell.github.io/multik-tv/test-signal.html",
   "testSignal": true,
-  "note": "Подключён технический тестовый HLS-сигнал с сервера Render. Это не трансляция мультфильмов."
+  "note": "Настроен адрес HLS видеосервера Render. До проверки воспроизведения это не считается подтверждённым прямым эфиром; при отсутствии лицензированного источника сервер показывает технический тестовый сигнал."
 }
