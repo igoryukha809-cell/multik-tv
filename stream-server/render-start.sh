@@ -361,19 +361,36 @@ for original_show in "$ORIGINAL_DIR"/*.mp4; do
 done
 if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
   echo "Starting continuous broadcast playlist: licensed_items=$PROGRAM_READY, original_items=$ORIGINAL_COUNT."
-  echo "Один FFmpeg-передатчик будет воспроизводить все выпуски подряд без переподключения между ними."
-  while kill -0 "$SRS_PID" 2>/dev/null; do
-    write_health "live" "Continuous programme playlist is being published"
-    result=0
-    ffmpeg -hide_banner -nostdin -loglevel warning -re -stream_loop -1 \
+  echo "Собираю единый MP4-файл, чтобы FFmpeg не перезапускал RTMP при переходе между выпусками."
+  COMBINED_FILE="/tmp/multik-tv-continuous.mp4"
+  rm -f "$COMBINED_FILE"
+  if ! ffmpeg -hide_banner -nostdin -loglevel warning -y \
       -f concat -safe 0 -i "$PLAYLIST_FILE" \
+      -map 0:v:0 -map 0:a:0? -c copy -movflags +faststart "$COMBINED_FILE"; then
+    echo "Потоковое объединение без перекодирования не удалось; выполняю совместимую сборку."
+    rm -f "$COMBINED_FILE"
+    ffmpeg -hide_banner -nostdin -loglevel warning -y \
+      -f concat -safe 0 -i "$PLAYLIST_FILE" \
+      -map 0:v:0 -map 0:a:0? -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
+      -c:a aac -b:a 96k -ar 44100 -ac 2 -movflags +faststart "$COMBINED_FILE"
+  fi
+  if [[ ! -s "$COMBINED_FILE" ]] || ! ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$COMBINED_FILE" >/dev/null 2>&1; then
+    write_health "error" "Could not build a continuous programme file"
+    echo "ОШИБКА: не удалось собрать единый файл для вещания."
+    exit 1
+  fi
+  echo "Единый файл готов; запускаю один циклический MP4-поток."
+  while kill -0 "$SRS_PID" 2>/dev/null; do
+    write_health "starting" "Starting continuous MP4 publisher"
+    result=0
+    ffmpeg -hide_banner -nostdin -loglevel warning -re -stream_loop -1 -i "$COMBINED_FILE" \
       -map 0:v:0 -map 0:a:0? \
       -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=25" \
       -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 \
       -b:v 1300k -maxrate 1300k -bufsize 2600k \
       -c:a aac -b:a 96k -ar 44100 -ac 2 \
       -f flv rtmp://127.0.0.1/live/multiktv || result=$?
-    write_health "recovering" "Publisher exited with code $result; restarting the same playlist"
+    write_health "recovering" "Publisher exited with code $result; restarting the continuous MP4"
     echo "ОШИБКА: FFmpeg передатчик завершился с кодом $result; повторный запуск через 2 секунды."
     sleep 2
   done
