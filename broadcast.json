@@ -11,9 +11,32 @@
       "timezone": "Europe/Moscow",
       "source": "Open-Meteo",
       "generatedBy": "FFmpeg"
-    }
+    },
+    "originalShows": [
+      {
+        "title": "Космос рядом",
+        "durationSeconds": 36,
+        "format": "original educational short",
+        "generatedBy": "FFmpeg",
+        "language": "ru"
+      },
+      {
+        "title": "Удивительная природа",
+        "durationSeconds": 36,
+        "format": "original educational short",
+        "generatedBy": "FFmpeg",
+        "language": "ru"
+      },
+      {
+        "title": "Мир океанов",
+        "durationSeconds": 36,
+        "format": "original educational short",
+        "generatedBy": "FFmpeg",
+        "language": "ru"
+      }
+    ]
   },
-  "note": "Все времена телепрограммы, погодного выпуска и профилактики указаны по московскому времени (Europe/Moscow). Профилактика ежедневно с 02:00 до 07:00. Статус остаётся test_signal до подтверждения успешного развёртывания и проверки HLS.",
+  "note": "Все времена телепрограммы, погодного выпуска и профилактики указаны по московскому времени (Europe/Moscow). Профилактика ежедневно с 02:00 до 07:00. Статус остаётся test_signal до подтверждения успешного развёртывания и проверки HLS. Авторские познавательные выпуски создаются сервером автоматически и идут в ротации после лицензированной программы.",
   "maintenance": {
     "daily": true,
     "start": "02:00",
