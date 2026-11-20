@@ -91,16 +91,20 @@ while kill -0 "$SRS_PID" 2>/dev/null; do
       FFMPEG_PID=""
       break
     fi
-    echo "Downloaded file did not pass media validation; retaining test signal."
+    echo "Downloaded file did not pass media validation; switching to original channel-made programmes."
     rm -f "$PROGRAM_FILE"
+    kill "$FFMPEG_PID" 2>/dev/null || true
+    wait "$FFMPEG_PID" 2>/dev/null || true
+    FFMPEG_PID=""
     break
   fi
   if ! kill -0 "$DOWNLOAD_PID" 2>/dev/null; then
-    echo "Program download failed; retaining the clearly labelled test signal."
+    echo "Program download failed; switching to original channel-made programmes."
     cat "$DOWNLOAD_LOG" || true
-    wait "$FFMPEG_PID" || true
+    kill "$FFMPEG_PID" 2>/dev/null || true
+    wait "$FFMPEG_PID" 2>/dev/null || true
     FFMPEG_PID=""
-    exit 0
+    break
   fi
   sleep 2
 done
@@ -215,9 +219,18 @@ else
   echo "Не удалось создать авторские передачи; продолжаю с проверенной лицензированной программой."
 fi
 
+PROGRAM_READY=0
 if [[ -s "$PROGRAM_FILE" ]] && ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$PROGRAM_FILE" >/dev/null 2>&1; then
+  PROGRAM_READY=1
+fi
+
+if (( PROGRAM_READY )) || compgen -G "$ORIGINAL_DIR/*.mp4" >/dev/null; then
   echo "Starting the scheduled broadcast loop."
-  echo "License: CC BY-SA 4.0; attribution is burned into the video."
+  if (( PROGRAM_READY )); then
+    echo "Licensed programme: Pepper & Carrot Episode 6 (CC BY-SA 4.0)."
+  else
+    echo "Licensed download unavailable; running original channel-made programmes."
+  fi
   echo "Weather show: every day at ${WEATHER_TIME} (${TZ})."
   WEATHER_PLAYED_DATE=""
   while kill -0 "$SRS_PID" 2>/dev/null; do
@@ -231,13 +244,15 @@ if [[ -s "$PROGRAM_FILE" ]] && ffprobe -v error -select_streams v:0 -show_entrie
       fi
     fi
 
-    play_channel_ident
-    echo "В эфире: Пеппер и Кэррот, эпизод 6 (CC BY-SA 4.0)."
-    ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$PROGRAM_FILE" \
-      -map 0:v:0 -map 0:a:0? \
-      -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='Pepper and Carrot Ep. 6 | Morevna Project | David Revoy | Gregoire Lourme | CC BY-SA 4.0':fontcolor=white:fontsize=15:box=1:boxcolor=black@0.55:boxborderw=7:x=12:y=h-th-12" \
-      -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 -b:v 1600k -maxrate 1600k -bufsize 3200k \
-      -c:a aac -b:a 128k -ar 44100 -ac 2 -f flv rtmp://127.0.0.1/live/multiktv || echo "Основной ролик завершился с ошибкой; повторю цикл."
+    if (( PROGRAM_READY )); then
+      play_channel_ident
+      echo "В эфире: Пеппер и Кэррот, эпизод 6 (CC BY-SA 4.0)."
+      ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$PROGRAM_FILE" \
+        -map 0:v:0 -map 0:a:0? \
+        -vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='Pepper and Carrot Ep. 6 | Morevna Project | David Revoy | Gregoire Lourme | CC BY-SA 4.0':fontcolor=white:fontsize=15:box=1:boxcolor=black@0.55:boxborderw=7:x=12:y=h-th-12" \
+        -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 -b:v 1600k -maxrate 1600k -bufsize 3200k \
+        -c:a aac -b:a 128k -ar 44100 -ac 2 -f flv rtmp://127.0.0.1/live/multiktv || echo "Основной ролик завершился с ошибкой; повторю цикл."
+    fi
     for original_show in "$ORIGINAL_DIR"/*.mp4; do
       [[ -f "$original_show" ]] || continue
       echo "В эфире авторская передача: ${original_show##*/}."
