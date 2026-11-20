@@ -253,7 +253,7 @@ generate_weather_show() {
     json="${WEATHER_DIR}/weather-${count}.json"
     txt="${WEATHER_DIR}/weather-${count}.txt"
     clip="${WEATHER_DIR}/weather-${count}.mp4"
-    source="MET Norway"
+    source="MET Norway (CC BY 4.0)"
     url="https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}"
     weather_ua="${WEATHER_USER_AGENT:-MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)}"
 
