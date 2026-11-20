@@ -92,9 +92,8 @@ else
 fi
 
 # Publish the channel slate and ident, then a test signal until original shows are rendered.
-play_maintenance_slate || echo "WARNING: maintenance slate failed; continuing startup."
-play_channel_ident || echo "WARNING: channel ident failed; continuing startup."
-# No synthetic test pattern is published as a substitute for programmes.
+# Start the real programme playlist immediately after SRS is ready.
+# Do not publish a synthetic test signal or a long startup slate.
 
 if [[ -n "$DOWNLOAD_PID" ]]; then
   while kill -0 "$SRS_PID" 2>/dev/null; do
