@@ -255,19 +255,53 @@ const connectionWatchdog=setTimeout(()=>{
      player.addEventListener('loadedmetadata',()=>{selectRussianAudioTrack();details.textContent='Поток получен от видеосервера. Плеер запускает его автоматически без звука; при наличии русской аудиодорожки она выбирается первой.';startAutomaticPlayback();},{once:true});
      player.addEventListener('error',()=>showTestSignal('HLS-поток не ответил.'),{once:true});
     }else{
-     const module=await import('https://cdn.jsdelivr.net/npm/hls.js@1.5.20/+esm');
-     if(!module.default.isSupported())throw Error('Браузер не поддерживает HLS');
+     // Try independent HLS.js CDNs. A failed CDN must not leave the player
+     // waiting forever when the broadcast server is already publishing segments.
+     let HlsClass=null, libraryError=null;
+     for(const libraryUrl of [
+       'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/+esm',
+       'https://esm.sh/hls.js@1.5.20'
+     ]){
+       try{
+         const loaded=await import(libraryUrl);
+         HlsClass=loaded.default||loaded.Hls||null;
+         if(HlsClass&&HlsClass.isSupported())break;
+         HlsClass=null;
+       }catch(error){libraryError=error;}
+     }
+     if(!HlsClass){
+       for(const scriptUrl of [
+         'https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js',
+         'https://unpkg.com/hls.js@1.5.20/dist/hls.min.js'
+       ]){
+         try{
+           await new Promise((resolve,reject)=>{
+             const script=document.createElement('script');
+             script.src=scriptUrl; script.async=true;
+             script.onload=resolve; script.onerror=()=>reject(new Error('Не загрузилась библиотека HLS'));
+             document.head.appendChild(script);
+           });
+           if(window.Hls&&window.Hls.isSupported()){HlsClass=window.Hls;break;}
+         }catch(error){libraryError=error;}
+       }
+     }
+     if(!HlsClass)throw Error('Не удалось загрузить видеоплеер HLS. '+(libraryError?.message||'Проверьте соединение.'));
      showPlayer();
-     hlsEngine=new module.default({enableWorker:true,lowLatencyMode:false,liveSyncDurationCount:4,manifestLoadingMaxRetry:8,manifestLoadingRetryDelay:1000,manifestLoadingMaxRetryTimeout:8000,manifestLoadingTimeOut:15000,levelLoadingMaxRetry:8,levelLoadingRetryDelay:1000,levelLoadingMaxRetryTimeout:8000,fragLoadingMaxRetry:8,fragLoadingRetryDelay:1000,fragLoadingMaxRetryTimeout:8000});
+     hlsEngine=new HlsClass({enableWorker:false,lowLatencyMode:false,liveSyncDurationCount:4,manifestLoadingMaxRetry:8,manifestLoadingRetryDelay:1000,manifestLoadingMaxRetryTimeout:8000,manifestLoadingTimeOut:15000,levelLoadingMaxRetry:8,levelLoadingRetryDelay:1000,levelLoadingMaxRetryTimeout:8000,fragLoadingMaxRetry:8,fragLoadingRetryDelay:1000,fragLoadingMaxRetryTimeout:8000});
      hlsEngine.loadSource(url.href); hlsEngine.attachMedia(player);
-     hlsEngine.on(module.default.Events.MANIFEST_PARSED,()=>{
+     hlsEngine.on(HlsClass.Events.MANIFEST_PARSED,()=>{
       selectRussianAudioTrack();
       details.textContent='HLS-манифест получен. Ожидаем начало воспроизведения; русская дорожка выбирается автоматически, если сервер её предоставляет.';
       startAutomaticPlayback();
      });
-hlsEngine.on(module.default.Events.AUDIO_TRACKS_UPDATED,selectRussianAudioTrack);
-     hlsEngine.on(module.default.Events.ERROR,(_,data)=>{
-      if(data.fatal)showTestSignal('Видеосервер пока недоступен.');
+     hlsEngine.on(HlsClass.Events.AUDIO_TRACKS_UPDATED,selectRussianAudioTrack);
+     hlsEngine.on(HlsClass.Events.ERROR,(_,data)=>{
+      if(data.fatal){
+       details.textContent='Ошибка HLS: '+(data.details||data.type||'неизвестная ошибка')+'. Повторяем подключение.';
+       if(data.type===HlsClass.ErrorTypes.NETWORK_ERROR)hlsEngine.startLoad();
+       else if(data.type===HlsClass.ErrorTypes.MEDIA_ERROR)hlsEngine.recoverMediaError();
+       else showTestSignal('Видеосервер пока недоступен.');
+      }
      });
      setTimeout(()=>{if(!player.readyState&&!fallbackStarted)showTestSignal('Поток не начал передавать медиаданные за 90 секунд.');},90000);
     }
