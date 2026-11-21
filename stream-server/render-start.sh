@@ -895,6 +895,7 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
               if [[ "$segment_path" != "$last_segment" ]]; then
                 last_segment="$segment_path"
                 last_change=$SECONDS
+                write_health "live" "HLS media segment is advancing"
                 advancing_segments=$((advancing_segments + 1))
                 echo "WATCHDOG: confirmed advancing media segment $advancing_segments."
                 if (( advancing_segments >= 2 && health_live == 0 )); then
