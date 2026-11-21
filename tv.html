@@ -172,16 +172,38 @@ footer{font-size:13px;color:#9eacd3}
         <span class="brand-name">НАШ КАНАЛ</span>
       </div>
     </div>
-    <iframe
-      src="https://kinescope.io/embed/0cGaBsxQyyGHNevtvjRBfC"
-      title="Прямой эфир МУЛЬТИК ТВ"
-      allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;"
-      frameborder="0"
-      allowfullscreen
-      loading="eager"></iframe>
+    <video id="liveHlsPlayer" controls playsinline autoplay muted preload="auto"
+      title="Прямой эфир телеканала" aria-label="Прямой эфир телеканала"></video>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.13/dist/hls.min.js"></script>
+    <script>
+    (() => {
+      const video = document.getElementById('liveHlsPlayer');
+      const status = document.getElementById('liveStreamStatus');
+      const source = 'https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8';
+      const fail = (message) => { if (status) status.textContent = message; };
+      video.addEventListener('playing', () => fail('Трансляция подключена. Для звука нажми значок динамика в плеере.'));
+      video.addEventListener('error', () => fail('Поток пока не удалось воспроизвести. Сервер может быть временно недоступен.'));
+      if (window.Hls && Hls.isSupported()) {
+        const hls = new Hls({ enableWorker: true, lowLatencyMode: false, liveSyncDurationCount: 3 });
+        hls.loadSource(source);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {
+          fail('Поток найден. Нажми ▶ для начала просмотра.');
+        }));
+        hls.on(Hls.Events.ERROR, (_, data) => {
+          if (data.fatal) fail('Не удалось загрузить эфирный поток. Повторяем подключение…');
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = source;
+        video.play().catch(() => fail('Поток найден. Нажми ▶ для начала просмотра.'));
+      } else {
+        fail('Этот браузер не поддерживает воспроизведение HLS.');
+      }
+    })();
+    </script>
   </div>
 </div>
-<p class="live-note">Это общий плеер трансляции Kinescope. Часы, рубрики и бегущая строка — информационное оформление этой веб-страницы; они не встраиваются в исходный видеосигнал. Если эфир не начался автоматически, нажми ▶ в плеере.</p>
+<p class="live-note" id="liveStreamStatus">Подключаем прямой эфир. Воспроизведение может начаться без звука; включи звук в плеере.</p>
 </section>
 
 <section class="screen">
