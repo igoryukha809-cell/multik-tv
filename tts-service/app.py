@@ -12,7 +12,11 @@ from pydantic import BaseModel, Field
 from piper import PiperVoice
 
 VOICE_PATH = os.getenv("PIPER_MODEL", "/app/voices/ru_RU-denis-medium.onnx")
-ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "https://igoryukha809-cell.github.io")
+ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "https://igoryukha809-cell.github.io").rstrip("/")
+ALLOWED_ORIGINS = sorted({
+    ALLOWED_ORIGIN,
+    "https://igoryukha809-cell.github.io",
+})
 MAX_CHARS = 1200
 RATE_LIMIT = 8
 WINDOW_SECONDS = 60
@@ -20,7 +24,7 @@ WINDOW_SECONDS = 60
 app = FastAPI(title="Channel TTS", version="0.1.1")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[ALLOWED_ORIGIN],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
