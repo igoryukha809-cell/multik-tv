@@ -92,12 +92,11 @@ make_channel_ident_video() {
 }
 
 make_next_program_card() {
-  local title="$1" output="$2" title_file="$3"
-  printf '%s\\n' "$title" > "$title_file"
-  ffmpeg -hide_banner -nostdin -loglevel warning -y -t 5 \\
-    -f lavfi -i "color=c=0x182d58:s=1280x720:r=25:d=5" \\
+  local output="$1" schedule_file="$2"
+  ffmpeg -hide_banner -nostdin -loglevel warning -y -t 8 \\
+    -f lavfi -i "color=c=0x182d58:s=1280x720:r=25:d=8" \\
     -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \\
-    -vf "drawbox=x=0:y=0:w=1280:h=14:color=0xffc94f:t=fill,drawbox=x=0:y=706:w=1280:h=14:color=0x56c9dc:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='ДАЛЕЕ В ЭФИРЕ':fontcolor=0xffd76a:fontsize=42:borderw=2:bordercolor=0x102044:x=(w-text_w)/2:y=190,drawtext=fontfile=${WEATHER_FONT}:textfile=${title_file}:fontcolor=white:fontsize=48:borderw=3:bordercolor=0x102044:x=(w-text_w)/2:y=310:shadowcolor=black@0.5:shadowx=3:shadowy=3,drawtext=fontfile=${WEATHER_FONT}:text='СМОТРИТЕ СЛЕДУЮЩУЮ ПРОГРАММУ':fontcolor=0xbfeeff:fontsize=24:x=(w-text_w)/2:y=430" \\
+    -vf "drawbox=x=0:y=0:w=1280:h=14:color=0xffc94f:t=fill,drawbox=x=0:y=706:w=1280:h=14:color=0x56c9dc:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='СКОРО В ЭФИРЕ':fontcolor=0xffd76a:fontsize=48:borderw=2:bordercolor=0x102044:x=(w-text_w)/2:y=95,drawtext=fontfile=${WEATHER_FONT}:textfile=${schedule_file}:fontcolor=white:fontsize=36:line_spacing=24:borderw=2:bordercolor=0x102044:x=(w-text_w)/2:y=220:shadowcolor=black@0.5:shadowx=3:shadowy=3,drawtext=fontfile=${WEATHER_FONT}:text='ПРОГРАММА ПО ПОРЯДКУ ЭФИРНОГО ПЛЕЙЛИСТА':fontcolor=0xbfeeff:fontsize=21:x=(w-text_w)/2:y=600" \\
     -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \\
     -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest -movflags +faststart "$output"
   ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$output" >/dev/null
@@ -606,19 +605,28 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     birthday_today=1
   fi
   item_index=0
+  total_programmes=${#PROGRAM_ITEMS[@]}
   for programme in "${PROGRAM_ITEMS[@]}"; do
     item_index=$((item_index + 1))
-    display_name="${programme##*/}"
-    display_name="${display_name%.*}"
-    display_name="${display_name//_/ }"
-    display_name="${display_name//-/ }"
-    card_file="/tmp/multik-tv-next-program-${item_index}.mp4"
-    card_title_file="/tmp/multik-tv-next-program-${item_index}.txt"
-    echo "Готовлю эфирную плашку «Далее в эфире: ${display_name}»."
-    if make_next_program_card "$display_name" "$card_file" "$card_title_file"; then
+    card_file="/tmp/multik-tv-upcoming-${item_index}.mp4"
+    schedule_file="/tmp/multik-tv-upcoming-${item_index}.txt"
+    : > "$schedule_file"
+    # Show this programme plus the next three playlist entries. The list wraps
+    # at the end because the broadcast playlist itself loops continuously.
+    for offset in 0 1 2 3; do
+      upcoming_index=$(( (item_index - 1 + offset) % total_programmes ))
+      upcoming_path="${PROGRAM_ITEMS[$upcoming_index]}"
+      display_name="${upcoming_path##*/}"
+      display_name="${display_name%.*}"
+      display_name="${display_name//_/ }"
+      display_name="${display_name//-/ }"
+      printf '%s. %s\\n' "$((offset + 1))" "$display_name" >> "$schedule_file"
+    done
+    echo "Готовлю эфирный список «Скоро в эфире» для программы №${item_index}."
+    if make_next_program_card "$card_file" "$schedule_file"; then
       printf "file '%s'\\n" "$card_file" >> "$PLAYLIST_FILE"
     else
-      echo "WARNING: не удалось собрать плашку следующей программы; продолжаю без неё."
+      echo "WARNING: не удалось собрать список будущих программ; продолжаю без него."
     fi
     printf "file '%s'\\n" "$programme" >> "$PLAYLIST_FILE"
     if (( birthday_today && item_index == 1 )); then
