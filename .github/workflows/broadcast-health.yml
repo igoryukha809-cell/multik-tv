@@ -30,13 +30,59 @@ jobs:
           test "$code" = "200"
           grep -qi "МУЛЬТИК ТВ" /tmp/site.html
 
-      - name: Проверить погодный API
+      - name: Проверить погодные источники с резервированием
         id: weather
         continue-on-error: true
         shell: bash
         run: |
-          curl -fsS --max-time 25 "https://api.open-meteo.com/v1/forecast?latitude=53.35&longitude=83.76&current=temperature_2m,weather_code&timezone=auto" -o /tmp/weather.json
-          python3 -c 'import json; d=json.load(open("/tmp/weather.json")); assert "current" in d and "temperature_2m" in d["current"]; print("Погодные данные получены:", d["current"]["temperature_2m"], d["current"].get("temperature_2m_unit","°C"))'
+          set -u
+          lat="53.35"
+          lon="83.76"
+          tmp="/tmp/weather.json"
+
+          check_source() {
+            provider="$1"
+            url="$2"
+            user_agent="${3:-}"
+            args=(--fail --silent --show-error --location --connect-timeout 5 --max-time 12 --retry 1 --retry-delay 1 -H "Accept: application/json")
+            if [[ -n "$user_agent" ]]; then
+              args+=(-H "User-Agent: $user_agent")
+            fi
+
+            if curl "${args[@]}" "$url" -o "$tmp" &&
+              python3 - "$tmp" "$provider" <<'PY'
+          import json, sys
+          path, provider = sys.argv[1], sys.argv[2]
+          with open(path, encoding="utf-8") as f:
+              data = json.load(f)
+          if provider == "MET Norway":
+              assert data.get("properties", {}).get("timeseries"), "missing forecast timeseries"
+          elif provider == "Open-Meteo":
+              assert isinstance(data.get("current"), dict) and "temperature_2m" in data["current"], "missing current temperature"
+          else:
+              assert data.get("current_condition"), "missing current conditions"
+          print("Погодные данные получены через", provider)
+          PY
+            then
+              return 0
+            fi
+
+            echo "Источник недоступен или вернул некорректные данные: $provider"
+            return 1
+          }
+
+          if check_source "MET Norway" "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}" "MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)"; then
+            exit 0
+          fi
+          if check_source "Open-Meteo" "https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto"; then
+            exit 0
+          fi
+          if check_source "wttr.in" "https://wttr.in/${lat},${lon}?format=j1" "MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)"; then
+            exit 0
+          fi
+
+          echo "Все три погодных источника недоступны из GitHub Actions runner." >&2
+          exit 1
 
       - name: Получить код диагностики
         if: always()
@@ -59,9 +105,10 @@ jobs:
             echo "## Автоматическая проверка МУЛЬТИК ТВ"
             echo ""
             echo "- Сайт: ${{ steps.site.outcome }}"
-            echo "- Погодный API: ${{ steps.weather.outcome }}"
+            echo "- Погодные источники (MET Norway → Open-Meteo → wttr.in): ${{ steps.weather.outcome }}"
             echo "- HLS-видеопоток: ${{ steps.stream.outcome }}"
             echo ""
-            echo "HLS-проверка теперь проверяет health.json, цепочку плейлистов и скачивание реального медиасегмента. Ошибка HLS делает проверку неуспешной."
+            echo "Погодная проверка использует ту же цепочку резервных источников, что и генератор прогноза. Ошибка одного провайдера не считается отказом всей погоды."
+            echo "HLS-проверка проверяет health.json, цепочку плейлистов и скачивание реального медиасегмента."
             echo "Проверка выполняется каждые 15 минут. Она обнаруживает сбои, но сама по себе не перезапускает Render."
           } >> "$GITHUB_STEP_SUMMARY"
