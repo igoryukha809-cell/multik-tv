@@ -243,6 +243,7 @@ generate_weather_show() {
   : > "$concat_file"
 
   local -a cities=(
+    # Broadcast weather rotation: all 11 configured cities.
     "Норильск|Норильске|69.35|88.20"
     "Южно-Сахалинск|Южно-Сахалинске|46.96|142.73"
     "Иркутск|Иркутске|52.29|104.28"
