@@ -80,15 +80,15 @@ play_channel_ident() {
 
 make_channel_birthday_bumper() {
   local title_file="/tmp/channel-birthday-title.txt" sub_file="/tmp/channel-birthday-sub.txt"
-  printf '%s\\n' 'С ДНЁМ РОЖДЕНИЯ, НАШ КАНАЛ!' > "$title_file"
-  printf '%s\\n' '17 НОЯБРЯ — ДЕНЬ НАШЕЙ ИСТОРИИ' 'СПАСИБО, ЧТО ВЫ С НАМИ!' > "$sub_file"
+  printf '%s\n' 'С ДНЁМ РОЖДЕНИЯ, НАШ КАНАЛ!' > "$title_file"
+  printf '%s\n' '17 НОЯБРЯ — ДЕНЬ НАШЕЙ ИСТОРИИ' 'СПАСИБО, ЧТО ВЫ С НАМИ!' > "$sub_file"
   echo "Создаю 12-секундную праздничную заставку для общего видеосигнала."
-  ffmpeg -hide_banner -nostdin -loglevel warning -y -t 12 \\
-    -f lavfi -i "color=c=0x542c91:s=1280x720:r=25:d=12" \\
-    -f lavfi -i 'aevalsrc=0.12*(if(between(t\\,0\\,0.45)\\,sin(2*PI*523.25*t)\\,0)+if(between(t\\,0.45\\,0.9)\\,sin(2*PI*659.25*t)\\,0)+if(between(t\\,0.9\\,1.35)\\,sin(2*PI*783.99*t)\\,0)+if(between(t\\,1.35\\,1.8)\\,sin(2*PI*1046.5*t)\\,0)+if(between(t\\,1.8\\,2.25)\\,sin(2*PI*880*t)\\,0)+if(between(t\\,2.25\\,2.7)\\,sin(2*PI*783.99*t)\\,0)+if(between(t\\,2.7\\,3.15)\\,sin(2*PI*659.25*t)\\,0)+if(between(t\\,3.15\\,3.6)\\,sin(2*PI*783.99*t)\\,0)+if(between(t\\,3.6\\,4.5)\\,sin(2*PI*1046.5*t)\\,0)+if(between(t\\,4.5\\,5.4)\\,sin(2*PI*783.99*t)\\,0)+if(between(t\\,5.4\\,12)\\,sin(2*PI*523.25*t)*exp(-(t-5.4)*0.18)\\,0)):s=44100:d=12' \\
-    -loop 1 -framerate 25 -i /usr/local/srs/brand.png \\
-    -filter_complex "[0:v]drawbox=x='80+35*sin(t*1.3)':y=45:w=1120:h=8:color=0xffd45e@0.95:t=fill,drawbox=x='100+65*cos(t*1.1)':y=650:w=1080:h=7:color=0xff8fcf@0.9:t=fill,drawbox=x='120+mod(t*90\\,1000)':y='120+35*sin(t*2)':w=18:h=18:color=0xffdf79@0.9:t=fill,drawbox=x='1000-mod(t*75\\,900)':y='500-30*cos(t*2)':w=16:h=16:color=0xff9ccf@0.9:t=fill,drawtext=fontfile=${WEATHER_FONT}:textfile=${title_file}:fontcolor=white:fontsize=58:borderw=3:bordercolor=0x36205f:x=(w-text_w)/2:y=350:shadowcolor=black@0.4:shadowx=3:shadowy=3,drawtext=fontfile=${WEATHER_FONT}:textfile=${sub_file}:fontcolor=0xffe7a0:fontsize=27:line_spacing=16:x=(w-text_w)/2:y=455:shadowcolor=black@0.4:shadowx=2:shadowy=2[bg];[2:v]scale=210:210,format=rgba,fade=t=in:st=0:d=0.8:alpha=1,fade=t=out:st=11:d=0.8:alpha=1[logo];[bg][logo]overlay=x=(W-w)/2:y=85+10*sin(t*2):shortest=1[v]" \\
-    -map "[v]" -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \\
+  ffmpeg -hide_banner -nostdin -loglevel warning -y -t 12 \
+    -f lavfi -i "color=c=0x542c91:s=1280x720:r=25:d=12" \
+    -f lavfi -i 'aevalsrc=0.12*(if(between(t\,0\,0.45)\,sin(2*PI*523.25*t)\,0)+if(between(t\,0.45\,0.9)\,sin(2*PI*659.25*t)\,0)+if(between(t\,0.9\,1.35)\,sin(2*PI*783.99*t)\,0)+if(between(t\,1.35\,1.8)\,sin(2*PI*1046.5*t)\,0)+if(between(t\,1.8\,2.25)\,sin(2*PI*880*t)\,0)+if(between(t\,2.25\,2.7)\,sin(2*PI*783.99*t)\,0)+if(between(t\,2.7\,3.15)\,sin(2*PI*659.25*t)\,0)+if(between(t\,3.15\,3.6)\,sin(2*PI*783.99*t)\,0)+if(between(t\,3.6\,4.5)\,sin(2*PI*1046.5*t)\,0)+if(between(t\,4.5\,5.4)\,sin(2*PI*783.99*t)\,0)+if(between(t\,5.4\,12)\,sin(2*PI*523.25*t)*exp(-(t-5.4)*0.18)\,0)):s=44100:d=12' \
+    -loop 1 -framerate 25 -i /usr/local/srs/brand.png \
+    -filter_complex "[0:v]drawbox=x='80+35*sin(t*1.3)':y=45:w=1120:h=8:color=0xffd45e@0.95:t=fill,drawbox=x='100+65*cos(t*1.1)':y=650:w=1080:h=7:color=0xff8fcf@0.9:t=fill,drawbox=x='120+mod(t*90\,1000)':y='120+35*sin(t*2)':w=18:h=18:color=0xffdf79@0.9:t=fill,drawbox=x='1000-mod(t*75\,900)':y='500-30*cos(t*2)':w=16:h=16:color=0xff9ccf@0.9:t=fill,drawtext=fontfile=${WEATHER_FONT}:textfile=${title_file}:fontcolor=white:fontsize=58:borderw=3:bordercolor=0x36205f:x=(w-text_w)/2:y=350:shadowcolor=black@0.4:shadowx=3:shadowy=3,drawtext=fontfile=${WEATHER_FONT}:textfile=${sub_file}:fontcolor=0xffe7a0:fontsize=27:line_spacing=16:x=(w-text_w)/2:y=455:shadowcolor=black@0.4:shadowx=2:shadowy=2[bg];[2:v]scale=210:210,format=rgba,fade=t=in:st=0:d=0.8:alpha=1,fade=t=out:st=11:d=0.8:alpha=1[logo];[bg][logo]overlay=x=(W-w)/2:y=85+10*sin(t*2):shortest=1[v]" \
+    -map "[v]" -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
     -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest "$BIRTHDAY_VIDEO"
   ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$BIRTHDAY_VIDEO" >/dev/null
 }
