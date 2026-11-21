@@ -233,7 +233,7 @@ prepare_dialogue_cartoon_library() {
 }
 
 generate_weather_show() {
-  local entry city lat lon url json txt clip speech spoken temp feels wind humidity rain low high code condition source cache_file cache_source cache_time now temp_say wind_say feels_say
+  local entry city city_say lat lon url json txt clip speech spoken temp feels wind humidity rain low high code condition source cache_file cache_source cache_time now temp_say wind_say feels_say
   local count=0
   local city_index=0
   local concat_file="${WEATHER_DIR}/concat.txt"
@@ -243,19 +243,19 @@ generate_weather_show() {
   : > "$concat_file"
 
   local -a cities=(
-    "Барнаул|53.35|83.76"
-    "Москва|55.75|37.62"
-    "Санкт-Петербург|59.94|30.31"
-    "Новосибирск|55.03|82.92"
-    "Екатеринбург|56.84|60.61"
-    "Казань|55.80|49.11"
-    "Красноярск|56.01|92.87"
-    "Владивосток|43.12|131.89"
+    "Барнаул|Барнауле|53.35|83.76"
+    "Москва|Москве|55.75|37.62"
+    "Санкт-Петербург|Санкт-Петербурге|59.94|30.31"
+    "Новосибирск|Новосибирске|55.03|82.92"
+    "Екатеринбург|Екатеринбурге|56.84|60.61"
+    "Казань|Казани|55.80|49.11"
+    "Красноярск|Красноярске|56.01|92.87"
+    "Владивосток|Владивостоке|43.12|131.89"
   )
 
   for entry in "${cities[@]}"; do
     sleep 2
-    IFS='|' read -r city lat lon <<< "$entry"
+    IFS='|' read -r city city_say lat lon <<< "$entry"
     city_index=$((city_index + 1))
     json="${WEATHER_DIR}/weather-${count}.json"
     txt="${WEATHER_DIR}/weather-${count}.txt"
@@ -385,7 +385,7 @@ generate_weather_show() {
 
     # The unavailable forecast still gets a visible card and an honest voice-over.
     if [[ "$source" == "Резервная заставка" ]]; then
-      spoken="Приве-е-ет, друзья! Это Соня! Сейчас мы в городе ${city}. К сожалению, прогноз временно недоступен. Мы обязательно вернёмся к погоде этого города позже!"
+      spoken="Приве-е-ет, друзья! Это Соня! Сейчас мы расскажем о погоде в ${city_say}. К сожалению, прогноз временно недоступен. Мы обязательно вернёмся к прогнозу позже!"
     else
       temp_say="$(printf '%.0f' "$temp" 2>/dev/null || printf '%s' "$temp")"
       wind_say="$(printf '%.0f' "$wind" 2>/dev/null || printf '%s' "$wind")"
@@ -393,7 +393,7 @@ generate_weather_show() {
       if [[ -n "$feels" ]]; then
         feels_say=" По ощущениям ${feels} градусов."
       fi
-      spoken="Приве-е-ет, друзья! Это Соня! Давайте вместе узнаем погоду в городе ${city}! Сейчас ${temp_say} градусов. ${condition}!${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов. Пусть ваш день будет чудесным!"
+      spoken="Приве-е-ет, друзья! Это Соня! Давайте вместе узнаем погоду в ${city_say}! Сейчас ${temp_say} градусов. ${condition}!${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов. Пусть ваш день будет чудесным!"
       if [[ "$rain" != "—" ]]; then
         spoken+=" Вероятность осадков ${rain} процентов."
       fi
@@ -406,24 +406,23 @@ generate_weather_show() {
     fi
 
     if [[ -n "$speech" ]]; then
-      if ffmpeg -hide_banner -nostdin -loglevel error \
+      if ! ffmpeg -hide_banner -nostdin -loglevel error \
         -f lavfi -i "color=c=0x14558B:s=1280x720:r=25:d=40" -i "$speech" \
-        -vf "drawtext=fontfile=${WEATHER_FONT}:textfile=${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
+        -vf "drawtext=fontfile=\${WEATHER_FONT}:textfile=\${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
         -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
         -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest -movflags +faststart "$clip"; then
-        :
-      else
-        echo "Не удалось собрать погодный экран с голосом для ${city}."
-        continue
+        echo "Не удалось собрать погодный экран с голосом для \${city}; сохраняю город с экранной карточкой."
+        speech=""
       fi
-    else
+    fi
+    if [[ -z "$speech" ]]; then
       if ! ffmpeg -hide_banner -nostdin -loglevel error \
         -f lavfi -i "color=c=0x14558B:s=1280x720:r=25:d=12" \
         -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
-        -vf "drawtext=fontfile=${WEATHER_FONT}:textfile=${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
+        -vf "drawtext=fontfile=\${WEATHER_FONT}:textfile=\${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
         -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
         -c:a aac -b:a 48k -ar 44100 -ac 2 -shortest -movflags +faststart "$clip"; then
-        echo "Не удалось собрать резервный погодный экран для ${city}."
+        echo "Не удалось собрать даже экранную карточку погоды для \${city}."
         continue
       fi
     fi
