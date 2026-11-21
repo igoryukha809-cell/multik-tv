@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#28204f">
+<title>Студия озвучивания — Погода</title>
+<style>
+:root{color-scheme:dark;--bg:#17152b;--panel:#24213f;--line:#3b365f;--text:#f7f4ff;--muted:#b9b3d3;--accent:#a995ff;--mint:#8ce4c7}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0,#393064 0,transparent 42%),var(--bg);color:var(--text);font:16px/1.5 system-ui,Arial,sans-serif}.wrap{max-width:920px;margin:auto;padding:24px 16px 60px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}a{color:#d1c7ff}.back{font-size:14px;text-decoration:none}.eyebrow{color:var(--mint);font-size:12px;font-weight:800;letter-spacing:.12em}h1{font-size:clamp(30px,7vw,48px);line-height:1.1;margin:8px 0}header p{color:var(--muted);max-width:620px}.panel{background:#24213fee;border:1px solid var(--line);border-radius:22px;padding:20px;margin:16px 0;box-shadow:0 15px 40px #09081755}.label{display:block;font-weight:750;margin:0 0 9px}.hosts{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}.host{border:1px solid var(--line);border-radius:15px;background:#302b50;color:var(--text);padding:12px 6px;cursor:pointer;font:inherit}.host .emoji{display:block;font-size:30px}.host[aria-pressed=true]{border-color:var(--accent);background:#453a70;box-shadow:inset 0 0 0 1px var(--accent)}textarea{width:100%;min-height:190px;resize:vertical;background:#17152b;color:var(--text);border:1px solid var(--line);border-radius:14px;padding:14px;font:16px/1.55 system-ui,Arial}textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.counter{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:7px}.sliders{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.slider label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}.slider input{width:100%;accent-color:var(--accent)}.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{border:0;border-radius:99px;padding:13px 19px;font-weight:800;font-size:14px;cursor:pointer;background:var(--accent);color:#211b42}.btn.secondary{background:#383252;color:var(--text);border:1px solid var(--line)}.notice{background:#322c4e;border:1px solid #65558f;border-radius:14px;padding:14px;color:#e6dfff;font-size:14px}.notice strong{color:#fff}.small{font-size:12px;color:var(--muted)}.history{color:var(--muted);font-size:14px}.pill{display:inline-block;border-radius:99px;background:#393451;padding:5px 9px;font-size:11px;color:#d2c8ff}.disabled{opacity:.55;cursor:not-allowed}@media(max-width:600px){.hosts{grid-template-columns:repeat(3,1fr)}.sliders{grid-template-columns:1fr}.panel{padding:16px}.wrap{padding:18px 12px 40px}}
+</style>
+</head>
+<body><main class="wrap">
+<header><div><div class="eyebrow">ПОГОДНАЯ РЕДАКЦИЯ</div><h1>Студия озвучивания</h1><p>Подготовь текст прогноза и выбери одного из оригинальных ведущих.</p></div><a class="back" href="../weather-show.html">← К прогнозу</a></header>
+<section class="panel"><span class="label">1. Выбери ведущего</span><div class="hosts" id="hosts">
+<button class="host" aria-pressed="true" data-host="Рыжик"><span class="emoji">🦊</span>Рыжик</button>
+<button class="host" aria-pressed="false" data-host="Пик"><span class="emoji">🐿️</span>Пик</button>
+<button class="host" aria-pressed="false" data-host="Умка"><span class="emoji">🐻‍❄️</span>Умка</button>
+<button class="host" aria-pressed="false" data-host="Топа"><span class="emoji">🐸</span>Топа</button>
+<button class="host" aria-pressed="false" data-host="Кира"><span class="emoji">🐦‍⬛</span>Кира</button>
+</div><p class="small" id="hostHint">Рыжик — бодрый, дружелюбный и любознательный ведущий.</p></section>
+<section class="panel"><label class="label" for="script">2. Текст прогноза</label><textarea id="script" maxlength="5000" placeholder="Привет, друзья! Сегодня узнаем, какая погода ждёт нас в разных городах..."></textarea><div class="counter"><span>Текст для озвучивания</span><span id="count">0 / 5000</span></div></section>
+<section class="panel"><span class="label">3. Настройки подачи</span><div class="sliders">
+<div class="slider"><label for="rate"><span>Темп речи</span><output id="rateOut">Обычный</output></label><input id="rate" type="range" min="0.8" max="1.2" step="0.05" value="1"></div>
+<div class="slider"><label for="pitch"><span>Высота голоса</span><output id="pitchOut">Средняя</output></label><input id="pitch" type="range" min="0.85" max="1.15" step="0.05" value="1"></div>
+<div class="slider"><label for="mood"><span>Выразительность</span><output id="moodOut">Яркая</output></label><input id="mood" type="range" min="1" max="3" step="1" value="2"></div>
+</div></section>
+<section class="panel"><span class="label">4. Генерация аудио</span><div class="notice" role="status"><strong>Сервис нейросетевого озвучивания пока не подключён.</strong><br>Настройки и текст можно подготовить, но настоящая генерация MP3 ещё недоступна. Мы не будем выдавать системный голос браузера за нейросетевой.</div><p class="small">Для подключения потребуется выбрать поставщика TTS и добавить его ключ в серверные секреты. Не отправляй секретные ключи в чат.</p><div class="actions"><button class="btn disabled" disabled title="Сначала подключается сервер озвучивания">Создать MP3</button><button class="btn secondary" id="copy">Скопировать текст и настройки</button></div><p id="feedback" class="small" aria-live="polite"></p></section>
+<section class="panel"><span class="label">История записей</span><p class="history">Пока нет созданных аудиозаписей. Они появятся здесь после подключения сервиса озвучивания.</p></section>
+<p class="small">Голоса и персонажи задуманы как оригинальные образы. Это не копии голосов актёров или существующих персонажей.</p>
+</main>
+<script>
+const hints={Рыжик:"Бодрый, дружелюбный и любознательный ведущий.",Пик:"Быстрый, звонкий и внимательный рассказчик.",Умка:"Спокойный, мягкий и заботливый ведущий.",Топа:"Весёлый, энергичный и выразительный рассказчик.",Кира:"Яркая, уверенная и доброжелательная ведущая."};
+let host="Рыжик";const $=id=>document.getElementById(id);
+document.querySelectorAll(".host").forEach(b=>b.addEventListener("click",()=>{host=b.dataset.host;document.querySelectorAll(".host").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));$("hostHint").textContent=host+" — "+hints[host]}));
+$("script").addEventListener("input",()=>{$("count").textContent=$("script").value.length+" / 5000"});
+function describe(id,labels){$(id+"Out").textContent=labels[$(id).value]||$(id).value}
+$("rate").addEventListener("input",()=>describe("rate",{"0.8":"Медленно","0.85":"Медленно","0.9":"Спокойно","0.95":"Спокойно","1":"Обычный","1.05":"Бодро","1.1":"Бодро","1.15":"Быстро","1.2":"Быстро"}));
+$("pitch").addEventListener("input",()=>describe("pitch",{"0.85":"Ниже","0.9":"Ниже","0.95":"Средняя","1":"Средняя","1.05":"Выше","1.1":"Выше","1.15":"Высокая"}));
+$("mood").addEventListener("input",()=>describe("mood",{"1":"Спокойная","2":"Яркая","3":"Очень яркая"}));
+$("copy").addEventListener("click",async()=>{const s="Ведущий: "+host+"\nТемп: "+$("rate").value+"\nВысота: "+$("pitch").value+"\nВыразительность: "+$("mood").value+"\n\n"+$("script").value;try{await navigator.clipboard.writeText(s);$("feedback").textContent="Текст и настройки скопированы."}catch(e){$("feedback").textContent="Не удалось скопировать автоматически. Выдели и скопируй текст вручную."}});
+</script></body></html>
