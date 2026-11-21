@@ -44,6 +44,24 @@ body[data-season] .below{border-top:3px solid var(--season-c)}
 body[data-season] .tag{background:var(--season-chip);color:var(--season-text)}
 body[data-season] .brand{color:var(--season-c)}
 body[data-season] .panel{border-color:color-mix(in srgb,var(--season-b) 48%,#39466f)}
+/* Праздничные темы — авторская графика канала, без копирования фирменных заставок. */
+.holiday-badge{display:inline-flex;align-items:center;gap:7px;margin:4px 0 12px;padding:8px 14px;border-radius:999px;background:var(--holiday-chip,#653b83);color:#fff;font-weight:900;font-size:13px;box-shadow:0 5px 18px #0005}
+body[data-holiday="newyear"]{--season-a:#123d70;--season-b:#187d83;--season-c:#f7d979;--season-chip:#164a63;background:radial-gradient(ellipse at 50% 0,#17677a,#0b1023 70%)}
+body[data-holiday="defender"]{--season-a:#17466c;--season-b:#327b91;--season-c:#f0cf85;--season-chip:#17466c}
+body[data-holiday="women"]{--season-a:#773b78;--season-b:#c45b91;--season-c:#ffd2df;--season-chip:#743c78}
+body[data-holiday="april"]{--season-a:#47853d;--season-b:#d1a63d;--season-c:#fff0a5;--season-chip:#47723c}
+body[data-holiday="cosmos"]{--season-a:#18265f;--season-b:#6546a8;--season-c:#9cecff;--season-chip:#273b7a}
+body[data-holiday="may"]{--season-a:#8c392e;--season-b:#d18a43;--season-c:#ffe09b;--season-chip:#74352e}
+body[data-holiday="children"]{--season-a:#177d88;--season-b:#4cae79;--season-c:#ffe17a;--season-chip:#176b70}
+body[data-holiday="family"]{--season-a:#9a5a35;--season-b:#d58c4e;--season-c:#ffe2a3;--season-chip:#804c30}
+body[data-holiday="unity"]{--season-a:#315a91;--season-b:#b84c4c;--season-c:#ffe1a2;--season-chip:#3c527f}
+body[data-holiday="birthday"]{--season-a:#65368f;--season-b:#dc5c9c;--season-c:#ffe17a;--season-chip:#65368f}
+body[data-holiday] .stage{background:radial-gradient(circle at 15% 20%,var(--season-c) 0 5%,transparent 6%),radial-gradient(circle at 85% 75%,var(--season-b) 0 9%,transparent 10%),linear-gradient(135deg,var(--season-a),var(--season-b) 58%,#17203d)}
+body[data-holiday] .art h2{color:var(--season-c)}
+body[data-holiday] .below{border-top:4px solid var(--season-c)}
+body[data-holiday] .tag{background:var(--holiday-chip);color:#fff}
+body[data-holiday] .panel{border-color:color-mix(in srgb,var(--season-c) 42%,#39466f)}
+body[data-holiday] .rainbow{filter:drop-shadow(0 0 16px var(--season-c))}
 /* Пульт и локальные кнопки доступны только в коде страницы, но не показываются зрителям. */
 #viewer-controls{display:none!important}
 
@@ -57,7 +75,8 @@ body[data-season] .panel{border-color:color-mix(in srgb,var(--season-b) 48%,#394
 <header><div class="top"><div class="brand">🌈 МУЛЬТИК ТВ</div><div><a href="auto-library.html">🤖 Автоподбор мультфильмов</a> · <a href="video-studio.html">🎬 Создать заставку</a> · <a href="index.html">← На главную</a></div></div>
 <h1>МУЛЬТИК ТВ — прямой эфир</h1>
 <span class="tag">🔴 ОНЛАЙН-ТРАНСЛЯЦИЯ</span>
-<span class="season-badge" id="seasonBadge" aria-live="polite">🍂 Осеннее оформление</span></header>
+<span class="season-badge" id="seasonBadge" aria-live="polite">🍂 Осеннее оформление</span>
+<span class="holiday-badge" id="holidayBadge" hidden aria-live="polite"></span></header>
 <main>
 
 <section class="panel" id="live-broadcast">
@@ -147,7 +166,29 @@ function applySeason(){
  document.documentElement.style.setProperty('color-scheme','dark');
 }
 applySeason();
-setInterval(applySeason,60000);
+const holidays=[
+ {id:'newyear',label:'Новогоднее оформление',icon:'🎄',test:(m,d)=>(m===12&&d>=28)||(m===1&&d<=15)},
+ {id:'defender',label:'Праздник 23 февраля',icon:'⭐',test:(m,d)=>m===2&&d>=22&&d<=23},
+ {id:'women',label:'Праздник 8 марта',icon:'🌷',test:(m,d)=>m===3&&d>=6&&d<=8},
+ {id:'april',label:'День смеха',icon:'🎈',test:(m,d)=>m===4&&d===1},
+ {id:'april',label:'День российской анимации',icon:'🎬',test:(m,d)=>m===4&&d>=7&&d<=8},
+ {id:'cosmos',label:'День космонавтики',icon:'🚀',test:(m,d)=>m===4&&d>=11&&d<=12},
+ {id:'may',label:'Праздник 1 мая',icon:'🌼',test:(m,d)=>(m===4&&d>=28)||(m===5&&d===1)},
+ {id:'may',label:'День Победы',icon:'🌟',test:(m,d)=>m===5&&d===9},
+ {id:'children',label:'День защиты детей',icon:'🎉',test:(m,d)=>m===5&&d===31||m===6&&d===1},
+ {id:'family',label:'День семьи, любви и верности',icon:'💛',test:(m,d)=>m===7&&d===8},
+ {id:'unity',label:'День народного единства',icon:'🤝',test:(m,d)=>m===11&&d===4},
+ {id:'birthday',label:'День рождения канала',icon:'🎂',test:(m,d)=>m===12&&d===27}
+];
+function applyHoliday(){
+ const now=new Date(),m=now.getMonth()+1,d=now.getDate();
+ const holiday=holidays.find(h=>h.test(m,d));
+ const badge=document.getElementById('holidayBadge');
+ if(holiday){document.body.dataset.holiday=holiday.id;badge.hidden=false;badge.textContent=holiday.icon+' '+holiday.label}
+ else{delete document.body.dataset.holiday;badge.hidden=true;badge.textContent=''}
+}
+applyHoliday();
+setInterval(()=>{applySeason();applyHoliday()},60000);
 const $=id=>document.getElementById(id);
 const source='https://upload.wikimedia.org/wikipedia/commons/8/8d/Morevna_Project_-_Pepper%26Carrot_%28animated_comic%29_-_Episode_6_-_The_Potion_Contest_%28Russian_variant%29.webm';
 const credit='Morevna Project · Pepper & Carrot — «Конкурс зельеваров» · CC BY-SA 4.0';
