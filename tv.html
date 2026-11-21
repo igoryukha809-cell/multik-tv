@@ -60,6 +60,20 @@ footer{font-size:13px;color:#9eacd3}
 .live-player iframe{position:absolute;width:100%;height:100%;top:0;left:0;border:0}
 .live-note{margin:12px 0 0;padding:12px 14px;border-radius:12px;background:#20294a;color:#dbe5ff;font-size:14px;line-height:1.5}
 
+
+/* Эфирные объявления поверх плеера страницы */
+#airPromo{position:absolute;inset:0;z-index:8;display:none;align-items:center;justify-content:center;padding:5%;background:linear-gradient(125deg,#21134deF,#6e39a8eF 55%,#e85c98eF);color:#fff;text-align:center;font-family:system-ui,Arial,sans-serif}
+#airPromo.show{display:flex;animation:airIn .45s ease-out}
+#airPromo .promo-inner{max-width:850px;text-shadow:0 2px 12px #180d3b88}
+#airPromo .promo-label{font-size:clamp(11px,1.6vw,17px);font-weight:900;letter-spacing:.18em;color:#ffe58b}
+#airPromo h2{font-size:clamp(27px,6vw,64px);line-height:1.02;margin:14px 0}
+#airPromo p{font-size:clamp(14px,2.3vw,24px);color:white;line-height:1.4;margin:0 auto;max-width:760px}
+#airPromo .promo-deco{font-size:clamp(34px,7vw,72px);margin:10px}
+#airPromo .promo-progress{height:5px;background:#ffffff55;border-radius:9px;margin:24px auto 0;max-width:500px;overflow:hidden}
+#airPromo .promo-progress i{display:block;height:100%;width:0;background:#ffe17a;animation:airProgress 15s linear forwards}
+@keyframes airIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+@keyframes airProgress{to{width:100%}}
+#airAudio{display:inline-flex;align-items:center;gap:7px;margin-top:10px;font-size:12px}
 </style>
 </head>
 <body>
@@ -74,7 +88,7 @@ footer{font-size:13px;color:#9eacd3}
 <h2>🔴 Прямой эфир МУЛЬТИК ТВ</h2>
 <div class="screen">
   <div class="live-player">
-    <div id="broadcastOverlay" aria-hidden="true">
+    <div id="airPromo" aria-live="polite" aria-atomic="true"><div class="promo-inner"><div class="promo-label">ОБЪЯВЛЕНИЕ НАШЕГО КАНАЛА</div><div class="promo-deco" id="airEmoji">⭐ 🏆 ✨</div><h2 id="airTitle">Скоро в эфире!</h2><p id="airText"></p><div class="promo-progress"><i></i></div></div></div><div id="broadcastOverlay" aria-hidden="true">
       <div class="channel-bug">
         <span class="brand-orbit"><i class="orb orb-a"></i><i class="orb orb-b"></i><i class="orb orb-c"></i><i class="orb orb-d"></i><i class="orb orb-e"></i></span>
         <span class="brand-name">НАШ КАНАЛ</span>
@@ -148,6 +162,51 @@ footer{font-size:13px;color:#9eacd3}
 <footer>МУЛЬТИК ТВ · Бесплатный браузерный показ · Не является общей синхронной трансляцией</footer>
 <script>
 (()=>{
+
+/* Редакционный блок эфирных объявлений. Показывается поверх видеоплеера страницы. */
+const airPromos=[
+ {type:'ПРЕМИЯ · СТАРТ СЕЗОНА',emoji:'⭐ 🏆 ✨',title:'Начинается «Звёздный выбор»!',text:'Кто станет любимцем зрителей? Следи за новостями премии, знакомься с номинациями и готовься выбирать самых ярких героев и программы нашего канала.'},
+ {type:'ПРЕМИЯ · ГОЛОСОВАНИЕ',emoji:'🗳️ 🌟 🎤',title:'Твой голос решает!',text:'Настало время выбирать! Знакомься с кандидатами в номинациях и поддержи своего фаворита. Сроки голосования смотри в календаре сезона на сайте канала.'},
+ {type:'ПРЕМИЯ · ЦЕРЕМОНИЯ',emoji:'🏆 🎉 🎬',title:'Встречаем победителей!',text:'Самый волнующий момент сезона близко! Следи за итогами зрительской премии «Звёздный выбор» и праздничным выпуском нашего канала.'},
+ {type:'КОНКУРС · ТВОРЧЕСКОЕ ЗАДАНИЕ',emoji:'🌊 🐠 🐙',title:'Мир удивительных открытий!',text:'Придумай морских жителей, волшебный риф или целый город на дне океана. Нарисуй свою идею и присоединяйся к нашему творческому конкурсу!'},
+ {type:'КОНКУРС · ИГРА НА ВНИМАНИЕ',emoji:'🔎 🧩 ⭐',title:'Сможешь найти всех?',text:'Внимательно рассмотри картинку, найди спрятанные детали и проверь свою наблюдательность. Каждый раунд — новая загадка!'},
+ {type:'КОНКУРС · СЕМЕЙНОЕ ТВОРЧЕСТВО',emoji:'🎨 💡 🎉',title:'Твоя идея может удивить!',text:'Создай семейную эмблему, придумай настольную игру или короткую историю. Приглашай близких и включай фантазию!'},
+ {type:'КОНКУРС · ВИКТОРИНА',emoji:'❓ 🧠 🎯',title:'Большая викторина ждёт тебя!',text:'Проверь знания, логику и смекалку в нашей викторине. Отвечай на вопросы раунд за раундом и открывай новое!'},
+ {type:'КОНКУРС · МАСТЕРСКАЯ',emoji:'✂️ 🖍️ 🌈',title:'Открываем мастерскую фантазии!',text:'Нарисуй яркую картину или придумай необычную поделку из безопасных материалов. Пусть творчество удивляет!'},
+ {type:'КОНКУРС · ИСТОРИЯ',emoji:'📖 ✨ 🎥',title:'Расскажи историю за минуту!',text:'Придумай короткий рассказ о дружбе, добром поступке или неожиданном открытии. Ждём твою историю — только без личных данных.'},
+ {type:'НОВОСТИ КАНАЛА',emoji:'📺 🔔 🌈',title:'Не пропусти новости канала!',text:'Новые конкурсы, этапы премии, результаты и специальные события — следи за объявлениями и расписанием на сайте нашего канала!'}
+];
+let airIndex=0,airTimer=null,airEnabled=false;
+const airEl=document.getElementById('airPromo');
+function showAirPromo(){
+ if(!airEl||document.hidden)return;
+ const p=airPromos[airIndex++%airPromos.length];
+ document.querySelector('#airPromo .promo-label').textContent=p.type;
+ document.getElementById('airEmoji').textContent=p.emoji;
+ document.getElementById('airTitle').textContent=p.title;
+ document.getElementById('airText').textContent=p.text;
+ airEl.classList.add('show');
+ if(airEnabled&&'speechSynthesis' in window){
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(p.title+'. '+p.text);
+  u.lang='ru-RU';u.rate=.94;u.pitch=1.08;
+  const voices=speechSynthesis.getVoices();
+  const ru=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith('ru'));
+  if(ru)u.voice=ru;
+  speechSynthesis.speak(u);
+ }
+ clearTimeout(airTimer);
+ airTimer=setTimeout(()=>{airEl.classList.remove('show');if(airEnabled&&'speechSynthesis'in window)speechSynthesis.cancel();},15000);
+}
+function enableAirAudio(){
+ airEnabled=true;
+ if('speechSynthesis'in window){
+  const p=airPromos[airIndex%airPromos.length];
+  const u=new SpeechSynthesisUtterance('Звуковые объявления канала включены.');
+  u.lang='ru-RU';speechSynthesis.speak(u);
+ }
+ const b=document.getElementById('airAudio');if(b)b.textContent='🔊 Озвучка объявлений включена';
+}
 const overlay=document.getElementById('broadcastOverlay');
 const seasons=[
  {name:'winter'},
@@ -176,6 +235,14 @@ function applyBroadcastTheme(){
  else delete overlay.dataset.holiday;
 }
 applyBroadcastTheme();
+const airButton=document.createElement('button');
+airButton.id='airAudio';airButton.type='button';airButton.textContent='🔊 Включить озвучку объявлений';
+airButton.addEventListener('click',enableAirAudio);
+document.querySelector('#live-broadcast .live-note').after(airButton);
+setTimeout(showAirPromo,12000);
+setInterval(()=>{if(!airEl.classList.contains('show'))showAirPromo()},8*60*1000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&'speechSynthesis'in window)speechSynthesis.cancel()});
+
 setInterval(applyBroadcastTheme,60000);
 const $=id=>document.getElementById(id);
 const source='https://upload.wikimedia.org/wikipedia/commons/8/8d/Morevna_Project_-_Pepper%26Carrot_%28animated_comic%29_-_Episode_6_-_The_Potion_Contest_%28Russian_variant%29.webm';
