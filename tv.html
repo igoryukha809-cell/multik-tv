@@ -92,6 +92,30 @@ footer{font-size:13px;color:#9eacd3}
 #broadcastOverlay[data-holiday="knowledge"] .brand-name:after{content:"🎒"}
 #broadcastOverlay[data-holiday="channel-birthday"] .brand-name:after{content:"🎂"}
 
+
+/* Праздничные межпрограммные заставки: оригинальная бумажная анимация */
+#holidayBumper{position:absolute;inset:0;z-index:9;display:none;overflow:hidden;align-items:center;justify-content:center;text-align:center;font-family:system-ui,Arial,sans-serif;color:#fff}
+#holidayBumper.show{display:flex;animation:hbFade .45s ease-out}
+#holidayBumper .hb-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#fff7 0 2%,transparent 42%),linear-gradient(135deg,#2475ad,#583d9b 55%,#e36b91)}
+#holidayBumper .hb-rays{position:absolute;inset:-40%;background:repeating-conic-gradient(from 4deg at 50% 50%,#fff2 0deg 8deg,transparent 8deg 16deg);animation:hbSpin 28s linear infinite}
+#holidayBumper .hb-confetti{position:absolute;inset:0;background-image:radial-gradient(circle,#fff 0 3px,transparent 4px),radial-gradient(circle,#ffe17a 0 4px,transparent 5px),radial-gradient(circle,#9cf2e0 0 3px,transparent 4px);background-size:83px 91px,117px 103px,143px 127px;background-position:8px 12px,40px 28px,70px 65px;opacity:.75;animation:hbDrift 7s linear infinite}
+#holidayBumper .hb-content{position:relative;z-index:2;width:min(90%,850px);padding:2%;text-shadow:0 3px 12px #1b174b88}
+#holidayBumper .hb-character{font-size:clamp(64px,13vw,142px);line-height:1.1;filter:drop-shadow(0 12px 2px #15143c55);animation:hbHop 1.5s ease-in-out infinite;transform-origin:50% 90%}
+#holidayBumper .hb-title{font-size:clamp(25px,5.5vw,62px);font-weight:1000;line-height:1.02;margin:8px 0 10px}
+#holidayBumper .hb-sub{font-size:clamp(14px,2.2vw,23px);font-weight:750;margin:0}
+#holidayBumper .hb-logo{display:inline-block;margin-top:18px;padding:8px 18px;border:3px solid #fff;border-radius:18px;background:#ffffff24;font-weight:1000;letter-spacing:.08em;font-size:clamp(13px,2vw,20px);box-shadow:0 7px 0 #20184b33}
+#holidayBumper[data-holiday="newyear"] .hb-bg{background:radial-gradient(circle at 50% 38%,#fff 0 2%,transparent 35%),linear-gradient(135deg,#145c9a,#4a3c9a 60%,#d34c83)}
+#holidayBumper[data-holiday="women"] .hb-bg{background:radial-gradient(circle at 50% 35%,#fff8 0 2%,transparent 40%),linear-gradient(135deg,#ed8bb5,#a34aab 55%,#f3b45f)}
+#holidayBumper[data-holiday="cosmos"] .hb-bg{background:radial-gradient(circle at 50% 38%,#fff 0 2%,transparent 35%),linear-gradient(135deg,#101d55,#4d3f9e 60%,#2389a9)}
+#holidayBumper[data-holiday="victory"] .hb-bg{background:radial-gradient(circle at 50% 38%,#fff8 0 2%,transparent 35%),linear-gradient(135deg,#164b85,#b34b56 60%,#e7a64b)}
+#holidayBumper[data-holiday="children"] .hb-bg{background:radial-gradient(circle at 50% 38%,#fff8 0 2%,transparent 35%),linear-gradient(135deg,#21a8b4,#4d69c6 55%,#e76c9d)}
+#holidayBumper[data-holiday="knowledge"] .hb-bg{background:radial-gradient(circle at 50% 38%,#fff8 0 2%,transparent 35%),linear-gradient(135deg,#247fbb,#574da4 55%,#e3a64b)}
+@keyframes hbFade{from{opacity:0;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
+@keyframes hbSpin{to{transform:rotate(360deg)}}
+@keyframes hbDrift{to{transform:translate3d(-28px,35px,0)}}
+@keyframes hbHop{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-17px) rotate(3deg)}}
+@media(prefers-reduced-motion:reduce){#holidayBumper *{animation:none!important}}
+
 @media(max-width:520px){#broadcastOverlay .channel-bug{top:2.4%;right:2%;width:clamp(100px,25vw,132px);height:clamp(27px,7vw,36px)}}
 /* Пульт и локальные кнопки доступны только в коде страницы, но не показываются зрителям. */
 #viewer-controls{display:none!important}
@@ -128,7 +152,7 @@ footer{font-size:13px;color:#9eacd3}
 <h2>🔴 Прямой эфир МУЛЬТИК ТВ</h2>
 <div class="screen">
   <div class="live-player">
-    <div id="airPromo" aria-live="polite" aria-atomic="true"><div class="promo-inner"><div class="promo-label">ОБЪЯВЛЕНИЕ НАШЕГО КАНАЛА</div><div class="promo-deco" id="airEmoji">⭐ 🏆 ✨</div><h2 id="airTitle">Скоро в эфире!</h2><p id="airText"></p><div class="promo-progress"><i></i></div></div></div><div id="broadcastOverlay" aria-hidden="true">
+    <div id="holidayBumper" aria-live="polite" aria-atomic="true"><div class="hb-bg"></div><div class="hb-rays"></div><div class="hb-confetti"></div><div class="hb-content"><div class="hb-character" id="hbCharacter">🦊</div><div class="hb-title" id="hbTitle">С праздником!</div><p class="hb-sub" id="hbSub">Пусть каждый день будет ярким!</p><div class="hb-logo">НАШ КАНАЛ</div></div></div><div id="airPromo" aria-live="polite" aria-atomic="true"><div class="promo-inner"><div class="promo-label">ОБЪЯВЛЕНИЕ НАШЕГО КАНАЛА</div><div class="promo-deco" id="airEmoji">⭐ 🏆 ✨</div><h2 id="airTitle">Скоро в эфире!</h2><p id="airText"></p><div class="promo-progress"><i></i></div></div></div><div id="broadcastOverlay" aria-hidden="true">
       <div class="channel-bug">
         <span class="brand-orbit"><i class="orb orb-a"></i><i class="orb orb-b"></i><i class="orb orb-c"></i><i class="orb orb-d"></i><i class="orb orb-e"></i></span>
         <span class="brand-name">НАШ КАНАЛ</span>
@@ -321,6 +345,36 @@ function applyBroadcastTheme(){
  else delete overlay.dataset.holiday;
 }
 applyBroadcastTheme();
+
+/* Короткая праздничная заставка: оригинальная сценка в бумажно-объёмной стилистике. */
+const holidayBumpers={
+ 'newyear':{character:'🐧',title:'С Новым годом!',sub:'Пусть впереди ждут чудеса и открытия!'},
+ 'inventors':{character:'🐱',title:'День детских изобретений!',sub:'Придумывай, исследуй и удивляйся!'},
+ 'kids-tv':{character:'🐻',title:'День детского телевидения!',sub:'Включаем фантазию — начинается праздник!'},
+ 'defender':{character:'🦁',title:'С праздником!',sub:'День добрых дел, смелости и заботы!'},
+ 'women':{character:'🦋',title:'С праздником весны!',sub:'Пусть будет больше улыбок, тепла и цветов!'},
+ 'cosmos':{character:'🚀',title:'Космос зовёт!',sub:'К новым открытиям и далёким мечтам!'},
+ 'victory':{character:'🕊️',title:'День Победы',sub:'Помним историю и ценим мир.'},
+ 'children':{character:'🐸',title:'С Днём защиты детей!',sub:'Пусть детство будет добрым и счастливым!'},
+ 'family':{character:'🐼',title:'День семьи, любви и верности',sub:'Самое важное — забота и поддержка близких.'},
+ 'knowledge':{character:'🦉',title:'С Днём знаний!',sub:'Новый учебный год — новые открытия!'},
+ 'unity':{character:'🐿️',title:'День народного единства',sub:'Дружба и взаимное уважение объединяют!'},
+ 'channel-birthday':{character:'🐰',title:'С Днём рождения канала!',sub:'Спасибо, что встречаете праздники вместе с нами!'}
+};
+function playHolidayBumper(){
+ const holiday=holidays.find(h=>h.test(new Date().getMonth()+1,new Date().getDate()));
+ if(!holiday)return;
+ const data=holidayBumpers[holiday.id];if(!data)return;
+ const el=document.getElementById('holidayBumper');if(!el)return;
+ el.dataset.holiday=holiday.id;
+ document.getElementById('hbCharacter').textContent=data.character;
+ document.getElementById('hbTitle').textContent=data.title;
+ document.getElementById('hbSub').textContent=data.sub;
+ el.classList.add('show');
+ window.setTimeout(()=>el.classList.remove('show'),7500);
+}
+
+setTimeout(playHolidayBumper,1800);
 const airButton=document.createElement('button');
 airButton.id='airAudio';airButton.type='button';airButton.textContent='🔊 Включить голос Piper';
 airButton.addEventListener('click',enableAirAudio);
