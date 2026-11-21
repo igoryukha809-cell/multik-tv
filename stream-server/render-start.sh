@@ -650,7 +650,20 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     make_channel_birthday_bumper
     birthday_today=1
   fi
-  make_launch_countdown
+  PLAY_FIRST_LAUNCH_COUNTDOWN=0
+  claim_response=""
+  if [[ -n "${CHANNEL_LAUNCH_CLAIM_URL:-}" && -n "${CHANNEL_LAUNCH_CLAIM_TOKEN:-}" ]]; then
+    claim_response="$(curl -fsS --connect-timeout 5 --max-time 15 -X POST \
+      -H "Authorization: Bearer ${CHANNEL_LAUNCH_CLAIM_TOKEN}" \
+      "${CHANNEL_LAUNCH_CLAIM_URL}" 2>/dev/null || true)"
+  fi
+  if [[ "${claim_response}" == *'"play_countdown":true'* ]]; then
+    PLAY_FIRST_LAUNCH_COUNTDOWN=1
+    make_launch_countdown
+    echo "STARTUP: database confirmed this is the channel's first-ever launch."
+  else
+    echo "STARTUP: first-launch countdown already used or persistent claim service unavailable; skipping countdown."
+  fi
   make_channel_opening
   make_channel_promo
   printf "file '%s'\\n" "/tmp/multik-tv-opening.mp4" >> "$PLAYLIST_FILE"
@@ -717,19 +730,23 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     exit 1
   fi
   echo "Единый файл готов; запускаю один циклический MP4-поток."
-  echo "STARTUP: показываю пятиминутный отсчёт один раз перед циклическим эфиром."
-  if kill -0 "$SRS_PID" 2>/dev/null; then
-    if ffmpeg -hide_banner -nostdin -loglevel warning -re -i "/tmp/multik-tv-launch-countdown.mp4" \
-        -map 0:v:0 -map 0:a:0 \
-        -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20" \
-        -c:v libx264 -preset ultrafast -tune zerolatency -threads 1 -pix_fmt yuv420p -r 20 -g 40 \
-        -b:v 450k -maxrate 450k -bufsize 900k \
-        -c:a aac -b:a 96k -ar 44100 -ac 2 \
-        -f flv rtmp://127.0.0.1/live/multiktv; then
-      echo "STARTUP: пятиминутный отсчёт завершён; запускаю основную программу."
-    else
-      echo "WARNING: отсчёт завершился с ошибкой; перехожу к основному эфиру."
+  if (( PLAY_FIRST_LAUNCH_COUNTDOWN )); then
+    echo "STARTUP: показываю пятиминутный отсчёт первого запуска канала."
+    if kill -0 "$SRS_PID" 2>/dev/null; then
+      if ffmpeg -hide_banner -nostdin -loglevel warning -re -i "/tmp/multik-tv-launch-countdown.mp4" \
+          -map 0:v:0 -map 0:a:0 \
+          -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20" \
+          -c:v libx264 -preset ultrafast -tune zerolatency -threads 1 -pix_fmt yuv420p -r 20 -g 40 \
+          -b:v 450k -maxrate 450k -bufsize 900k \
+          -c:a aac -b:a 96k -ar 44100 -ac 2 \
+          -f flv rtmp://127.0.0.1/live/multiktv; then
+        echo "STARTUP: пятиминутный отсчёт завершён; запускаю основную программу."
+      else
+        echo "WARNING: отсчёт завершился с ошибкой; перехожу к основному эфиру."
+      fi
     fi
+  else
+    echo "STARTUP: пропускаю заставку — первый запуск уже отмечен в постоянной базе."
   fi
   restart_delay=2
   while kill -0 "$SRS_PID" 2>/dev/null; do
