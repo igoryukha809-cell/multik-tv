@@ -3,49 +3,55 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#5b43b8">
-<meta name="description" content="Детский телеканал: прямой эфир, телепрограмма, видео, передачи и игры.">
-<title>МУЛЬТИК ТВ — вместе интереснее!</title>
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="МУЛЬТИК ТВ — прямой эфир, телепрограмма, новые видео, мультфильмы и игры.">
+<title>МУЛЬТИК ТВ — детский телеканал</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
-:root{--ink:#29264e;--muted:#77758d;--purple:#6045bd;--pink:#f06a9d;--yellow:#ffda62;--line:#ece9f4;--bg:#fff}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif}a{color:inherit;text-decoration:none}.wrap{width:min(1160px,calc(100% - 36px));margin:auto}.rainbow{height:7px;background:linear-gradient(90deg,#f15e9c,#ffd65a,#67cda7,#52c7e8,#9273e6)}
-header{position:sticky;top:0;z-index:10;background:#ffffffed;backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}.head{height:76px;display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{display:flex;align-items:center;gap:10px;font-size:23px;font-weight:1000;color:#5a40b1;white-space:nowrap}.brand-mark{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,#ffe16b,#ff9cbd 55%,#9b83ed);display:grid;place-items:center;font-size:26px}.nav{display:flex;gap:22px;align-items:center;font-size:13px;font-weight:850;color:#55516e}.nav a:hover{color:var(--pink)}.watch{background:#fff0f5;color:#d74780;padding:10px 15px;border-radius:99px;font-size:12px;font-weight:950;white-space:nowrap}
-main{padding-bottom:46px}.hero{padding:24px 0 16px}.hero-card{min-height:265px;border-radius:25px;padding:34px;position:relative;overflow:hidden;color:white;background:linear-gradient(110deg,#4933a5,#7652c8 58%,#ed80ae)}.hero-card:after{content:"✨";position:absolute;right:9%;top:18%;font-size:clamp(95px,14vw,160px);filter:drop-shadow(0 8px 5px #25115a55)}.eyebrow{font-size:11px;letter-spacing:.15em;font-weight:1000;color:#ffe99b}.hero h1{font-size:clamp(34px,5vw,58px);line-height:1.03;margin:12px 0;max-width:620px}.hero p{max-width:500px;color:#f5efff;margin:0}.hero-link{display:inline-block;margin-top:19px;padding:11px 18px;border-radius:99px;background:var(--yellow);color:#3d3272;font-weight:950;position:relative;z-index:1}
-.section{margin-top:28px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:14px}.section-head h2{font-size:25px;margin:0;color:#35305f}.section-head a{font-size:12px;color:var(--purple);font-weight:950}.section-sub{margin:3px 0 0;color:var(--muted);font-size:12px}
-.onair-grid{display:grid;grid-template-columns:1.35fr .8fr;gap:14px}.onair-screen{min-height:235px;aspect-ratio:16/8.5;border-radius:20px;background:radial-gradient(circle at 50% 35%,#9c8be5,#53419f 55%,#26204d);display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;position:relative;overflow:hidden}.screen-icon{font-size:70px;filter:drop-shadow(0 5px 3px #21134b66)}.screen-label{font-weight:950;font-size:clamp(20px,3vw,30px)}.screen-sub{color:#e9e2ff;font-size:13px}.live-info{border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;justify-content:center}.live-pill{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:950;color:#ad4b70;background:#fff0f5;border-radius:99px;padding:7px 10px;width:max-content}.live-pill i{width:7px;height:7px;background:#e65b83;border-radius:50%}.live-info h3{font-size:21px;margin:12px 0 4px}.live-info p{font-size:12px;color:var(--muted);margin:0}.clock{font-variant-numeric:tabular-nums;font-weight:950;color:#654bb9;margin-top:12px}
-.video-grid,.show-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.video-card,.show-card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff;transition:transform .18s,box-shadow .18s}.video-card:hover,.show-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px #29204b12}.video-art,.show-art{height:132px;display:grid;place-items:center;font-size:58px;background:linear-gradient(135deg,#ffe69b,#ffabc5)}.video-card:nth-child(4n+2) .video-art,.show-card:nth-child(4n+2) .show-art{background:linear-gradient(135deg,#b4ebdc,#93d7ed)}.video-card:nth-child(4n+3) .video-art,.show-card:nth-child(4n+3) .show-art{background:linear-gradient(135deg,#d4c4ff,#f1b9df)}.video-card:nth-child(4n) .video-art,.show-card:nth-child(4n) .show-art{background:linear-gradient(135deg,#b7dfff,#a9e6e2)}.card-body{padding:13px 14px 15px}.card-body h3{font-size:14px;margin:0 0 4px}.card-body p{font-size:11px;color:var(--muted);margin:0}
-.games{display:grid;grid-template-columns:1fr 1fr;gap:13px}.game-card{border:1px solid var(--line);border-radius:19px;padding:20px;background:linear-gradient(120deg,#f1f9ff,#f7f0ff)}.game-card h3{margin:0 0 5px}.game-card p{font-size:12px;color:var(--muted);margin:0 0 12px}.game-link{display:inline-block;color:var(--purple);font-size:12px;font-weight:950}
-footer{background:#29234f;color:#e5e0f7;padding:24px 0;font-size:12px}.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-@media(max-width:850px){.nav{gap:12px}.video-grid,.show-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:650px){.head{height:66px}.nav{display:none}.hero-card{padding:25px;min-height:245px}.hero-card:after{right:2%;top:43%;font-size:100px}.onair-grid{grid-template-columns:1fr}.onair-screen{min-height:190px}.games{grid-template-columns:1fr}.section-head h2{font-size:22px}}
-@media(max-width:420px){.wrap{width:calc(100% - 26px)}.brand{font-size:18px}.brand-mark{width:40px;height:40px}.watch{font-size:10px;padding:9px 11px}.video-grid,.show-grid{gap:8px}.video-art,.show-art{height:96px;font-size:47px}.card-body{padding:10px}.card-body h3{font-size:12px}}
+:root{--ink:#302d52;--muted:#77758d;--purple:#6245b8;--pink:#ed6099;--line:#eae8f1;--bg:#fff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif}a{color:inherit;text-decoration:none}
+.rainbow{height:6px;background:linear-gradient(90deg,#f15e9c,#ffd65a,#67cda7,#52c7e8,#9273e6)}
+header{background:#fff;border-bottom:1px solid var(--line)}.wrap{width:min(1160px,calc(100% - 36px));margin:auto}.head{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:22px}
+.brand{display:flex;align-items:center;gap:11px;white-space:nowrap;color:#5a40b1;font-size:24px;font-weight:1000}.brand-mark{width:48px;height:48px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(135deg,#ffe16b,#ff9cbd 55%,#9b83ed);font-size:27px}
+.nav{display:flex;align-items:center;gap:24px;flex-wrap:wrap;font-size:13px;font-weight:850;color:#55516e}.nav a:hover{color:var(--pink)}
+main{padding:24px 0 48px}.section{margin:0 0 34px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:15px}.section-head h1,.section-head h2{font-size:clamp(23px,3vw,29px);line-height:1.15;margin:0;color:#35305f}.section-head a{font-size:12px;color:var(--purple);font-weight:950;white-space:nowrap}.section-sub{margin:4px 0 0;color:var(--muted);font-size:12px}
+.onair-grid{display:grid;grid-template-columns:1.35fr .8fr;gap:16px}.onair-screen{min-height:250px;aspect-ratio:16/8.5;border-radius:18px;background:radial-gradient(circle at 50% 35%,#a99be9,#604da9 57%,#30265e);display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;position:relative;overflow:hidden;padding:20px}.onair-screen:before{content:"";position:absolute;width:230px;height:230px;border:24px solid #ffffff18;border-radius:50%;right:-55px;bottom:-145px}.screen-icon{font-size:68px;filter:drop-shadow(0 5px 3px #21134b66)}.screen-label{font-weight:950;font-size:clamp(20px,3vw,30px)}.screen-sub{color:#eee9ff;font-size:13px}.live-info{border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;justify-content:center}.live-pill{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:950;color:#a4476c;background:#fff0f5;border-radius:99px;padding:7px 10px;width:max-content}.live-pill i{width:7px;height:7px;background:#e65b83;border-radius:50%}.live-info h3{font-size:21px;margin:13px 0 5px}.live-info p{font-size:12px;color:var(--muted);margin:0}.clock{font-variant-numeric:tabular-nums;font-weight:950;color:#654bb9;margin-top:13px}
+.video-grid,.show-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.video-card,.show-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;transition:transform .18s,box-shadow .18s}.video-card:hover,.show-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px #29204b12}.video-art,.show-art{height:145px;display:grid;place-items:center;font-size:58px;background:linear-gradient(135deg,#ffe69b,#ffabc5)}.video-card:nth-child(4n+2) .video-art,.show-card:nth-child(4n+2) .show-art{background:linear-gradient(135deg,#b4ebdc,#93d7ed)}.video-card:nth-child(4n+3) .video-art,.show-card:nth-child(4n+3) .show-art{background:linear-gradient(135deg,#d4c4ff,#f1b9df)}.video-card:nth-child(4n) .video-art,.show-card:nth-child(4n) .show-art{background:linear-gradient(135deg,#b7dfff,#a9e6e2)}.card-body{padding:13px 14px 15px}.card-body h3{font-size:14px;margin:0 0 4px}.card-body p{font-size:11px;color:var(--muted);margin:0}
+.games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.game-card{border:1px solid var(--line);border-radius:17px;padding:20px;background:linear-gradient(120deg,#f1f9ff,#f7f0ff)}.game-card h3{margin:0 0 5px}.game-card p{font-size:12px;color:var(--muted);margin:0 0 12px}.game-link{display:inline-block;color:var(--purple);font-size:12px;font-weight:950}
+footer{background:#29234f;color:#e5e0f7;padding:24px 0;font-size:12px}.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.foot a{color:#fff}
+@media(max-width:850px){.nav{gap:14px}.video-grid,.show-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.head{padding:12px 0;align-items:flex-start;flex-direction:column;gap:10px}.brand{font-size:20px}.brand-mark{width:42px;height:42px}.nav{width:100%;flex-wrap:nowrap;overflow-x:auto;gap:18px;padding:2px 0 7px;white-space:nowrap;scrollbar-width:thin}.onair-grid{grid-template-columns:1fr}.onair-screen{min-height:190px}.games{grid-template-columns:1fr}.section-head h1,.section-head h2{font-size:23px}}
+@media(max-width:420px){.wrap{width:calc(100% - 26px)}.video-grid,.show-grid{gap:8px}.video-art,.show-art{height:105px;font-size:47px}.card-body{padding:10px}.card-body h3{font-size:12px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div class="rainbow"></div>
-<header><div class="wrap head"><a class="brand" href="index.html"><span class="brand-mark">🌈</span><span>МУЛЬТИК ТВ</span></a><nav class="nav"><a href="live.html">Эфир</a><a href="guide.html">Телепрограмма</a><a href="online-catalog.html">Видео</a><a href="weather-show.html">Погода</a><a href="#games">Игры</a></nav><a class="watch" href="live.html">▶ ПРЯМОЙ ЭФИР</a></div></header>
+<header><div class="wrap head">
+<a class="brand" href="index.html"><span class="brand-mark">🌈</span><span>МУЛЬТИК ТВ</span></a>
+<nav class="nav" aria-label="Главное меню"><a href="guide.html">Телепрограмма</a><a href="live.html">Прямой эфир</a><a href="online-catalog.html">Видео</a><a href="#games">Игры</a><a href="weather-show.html">Погода</a></nav>
+</div></header>
 <main class="wrap">
-<section class="hero"><div class="hero-card"><div class="eyebrow">ТЕЛЕКАНАЛ ДЛЯ ВСЕЙ СЕМЬИ</div><h1>Вместе интереснее!</h1><p>Любимые истории, новые открытия, творчество и хорошее настроение — каждый день.</p><a class="hero-link" href="guide.html">Телепрограмма на сегодня →</a></div></section>
-<section class="section"><div class="section-head"><div><h2>Сегодня в эфире</h2><p class="section-sub" id="todayDate">Актуальная информация обновляется автоматически</p></div><a href="live.html">Открыть эфир →</a></div>
-<div class="onair-grid"><a class="onair-screen" href="live.html" aria-label="Открыть прямой эфир"><div><div class="screen-icon">📺✨</div><div class="screen-label" id="screenTitle">Телеканал</div><div class="screen-sub" id="screenSubtitle">Проверяем состояние трансляции…</div></div></a>
-<div class="live-info"><span class="live-pill"><i></i><span id="liveState">ПРОВЕРКА ЭФИРА</span></span><h3 id="currentProgram">Проверяем эфир</h3><p id="liveMessage">Статус трансляции загружается автоматически.</p><div class="clock" id="siteClock">--:--:--</div></div></div></section>
-<section class="section"><div class="section-head"><div><h2>Новые видео</h2><p class="section-sub">Материалы с проверенными условиями публикации</p></div><a href="online-catalog.html">Все видео →</a></div><div class="video-grid" id="videoGrid"><article class="video-card"><div class="video-art">🎬</div><div class="card-body"><h3>Загружаем каталог</h3><p>Список обновится автоматически</p></div></article></div></section>
-<section class="section" id="shows"><div class="section-head"><div><h2>Передачи</h2><p class="section-sub">Выбирай, что посмотреть и узнать</p></div><a href="online-catalog.html">Каталог →</a></div><div class="show-grid">
-<a class="show-card" href="online-catalog.html"><div class="show-art">🎞️</div><div class="card-body"><h3>Мультфильмы</h3><p>Каталог видеоматериалов</p></div></a>
-<a class="show-card" href="weather-show.html"><div class="show-art">☀️</div><div class="card-body"><h3>Погода</h3><p>Погода и прогноз</p></div></a>
-<a class="show-card" href="guide.html"><div class="show-art">📺</div><div class="card-body"><h3>Телепрограмма</h3><p>Расписание передач</p></div></a>
-<a class="show-card" href="games.html"><div class="show-art">🧩</div><div class="card-body"><h3>Игры</h3><p>Викторины и задания</p></div></a>
+<section class="section">
+<div class="section-head"><div><h1>Сегодня в эфире</h1><p class="section-sub" id="todayDate">Актуальная информация обновляется автоматически</p></div><a href="guide.html">Телепрограмма →</a></div>
+<div class="onair-grid">
+<a class="onair-screen" href="live.html" aria-label="Открыть прямой эфир"><div><div class="screen-icon">📺✨</div><div class="screen-label" id="screenTitle">МУЛЬТИК ТВ</div><div class="screen-sub" id="screenSubtitle">Проверяем состояние трансляции…</div></div></a>
+<div class="live-info"><span class="live-pill"><i></i><span id="liveState">ПРОВЕРКА ЭФИРА</span></span><h3 id="currentProgram">Проверяем эфир</h3><p id="liveMessage">Статус трансляции загружается автоматически.</p><div class="clock" id="siteClock">--:--:--</div></div>
 </div></section>
-<section class="section" id="games"><div class="section-head"><div><h2>Игры и развлечения</h2><p class="section-sub">Немного веселья и смекалки</p></div></div><div class="games"><article class="game-card"><h3>🧩 Минутка смекалки</h3><p>Проверь знания в короткой викторине.</p><a class="game-link" href="games.html">Играть →</a></article><article class="game-card"><h3>🌟 Творческие задания</h3><p>Идеи для рисунков, историй и новых открытий.</p><a class="game-link" href="games.html">Играть →</a></article></div></section>
+<section class="section"><div class="section-head"><div><h2>Новые видео</h2><p class="section-sub">Мультфильмы и программы канала</p></div><a href="online-catalog.html">Все видео →</a></div><div class="video-grid" id="videoGrid"><article class="video-card"><div class="video-art">🎬</div><div class="card-body"><h3>Загружаем каталог</h3><p>Список обновится автоматически</p></div></article></div></section>
+<section class="section" id="games"><div class="section-head"><div><h2>Игры</h2><p class="section-sub">Играй и узнавай новое</p></div><a href="games.html">Все игры →</a></div><div class="games"><article class="game-card"><h3>🧩 Минутка смекалки</h3><p>Проверь знания в короткой викторине.</p><a class="game-link" href="games.html">Играть →</a></article><article class="game-card"><h3>🌟 Творческие задания</h3><p>Идеи для рисунков, историй и новых открытий.</p><a class="game-link" href="games.html">Играть →</a></article></div></section>
+<section class="section"><div class="section-head"><div><h2>Передачи</h2><p class="section-sub">Открой любимые разделы телеканала</p></div><a href="online-catalog.html">Каталог →</a></div><div class="show-grid">
+<a class="show-card" href="online-catalog.html"><div class="show-art">🎞️</div><div class="card-body"><h3>Мультфильмы</h3><p>Каталог видеоматериалов</p></div></a>
+<a class="show-card" href="weather-show.html"><div class="show-art">☀️</div><div class="card-body"><h3>Погода</h3><p>Прогноз для городов</p></div></a>
+<a class="show-card" href="guide.html"><div class="show-art">📺</div><div class="card-body"><h3>Телепрограмма</h3><p>Расписание передач</p></div></a>
+<a class="show-card" href="live.html"><div class="show-art">🌈</div><div class="card-body"><h3>Прямой эфир</h3><p>Смотреть телеканал онлайн</p></div></a>
+</div></section>
 </main>
-<footer><div class="wrap foot"><span>© МУЛЬТИК ТВ · Детский телеканал</span><span><a href="rights-and-content.html">Права на материалы</a> · <a href="index.html">Главная</a></span></div></footer>
+<footer><div class="wrap foot"><span>© МУЛЬТИК ТВ · Детский телеканал</span><span><a href="rights-and-content.html">Права на материалы</a></span></div></footer>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  const date = new Date();
-  $('todayDate').textContent = date.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
+  $('todayDate').textContent = new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'});
   const tick = () => $('siteClock').textContent = new Date().toLocaleTimeString('ru-RU',{hour12:false,timeZone:'Europe/Moscow'}) + ' · Москва';
   tick(); setInterval(tick,1000);
   async function refreshBroadcast(){
@@ -55,10 +61,10 @@ footer{background:#29234f;color:#e5e0f7;padding:24px 0;font-size:12px}.foot{disp
       const status = await response.json();
       const active = status.streaming === true && status.activeItem;
       $('liveState').textContent = active ? 'В ЭФИРЕ' : 'ЭФИР ГОТОВИТСЯ';
-      $('screenTitle').textContent = active ? 'СЕЙЧАС В ЭФИРЕ' : 'ТЕЛЕКАНАЛ';
-      $('screenSubtitle').textContent = active ? (status.activeItem.title || 'Текущая передача') : 'Автоматически проверяем подключение';
-      $('currentProgram').textContent = active ? (status.activeItem.title || 'Текущая передача') : 'Трансляция пока не подключена';
-      $('liveMessage').textContent = status.message || (active ? 'Идёт передача.' : 'Сервер пока не передаёт видеосигнал. Статус проверяется автоматически.');
+      $('screenTitle').textContent = active ? 'СЕЙЧАС В ЭФИРЕ' : 'МУЛЬТИК ТВ';
+      $('screenSubtitle').textContent = active ? (status.activeItem.title || 'Текущая передача') : 'Статус проверяется автоматически';
+      $('currentProgram').textContent = active ? (status.activeItem.title || 'Текущая передача') : 'Трансляция готовится';
+      $('liveMessage').textContent = status.message || (active ? 'Идёт передача.' : 'Сервер пока не подтвердил видеосигнал. Статус проверяется автоматически.');
     }catch(error){
       $('liveState').textContent='СТАТУС НЕДОСТУПЕН';
       $('screenSubtitle').textContent='Не удалось получить статус эфира';
