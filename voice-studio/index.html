@@ -17,6 +17,11 @@
 <button class="host" aria-pressed="false" data-host="Умка"><span class="emoji">🐻‍❄️</span>Умка</button>
 <button class="host" aria-pressed="false" data-host="Топа"><span class="emoji">🐸</span>Топа</button>
 <button class="host" aria-pressed="false" data-host="Кира"><span class="emoji">🐦‍⬛</span>Кира</button>
+<button class="host" aria-pressed="false" data-host="Соня"><span class="emoji">🦔</span>Соня</button>
+<button class="host" aria-pressed="false" data-host="Бор"><span class="emoji">🦫</span>Бор</button>
+<button class="host" aria-pressed="false" data-host="Профессор Бублик"><span class="emoji">🦉</span>Проф. Бублик</button>
+<button class="host" aria-pressed="false" data-host="Рокки"><span class="emoji">🦝</span>Рокки</button>
+<button class="host" aria-pressed="false" data-host="Луна"><span class="emoji">🌙</span>Луна</button>
 </div><p class="small" id="hostHint">Рыжик — бодрый, дружелюбный и любознательный ведущий.</p></section>
 <section class="panel"><label class="label" for="script">2. Текст прогноза</label><textarea id="script" maxlength="5000" placeholder="Привет, друзья! Сегодня узнаем, какая погода ждёт нас в разных городах..."></textarea><div class="counter"><span>Текст для озвучивания</span><span id="count">0 / 5000</span></div></section>
 <section class="panel"><span class="label">3. Настройки подачи</span><div class="sliders">
@@ -29,7 +34,7 @@
 <p class="small">Голоса и персонажи задуманы как оригинальные образы. Это не копии голосов актёров или существующих персонажей.</p>
 </main>
 <script>
-const hints={Рыжик:"Бодрый, дружелюбный и любознательный ведущий.",Пик:"Быстрый, звонкий и внимательный рассказчик.",Умка:"Спокойный, мягкий и заботливый ведущий.",Топа:"Весёлый, энергичный и выразительный рассказчик.",Кира:"Яркая, уверенная и доброжелательная ведущая."};
+const hints={Рыжик:"Бодрый, дружелюбный и любознательный ведущий.",Пик:"Быстрый, звонкий и внимательный рассказчик.","Профессор Бублик":"Любознательный совёнок, который понятно объясняет науку.",Бор:"Изобретательный и добродушный ведущий мастерской.",Рокки:"Спортивный, энергичный и поддерживающий ведущий.",Луна:"Мягкая, спокойная и мечтательная ведущая вечерней программы.",Соня:"Добрая и аккуратная ведущая кулинарии и творчества.",Умка:"Спокойный, мягкий и заботливый ведущий.",Топа:"Весёлый, энергичный и выразительный рассказчик.",Кира:"Яркая, уверенная и доброжелательная ведущая."};
 let host="Рыжик";const $=id=>document.getElementById(id);
 document.querySelectorAll(".host").forEach(b=>b.addEventListener("click",()=>{host=b.dataset.host;document.querySelectorAll(".host").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));$("hostHint").textContent=host+" — "+hints[host]}));
 $("script").addEventListener("input",()=>{$("count").textContent=$("script").value.length+" / 5000"});
