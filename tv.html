@@ -32,34 +32,27 @@ button,.filebtn{border:0;border-radius:10px;padding:11px 15px;background:#ffe17a
 .status{color:#baffdc;font-weight:700}.meta{font-size:13px;color:#aab8df}
 ol{padding-left:24px}li{padding:7px 0;color:#e3e9ff}
 footer{font-size:13px;color:#9eacd3}
-/* Собственная телевизионная айдентика эфира: семейство цветных объёмных персонажей и сезонные варианты */
+/* Оригинальная эфирная айдентика: компактная группа цветных объёмных кругов */
 .live-player{position:relative;isolation:isolate;overflow:hidden}
 #broadcastOverlay{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden;font-family:Arial,system-ui,sans-serif}
-#broadcastOverlay .channel-bug{position:absolute;top:3.5%;right:3%;display:flex;align-items:center;gap:7px;padding:6px 12px 6px 7px;border-radius:30px;background:#ffffffed;color:#24335d;box-shadow:0 3px 14px #0003;font-size:clamp(10px,1.65vw,18px);font-weight:950;letter-spacing:-.035em}
-#broadcastOverlay .brand-orbit{position:relative;width:2.2em;height:2.2em;display:inline-block}
-#broadcastOverlay .orb{position:absolute;border-radius:50%;box-shadow:inset -5px -6px 8px #0002,inset 3px 3px 5px #fff9,0 2px 4px #0002}
-#broadcastOverlay .orb:after{content:"";position:absolute;top:24%;left:25%;width:24%;height:15%;border-radius:50%;background:#fff9;transform:rotate(-35deg)}
-#broadcastOverlay .orb-a{width:65%;height:65%;left:0;top:0;background:linear-gradient(140deg,#ffe66e,#ff9d38)}
-#broadcastOverlay .orb-b{width:53%;height:53%;right:0;top:0;background:linear-gradient(140deg,#8ce5ef,#388bd6)}
-#broadcastOverlay .orb-c{width:52%;height:52%;left:12%;bottom:0;background:linear-gradient(140deg,#f7a7d4,#b45fc4)}
-#broadcastOverlay .orb-d{width:40%;height:40%;right:0;bottom:2%;background:linear-gradient(140deg,#b7e879,#48ad78)}
-#broadcastOverlay .brand-name{white-space:nowrap}
-#broadcastOverlay .mascot{position:absolute;width:clamp(28px,5.5vw,66px);aspect-ratio:1;border-radius:50%;opacity:.92;box-shadow:inset -8px -9px 12px #0002,inset 4px 4px 8px #fff9,0 5px 14px #0003;animation:mascot-float 6s ease-in-out infinite}
-#broadcastOverlay .mascot:before{content:"";position:absolute;left:27%;top:25%;width:10%;height:13%;border-radius:50%;background:#24335d;box-shadow:clamp(5px,1vw,10px) 0 #24335d}
-#broadcastOverlay .mascot:after{content:"";position:absolute;left:39%;top:48%;width:24%;height:12%;border-bottom:2px solid #24335d;border-radius:50%}
-#broadcastOverlay .mascot-one{left:3.5%;top:12%;background:linear-gradient(145deg,#ffe66e,#ff9d38)}
-#broadcastOverlay .mascot-two{right:4%;bottom:12%;width:clamp(24px,4vw,48px);background:linear-gradient(145deg,#8ce5ef,#388bd6);animation-delay:-2s}
-#broadcastOverlay .mascot-three{left:9%;bottom:9%;width:clamp(20px,3vw,38px);background:linear-gradient(145deg,#b7e879,#48ad78);animation-delay:-4s}
-@keyframes mascot-float{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(5deg)}}
-#broadcastOverlay[data-season="spring"] .mascot-one{background:linear-gradient(145deg,#ffd3e3,#ec83b4)}
-#broadcastOverlay[data-season="summer"] .mascot-one{background:linear-gradient(145deg,#fff18a,#ff9d38)}
-#broadcastOverlay[data-season="autumn"] .mascot-one{background:linear-gradient(145deg,#ffc17c,#bd6743)}
-#broadcastOverlay[data-season="winter"] .mascot-one{background:linear-gradient(145deg,#e4f8ff,#78b9e6)}
-#broadcastOverlay[data-holiday="newyear"] .mascot-two{background:linear-gradient(145deg,#fff,#8dd7f5)}
-#broadcastOverlay[data-holiday="women"] .mascot-two{background:linear-gradient(145deg,#ffd6e8,#e77eae)}
-#broadcastOverlay[data-holiday="cosmos"] .mascot-two{background:linear-gradient(145deg,#b9d9ff,#7568d7)}
-#broadcastOverlay[data-holiday="children"] .mascot-two{background:linear-gradient(145deg,#fff0a6,#ff8c9c)}
-@media(max-width:520px){#broadcastOverlay .channel-bug{top:2.5%;right:2%;padding:4px 8px}#broadcastOverlay .mascot-one{left:2%;top:14%}}
+#broadcastOverlay .channel-bug{position:absolute;top:3.2%;right:2.8%;width:clamp(112px,17vw,205px);height:clamp(30px,4.5vw,52px);display:flex;align-items:center;justify-content:center}
+#broadcastOverlay .brand-orbit{position:absolute;inset:0;display:block}
+#broadcastOverlay .orb{position:absolute;top:8%;width:48%;height:84%;border-radius:50%;box-shadow:inset -5px -6px 8px #0002,inset 3px 3px 5px #fff8}
+#broadcastOverlay .orb-a{left:0;background:linear-gradient(145deg,#ffdc57,#ff9a31)}
+#broadcastOverlay .orb-b{left:18%;background:linear-gradient(145deg,#7ce5f0,#2586d7)}
+#broadcastOverlay .orb-c{left:36%;background:linear-gradient(145deg,#f3a0d4,#ad4dbb)}
+#broadcastOverlay .orb-d{left:54%;background:linear-gradient(145deg,#ff9a52,#e94c78)}
+#broadcastOverlay .orb-e{left:72%;background:linear-gradient(145deg,#b6e96c,#43aa72)}
+#broadcastOverlay .brand-name{position:relative;z-index:2;color:#fff;font-size:clamp(12px,2vw,23px);font-weight:1000;letter-spacing:-.07em;text-shadow:0 2px 3px #27304c,0 0 5px #27304c;white-space:nowrap}
+#broadcastOverlay[data-season="spring"] .orb-a{background:linear-gradient(145deg,#ffd4e4,#ec83b4)}
+#broadcastOverlay[data-season="summer"] .orb-a{background:linear-gradient(145deg,#fff18a,#ff9d38)}
+#broadcastOverlay[data-season="autumn"] .orb-a{background:linear-gradient(145deg,#ffc17c,#bd6743)}
+#broadcastOverlay[data-season="winter"] .orb-a{background:linear-gradient(145deg,#e4f8ff,#78b9e6)}
+#broadcastOverlay[data-holiday="newyear"] .orb-b{background:linear-gradient(145deg,#fff,#8dd7f5)}
+#broadcastOverlay[data-holiday="women"] .orb-c{background:linear-gradient(145deg,#ffd6e8,#e77eae)}
+#broadcastOverlay[data-holiday="cosmos"] .orb-b{background:linear-gradient(145deg,#b9d9ff,#7568d7)}
+#broadcastOverlay[data-holiday="children"] .orb-e{background:linear-gradient(145deg,#fff0a6,#ff8c9c)}
+@media(max-width:520px){#broadcastOverlay .channel-bug{top:2.4%;right:2%;width:clamp(100px,25vw,132px);height:clamp(27px,7vw,36px)}}
 /* Пульт и локальные кнопки доступны только в коде страницы, но не показываются зрителям. */
 #viewer-controls{display:none!important}
 
@@ -83,12 +76,9 @@ footer{font-size:13px;color:#9eacd3}
   <div class="live-player">
     <div id="broadcastOverlay" aria-hidden="true">
       <div class="channel-bug">
-        <span class="brand-orbit"><i class="orb orb-a"></i><i class="orb orb-b"></i><i class="orb orb-c"></i><i class="orb orb-d"></i></span>
-        <span class="brand-name">НАШ ТЕЛЕКАНАЛ</span>
+        <span class="brand-orbit"><i class="orb orb-a"></i><i class="orb orb-b"></i><i class="orb orb-c"></i><i class="orb orb-d"></i><i class="orb orb-e"></i></span>
+        <span class="brand-name">НАШ КАНАЛ</span>
       </div>
-      <span class="mascot mascot-one"></span>
-      <span class="mascot mascot-two"></span>
-      <span class="mascot mascot-three"></span>
     </div>
     <iframe
       src="https://kinescope.io/embed/0cGaBsxQyyGHNevtvjRBfC"
@@ -108,7 +98,7 @@ footer{font-size:13px;color:#9eacd3}
 <div class="art" id="art"><div class="rainbow">🌈</div><h2>МУЛЬТИК ТВ</h2><p>Добро пожаловать в волшебный мир приключений!</p><p>Автоматический показ запускается при открытии этой страницы. Звук можно включить кнопкой.</p></div>
 <video id="video" controls playsinline preload="metadata" hidden></video>
 </div>
-<div class="below"><span id="now">Сейчас в эфире: заставка МУЛЬТИК ТВ</span><span id="clock">--:--:--</span></div>
+<div class="below"><span id="now">Сейчас в эфире: заставка МУЛЬТИК ТВ</span></div>
 </section>
 <div class="layout">
 <div>
@@ -199,8 +189,6 @@ const messages=[
 let running=false,mode='licensed',files=[],index=0,bumperTimer=null,objectUrls=[],soundOn=false;
 const video=$('video');
 video.poster='data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221280%22%20height%3D%22720%22%20viewBox%3D%220%200%201280%20720%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%2321123c%22%2F%3E%3Cstop%20offset%3D%22.55%22%20stop-color%3D%22%237132a8%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2317102c%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%221280%22%20height%3D%22720%22%20fill%3D%22%23000%22%2F%3E%3Crect%20x%3D%22130%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22540%22%20rx%3D%2242%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%22640%22%20y%3D%22330%22%20text-anchor%3D%22middle%22%20font-size%3D%22104%22%20font-family%3D%22Arial%2Csans-serif%22%20font-weight%3D%22900%22%20fill%3D%22%23fff%22%3E%F0%9F%8C%88%20%D0%9C%D0%A3%D0%9B%D0%AC%D0%A2%D0%98%D0%9A%20%D0%A2%D0%92%3C%2Ftext%3E%3Ctext%20x%3D%22640%22%20y%3D%22410%22%20text-anchor%3D%22middle%22%20font-size%3D%2234%22%20font-family%3D%22Arial%2Csans-serif%22%20fill%3D%22%23ffe17a%22%3E%D0%9C%D0%98%D0%A0%20%D0%9D%D0%90%D0%A7%D0%98%D0%9D%D0%90%D0%95%D0%A2%D0%A1%D0%AF%20%D0%A1%20%D0%92%D0%9E%D0%9B%D0%A8%D0%95%D0%91%D0%A1%D0%A2%D0%92%D0%90!%3C%2Ftext%3E%3C%2Fsvg%3E';
-function clock(){$('clock').textContent=new Date().toLocaleTimeString('ru-RU')}
-clock();setInterval(clock,1000);
 function status(s){$('status').textContent=s}
 function clearTimer(){if(bumperTimer){clearTimeout(bumperTimer);bumperTimer=null}}
 function showBumper(message){
