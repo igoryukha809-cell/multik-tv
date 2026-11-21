@@ -48,13 +48,23 @@ jobs:
           SITE_ORIGIN: https://igoryukha809-cell.github.io
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error -X OPTIONS "$TTS_URL/api/tts" \
+          status=$(curl --silent --show-error -X OPTIONS "$TTS_URL/api/tts" \
             -H "Origin: $SITE_ORIGIN" \
             -H "Access-Control-Request-Method: POST" \
             -H "Access-Control-Request-Headers: content-type" \
-            -D /tmp/cors-headers -o /dev/null
-          grep -iFx "access-control-allow-origin: $SITE_ORIGIN" /tmp/cors-headers
-          echo "PIPER_CORS_OK"
+            -D /tmp/cors-headers -o /tmp/cors-body -w '%{http_code}')
+          echo "CORS_PREFLIGHT_HTTP_STATUS=$status"
+          echo "CORS_PREFLIGHT_HEADERS:"
+          cat /tmp/cors-headers
+          python - <<'PY'
+          from pathlib import Path
+          lines = Path("/tmp/cors-headers").read_text(errors="replace").splitlines()
+          values = [line.split(":", 1)[1].strip() for line in lines
+                    if ":" in line and line.split(":", 1)[0].strip().lower() == "access-control-allow-origin"]
+          expected = "https://igoryukha809-cell.github.io"
+          assert values and expected in values, {"expected": expected, "actual": values, "headers": lines}
+          print("PIPER_CORS_OK", values)
+          PY
 
       - name: Generate and validate real WAV audio
         env:
