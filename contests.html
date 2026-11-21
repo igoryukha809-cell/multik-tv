@@ -9,7 +9,7 @@
 <section class="section"><div class="head"><div><h2>🗳️ Голосование — 13 номинаций</h2><p class="muted">В каждой номинации выбери одного из трёх оригинальных кандидатов.</p></div></div><div class="grid" id="nominations"></div></section>
 <section class="section"><div class="head"><div><h2>💡 Предложить номинанта</h2><p class="muted">Помоги сформировать следующий список финалистов</p></div></div><div class="formbox"><div class="fields"><label>Номинация<select id="suggestCategory"></select></label><label>Имя героя, название передачи или песни<input id="suggestName" maxlength="70" placeholder="Например, герой из нашей программы"></label></div><p>Не указывай личные данные, контакты или ссылки на личные страницы. Предложение сохранится только в этом браузере и пока не отправляется организаторам.</p><button class="btn" id="suggestBtn">Сохранить предложение</button><div class="resultline" id="suggestResult"></div><div id="suggestions" class="muted"></div></div></section>
 <section class="section"><div class="head"><div><h2>🎓 Диплом зрителя-жюри</h2><p class="muted">После голосования можно распечатать памятный диплом без личных данных.</p></div></div><div class="diploma"><div style="font-size:42px">🏆 ⭐ 🏆</div><div class="kicker" style="color:#8b65bd">ЗВЁЗДНЫЙ ВЫБОР</div><h3>Диплом зрителя-жюри</h3><p id="diplomaStatus">Проголосуй в номинациях, чтобы получить диплом участника зрительского жюри.</p><button class="btn" id="printDiploma">Распечатать диплом</button></div></section>
-<section class="section"><div class="head"><div><h2>🎉 Церемония награждения</h2><p class="muted">Финал сезона</p></div></div><div class="notice">Когда появится общий сервер голосования, здесь можно будет публиковать проверенные итоги, тройки финалистов и дату церемонии. До этого момента победители не объявляются, чтобы не вводить зрителей в заблуждение.</div></section>
+<section class="section" id="seasonSync"><div class="head"><div><h2>🎉 Премия проходит одновременно с «Главными героями»</h2><p class="muted" id="seasonCaption">Календарь сезона</p></div></div><div class="notice" id="seasonStatus">Проверяем календарь сезона…</div><div class="steps" id="seasonStages"><div class="step"><b>Приём предложений</b><span>Ориентир: начало августа</span></div><div class="step"><b>Формирование финалистов</b><span>Ориентир: август — сентябрь</span></div><div class="step"><b>Голосование</b><span>Ориентир: сентябрь — октябрь</span></div><div class="step"><b>Церемония</b><span>Ориентир: конец октября — начало ноября</span></div></div><p class="muted">Даты следующего сезона появятся здесь после официального объявления телеканала «Карусель». Мы не выдаём примерные даты за подтверждённые.</p></section>
 </main><footer class="footer"><div class="wrap">«Звёздный выбор» — собственная премия канала · <a href="rights-and-content.html">Права на материалы</a></div></footer>
 <script>
 (()=>{
@@ -27,8 +27,27 @@ const cats=[
 ['learning','Познавательная программа','🔎','Помогает узнавать новое об окружающем мире.',['Планета открытий','Научный рюкзак','Вопрос на миллион звёзд'],['🌍','🎒','❓']],
 ['creative','Творческая программа','🎨','Вдохновляет мастерить, рисовать и придумывать.',['Мастерская чудес','Рисуем вместе','Фабрика идей'],['🛠️','🖍️','💡']],
 ['film','Лучший семейный фильм','🍿','История для совместного просмотра.',['Большое путешествие','Секрет старого дерева','День наоборот'],['🚂','🌳','🎈']],
-['discovery','Открытие сезона','✨','Новая идея или персонаж, который запомнился.',['Робот Бип','Дракончик Фью','Облачко Пон'],['🤖','🐉','☁️']]
 ];
+// Даты 2026 года взяты из официальных анонсов телеканала.
+const seasonStatus=document.getElementById('seasonStatus');
+const seasonCaption=document.getElementById('seasonCaption');
+const now=new Date();
+const milestones=[
+ {date:'2026-08-01',label:'Старт сезона и приём предложений'},
+ {date:'2026-08-19',label:'Старт голосования за тройки финалистов'},
+ {date:'2026-09-20',label:'Голосование за финалистов'},
+ {date:'2026-10-20',label:'Завершение голосования'},
+ {date:'2026-10-29',label:'Церемония награждения'},
+ {date:'2026-11-04',label:'Телевизионная трансляция церемонии'}
+];
+if(now.getFullYear()===2026){
+ const next=milestones.find(m=>new Date(m.date+'T23:59:59')>=now);
+ seasonCaption.textContent='Календарь премии «Главные Герои — 2026»';
+ seasonStatus.textContent=next?'Вместе с сезоном «Карусели»: '+next.label+' — '+new Date(next.date+'T12:00:00').toLocaleDateString('ru-RU')+'.':'Сезон 2026 завершён. Церемония прошла 29 октября, телевизионный показ состоялся 4 ноября. Следующий сезон откроется после официального объявления.';
+}else{
+ seasonCaption.textContent='Ожидание официального календаря '+now.getFullYear()+' года';
+ seasonStatus.textContent='Наша премия будет запускаться в период премии «Главные Герои». Точные даты следующего сезона пока не опубликованы телеканалом «Карусель»; календарь обновим после официального анонса.';
+}
 const root=document.getElementById('nominations');
 const votes=()=>{try{return JSON.parse(localStorage.getItem('star-awards-votes')||'{}')}catch{return {}}};
 function render(){
