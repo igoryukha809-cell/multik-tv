@@ -1,0 +1,85 @@
+name: Verify Piper voice service
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "tts-service/**"
+      - "ai-studio.html"
+      - "ai-studio.js"
+      - ".github/workflows/tts-e2e.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  piper-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wake service and verify model health
+        env:
+          TTS_URL: https://channel-voice-tts.onrender.com
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error "$TTS_URL/health" -o /tmp/health.json; then
+              break
+            fi
+            if [ "$attempt" = 6 ]; then
+              echo "Piper health endpoint did not become ready."
+              exit 1
+            fi
+            sleep 10
+          done
+          python - <<'PY'
+          import json
+          data = json.load(open("/tmp/health.json", encoding="utf-8"))
+          assert data.get("status") == "ok", data
+          assert data.get("engine") == "Piper", data
+          assert data.get("loaded") is True, data
+          print("PIPER_HEALTH_OK", data)
+          PY
+
+      - name: Verify browser CORS preflight
+        env:
+          TTS_URL: https://channel-voice-tts.onrender.com
+          SITE_ORIGIN: https://igoryukha809-cell.github.io
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error -X OPTIONS "$TTS_URL/api/tts" \
+            -H "Origin: $SITE_ORIGIN" \
+            -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: content-type" \
+            -D /tmp/cors-headers -o /dev/null
+          grep -iFx "access-control-allow-origin: $SITE_ORIGIN" /tmp/cors-headers
+          echo "PIPER_CORS_OK"
+
+      - name: Generate and validate real WAV audio
+        env:
+          TTS_URL: https://channel-voice-tts.onrender.com
+          SITE_ORIGIN: https://igoryukha809-cell.github.io
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error "$TTS_URL/api/tts" \
+            -H "Origin: $SITE_ORIGIN" \
+            -H "Content-Type: application/json" \
+            --data '{"text":"Проверка русского голоса. Озвучка работает."}' \
+            -D /tmp/audio-headers -o /tmp/piper-test.wav
+          grep -iE '^content-type: audio/wav' /tmp/audio-headers
+          python - <<'PY'
+          import wave
+          path = "/tmp/piper-test.wav"
+          with open(path, "rb") as f:
+              assert f.read(4) == b"RIFF", "Missing RIFF header"
+          with wave.open(path, "rb") as audio:
+              assert audio.getnframes() > 0, "WAV has no audio frames"
+              assert audio.getframerate() > 0, "Invalid sample rate"
+              print("PIPER_WAV_OK", {
+                  "channels": audio.getnchannels(),
+                  "sample_rate": audio.getframerate(),
+                  "frames": audio.getnframes(),
+                  "duration_seconds": round(audio.getnframes() / audio.getframerate(), 2),
+              })
+          PY
