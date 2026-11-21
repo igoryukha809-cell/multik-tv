@@ -32,15 +32,18 @@ jobs:
 
       - name: Проверить погодный API
         id: weather
+        continue-on-error: true
         shell: bash
         run: |
           curl -fsS --max-time 25 "https://api.open-meteo.com/v1/forecast?latitude=53.35&longitude=83.76&current=temperature_2m,weather_code&timezone=auto" -o /tmp/weather.json
           python3 -c 'import json; d=json.load(open("/tmp/weather.json")); assert "current" in d and "temperature_2m" in d["current"]; print("Погодные данные получены:", d["current"]["temperature_2m"], d["current"].get("temperature_2m_unit","°C"))'
 
       - name: Получить код диагностики
+        if: always()
         uses: actions/checkout@v4
 
       - name: Проверить реальное состояние HLS-эфира
+        if: always()
         id: stream
         env:
           STREAM_BASE_URL: https://multik-tv-test-stream-yltl.onrender.com
