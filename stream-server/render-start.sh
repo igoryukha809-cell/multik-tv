@@ -376,20 +376,8 @@ generate_weather_show() {
       condition="Прогноз временно недоступен"
     fi
 
-    {
-      printf 'КАНАЛ  |  ПРОГНОЗ ПОГОДЕ С ВЕДУЩИМИ\n'
-      printf 'Сегодня в эфире: %s\n' "$presenter"
-      printf '%s\n' "$city"
-      printf 'Сейчас: %s °C  |  %s\n' "$temp" "$condition"
-      [[ -z "$feels" ]] || printf 'Ощущается как: %s °C\n' "$feels"
-      printf 'Ветер: %s км/ч  |  Влажность: %s проц.\n' "$wind" "$humidity"
-      [[ "$rain" == "—" ]] || printf 'Вероятность осадков: %s проц.\n' "$rain"
-      [[ "$low" == "—" || "$high" == "—" ]] || printf 'Сегодня: %s...%s °C\n' "$low" "$high"
-      printf 'Источник: %s  |  Обновлено: %s\n' "$source" "$(date '+%H:%M %Z')"
-    } > "$txt"
-
-    # Rotate original presenters from city to city, like a children's TV weather show.
-    presenter_day="$(date +%j)"
+    # Keep one presenter team for the entire daily episode; rotate between days.
+    presenter_day="$(TZ=Europe/Moscow date +%j)"
     presenter_slot=$(( (10#$presenter_day - 1) % 4 ))
     case "$presenter_slot" in
       0) presenter="Лисёнок Рыжик и Облачко Капелька"; presenter_hello="Привет, друзья! Это Рыжик и Капелька!" ;;
@@ -397,6 +385,19 @@ generate_weather_show() {
       2) presenter="Совёнок Умка и Солнышко Лучик"; presenter_hello="Привет! На связи Умка и Лучик!" ;;
       *) presenter="Медвежонок Топа и Радужка"; presenter_hello="Добрый день! Это Топа и Радужка!" ;;
     esac
+
+    {
+      printf 'ПОГОДА | ПРОГНОЗ ДЛЯ ВСЕЙ СЕМЬИ\\n'
+      printf 'ВЕДУЩИЕ: %s\\n' "$presenter"
+      printf 'ГОРОД %s ИЗ 11\\n' "$city_index"
+      printf '%s\\n' "$city"
+      printf 'СЕЙЧАС: %s °C | %s\\n' "$temp" "$condition"
+      [[ -z "$feels" ]] || printf 'ОЩУЩАЕТСЯ КАК: %s °C\\n' "$feels"
+      printf 'ВЕТЕР: %s км/ч | ВЛАЖНОСТЬ: %s проц.\\n' "$wind" "$humidity"
+      [[ "$rain" == "—" ]] || printf 'ВЕРОЯТНОСТЬ ОСАДКОВ: %s проц.\\n' "$rain"
+      [[ "$low" == "—" || "$high" == "—" ]] || printf 'ДНЁМ: %s...%s °C\\n' "$low" "$high"
+      printf 'ИСТОЧНИК: %s | %s\\n' "$source" "$(TZ=Europe/Moscow date '+%H:%M МСК')"
+    } > "$txt"
     # The unavailable forecast still gets a visible card and an honest voice-over.
     if [[ "$source" == "Резервная заставка" ]]; then
       spoken="${presenter_hello} Сейчас мы расскажем о погоде в ${city_say}. К сожалению, прогноз временно недоступен. Мы обязательно вернёмся к прогнозу позже!"
@@ -407,10 +408,21 @@ generate_weather_show() {
       if [[ -n "$feels" ]]; then
         feels_say=" По ощущениям ${feels} градусов."
       fi
-      spoken="${presenter_hello} Давайте вместе узнаем погоду в ${city_say}! Сейчас ${temp_say} градусов. ${condition}!${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов. Пусть ваш день будет чудесным!"
+      if (( city_index == 1 )); then
+        spoken="${presenter_hello} Сегодня мы отправимся в путешествие по городам России! Начинаем с ${city_say}. Сейчас ${temp_say} градусов. ${condition}!${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов."
+      else
+        spoken="А теперь заглянем в ${city_say}. Здесь сейчас ${temp_say} градусов. ${condition}!${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов."
+      fi
       if [[ "$rain" != "—" ]]; then
         spoken+=" Вероятность осадков ${rain} процентов."
       fi
+      case "$condition" in
+        *Снег*) spoken+=" Одевайтесь теплее и выбирайте удобную обувь." ;;
+        *Дождь*|*Морось*) spoken+=" Не забудьте зонт и будьте внимательны на мокрой дороге." ;;
+        *Гроза*) spoken+=" Во время грозы лучше оставаться в помещении." ;;
+        *Туман*) spoken+=" На улице будьте особенно внимательны." ;;
+        *) spoken+=" Выбирайте одежду по погоде и хорошего вам дня!" ;;
+      esac
     fi
     printf '%s\n' "$spoken" > "${WEATHER_DIR}/weather-${count}.speech.txt"
     speech="${WEATHER_DIR}/weather-${count}.wav"
