@@ -389,7 +389,8 @@ generate_weather_show() {
     } > "$txt"
 
     # Rotate original presenters from city to city, like a children's TV weather show.
-    presenter_slot=$(( (count - 1) % 4 ))
+    presenter_day="$(date +%j)"
+    presenter_slot=$(( (10#$presenter_day - 1) % 4 ))
     case "$presenter_slot" in
       0) presenter="Лисёнок Рыжик и Облачко Капелька"; presenter_hello="Привет, друзья! Это Рыжик и Капелька!" ;;
       1) presenter="Пингвинёнок Пик и Снежинка Искорка"; presenter_hello="Здравствуйте! С вами Пик и Искорка!" ;;
