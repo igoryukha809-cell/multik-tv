@@ -87,5 +87,29 @@ footer{background:#29234f;color:#e5e0f7;padding:24px 0;font-size:12px}.foot{disp
   refreshBroadcast();loadVideos();setInterval(refreshBroadcast,30000);setInterval(loadVideos,300000);
 })();
 </script>
+
+<script>
+(() => {
+  const pattern = /поддержать\\s+канал|донат|donate|donationalerts/i;
+  const selectors = 'a,button,[role="button"],iframe';
+  function removeDonationControls(root) {
+    const nodes = [];
+    if (root instanceof Element && root.matches(selectors)) nodes.push(root);
+    if (root.querySelectorAll) nodes.push(...root.querySelectorAll(selectors));
+    for (const el of nodes) {
+      const label = [el.textContent, el.getAttribute('aria-label'), el.getAttribute('title'), el.getAttribute('href'), el.getAttribute('src')].filter(Boolean).join(' ');
+      if (pattern.test(label)) el.remove();
+    }
+  }
+  removeDonationControls(document);
+  new MutationObserver(records => {
+    for (const record of records) {
+      for (const node of record.addedNodes) {
+        if (node instanceof Element) removeDonationControls(node);
+      }
+    }
+  }).observe(document.documentElement, {childList:true,subtree:true});
+})();
+</script>
 </body>
 </html>
