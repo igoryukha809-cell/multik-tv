@@ -46,6 +46,41 @@ const cats=[
 const seasonStatus=document.getElementById('seasonStatus');
 const seasonCaption=document.getElementById('seasonCaption');
 const now=new Date();
+async function syncOfficialCalendar(){
+ try{
+  const response=await fetch('broadcast/karusel-calendar.json?ts='+Date.now(),{cache:'no-store'});
+  if(!response.ok)throw new Error('calendar HTTP '+response.status);
+  const data=await response.json();
+  const d=data.award?.dates||{};
+  const fmt=x=>x?new Date(x+'T12:00:00').toLocaleDateString('ru-RU'):'дата пока не объявлена';
+  seasonCaption.textContent='Календарь премии «Главные Герои — '+(data.award?.year||'')+'» · проверено '+new Date(data.checkedAt).toLocaleString('ru-RU');
+  const stages=[
+   ['Приём предложений',d.applications_end?'до '+fmt(d.applications_end):'срок уточняется'],
+   ['Голосование за финалистов',d.first_round_start&&d.first_round_end?fmt(d.first_round_start)+' — '+fmt(d.first_round_end):'срок уточняется'],
+   ['Финальное голосование',d.first_round_end&&d.final_round_end?fmt(d.first_round_end)+' — '+fmt(d.final_round_end):'срок уточняется'],
+   ['Церемония и эфир',d.ceremony?'церемония '+fmt(d.ceremony):'дата уточняется']
+  ];
+  document.getElementById('seasonStages').replaceChildren(...stages.map(([name,period])=>{const el=document.createElement('div');el.className='step';const b=document.createElement('b');b.textContent=name;const span=document.createElement('span');span.textContent=period;el.append(b,span);return el;}));
+  const all=[['Приём предложений',d.applications_end],['Старт голосования',d.first_round_start],['Завершение первого этапа',d.first_round_end],['Завершение финального голосования',d.final_round_end],['Церемония награждения',d.ceremony],['Телевизионная трансляция',d.broadcast]];
+  const upcoming=all.filter(x=>x[1]).map(x=>({label:x[0],date:x[1]})).filter(x=>new Date(x.date+'T23:59:59')>=new Date()).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  seasonStatus.textContent=upcoming?'Автоматически сверено с официальными новостями «Карусели». Следующий этап: '+upcoming.label+' — '+fmt(upcoming.date)+'.':'Даты сезона '+data.award.year+' загружены с официального сайта. Текущий сезон завершён; календарь следующего сезона появится после публикации анонса.';
+  const cards=[...document.querySelectorAll('#contestCards .card')];
+  (data.contests||[]).forEach(item=>{
+   const card=cards.find(el=>el.textContent.includes(item.title));
+   if(!card)return;
+   const date=card.querySelector('.muted');
+   if(date)date.textContent='Официальный период: '+fmt(item.start)+' — '+fmt(item.end);
+   const status=card.querySelector('.result');
+   if(status)status.textContent=new Date(item.end+'T23:59:59')>=new Date()?'Сверено с официальным календарём «Карусели»':'Период завершён';
+  });
+  const contestsNotice=document.querySelector('#our-contests .notice');
+  if(contestsNotice)contestsNotice.textContent='Автоматическая сверка с официальной страницей конкурсов «Карусели». Последняя успешная проверка: '+new Date(data.checkedAt).toLocaleString('ru-RU')+'. Даты наших собственных заданий отображаются только при совпадении с опубликованными датами источника.';
+ }catch(error){
+  seasonStatus.textContent='Не удалось обновить официальный календарь. Показанные ниже сведения могут быть устаревшими; повторная автоматическая проверка выполняется ежедневно.';
+  console.warn('Karusel calendar sync failed',error);
+ }
+}
+syncOfficialCalendar();
 const milestones=[
  {date:'2026-08-01',label:'Старт сезона и приём предложений'},
  {date:'2026-08-19',label:'Старт голосования за тройки финалистов'},
