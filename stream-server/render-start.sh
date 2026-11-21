@@ -377,7 +377,8 @@ generate_weather_show() {
     fi
 
     {
-      printf 'КАНАЛ  |  ПРОГНОЗ ПОГОДЫ\n'
+      printf 'КАНАЛ  |  ПРОГНОЗ ПОГОДЕ С ВЕДУЩИМИ\n'
+      printf 'Сегодня в эфире: %s\n' "$presenter"
       printf '%s\n' "$city"
       printf 'Сейчас: %s °C  |  %s\n' "$temp" "$condition"
       [[ -z "$feels" ]] || printf 'Ощущается как: %s °C\n' "$feels"
@@ -387,9 +388,17 @@ generate_weather_show() {
       printf 'Источник: %s  |  Обновлено: %s\n' "$source" "$(date '+%H:%M %Z')"
     } > "$txt"
 
+    # Rotate original presenters from city to city, like a children's TV weather show.
+    presenter_slot=$(( (count - 1) % 4 ))
+    case "$presenter_slot" in
+      0) presenter="Лисёнок Рыжик и Облачко Капелька"; presenter_hello="Привет, друзья! Это Рыжик и Капелька!" ;;
+      1) presenter="Пингвинёнок Пик и Снежинка Искорка"; presenter_hello="Здравствуйте! С вами Пик и Искорка!" ;;
+      2) presenter="Совёнок Умка и Солнышко Лучик"; presenter_hello="Привет! На связи Умка и Лучик!" ;;
+      *) presenter="Медвежонок Топа и Радужка"; presenter_hello="Добрый день! Это Топа и Радужка!" ;;
+    esac
     # The unavailable forecast still gets a visible card and an honest voice-over.
     if [[ "$source" == "Резервная заставка" ]]; then
-      spoken="Приве-е-ет, друзья! Это Соня! Сейчас мы расскажем о погоде в ${city_say}. К сожалению, прогноз временно недоступен. Мы обязательно вернёмся к прогнозу позже!"
+      spoken="${presenter_hello} Сейчас мы расскажем о погоде в ${city_say}. К сожалению, прогноз временно недоступен. Мы обязательно вернёмся к прогнозу позже!"
     else
       temp_say="$(printf '%.0f' "$temp" 2>/dev/null || printf '%s' "$temp")"
       wind_say="$(printf '%.0f' "$wind" 2>/dev/null || printf '%s' "$wind")"
@@ -397,7 +406,7 @@ generate_weather_show() {
       if [[ -n "$feels" ]]; then
         feels_say=" По ощущениям ${feels} градусов."
       fi
-      spoken="Приве-е-ет, друзья! Это Соня! Давайте вместе узнаем погоду в ${city_say}! Сейчас ${temp_say} градусов. ${condition}!${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов. Пусть ваш день будет чудесным!"
+      spoken="${presenter_hello} Давайте вместе узнаем погоду в ${city_say}! Сейчас ${temp_say} градусов. ${condition}!${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов. Пусть ваш день будет чудесным!"
       if [[ "$rain" != "—" ]]; then
         spoken+=" Вероятность осадков ${rain} процентов."
       fi
