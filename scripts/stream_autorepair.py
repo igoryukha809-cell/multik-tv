@@ -3,8 +3,9 @@ BASE=os.getenv('STREAM_BASE_URL','https://multik-tv-test-stream-yltl.onrender.co
 def get(url):
     req=urllib.request.Request(url,headers={'User-Agent':'MultikTV-AutoRepair/1.1','Cache-Control':'no-cache'})
     try:
-        with urllib.request.urlopen(req,timeout=12) as r: return r.status,r.read(2000000)
+        with urllib.request.urlopen(req,timeout=45) as r: return r.status,r.read(2000000)
     except urllib.error.HTTPError as e: return e.code,e.read(1000)
+    except Exception as e: return 0,(type(e).__name__+': '+str(e)).encode('utf-8','replace')
 def parse_health(body):
     text=body.decode('utf-8-sig','replace').strip()
     decoder=json.JSONDecoder()
@@ -16,7 +17,7 @@ def media_segments(url, depth=0, seen=None):
     if depth>3 or url in seen: return [],[]
     seen.add(url)
     code,body=get(url)
-    if code!=200: return [],[{'url':url,'http':code}]
+    if code!=200: return [],[{'url':url,'http':code,'detail':body.decode('utf-8','replace')[:240]}]
     text=body.decode('utf-8-sig','replace')
     lines=[x.strip() for x in text.splitlines() if x.strip()]
     if not lines or lines[0]!='#EXTM3U': return [],[{'url':url,'error':'response is not an HLS playlist'}]
@@ -40,7 +41,7 @@ def main():
     report={'base_url':BASE,'checks':[],'diagnosis':[]}
     try:
         code,body=get(BASE+'/broadcast/health.json'); report['checks'].append({'name':'health','http':code})
-        if code!=200: report['diagnosis'].append('Health endpoint HTTP '+str(code))
+        if code!=200: report['diagnosis'].append('Health endpoint HTTP '+str(code)+': '+body.decode('utf-8','replace')[:240])
         else:
             try:
                 h,trailing=parse_health(body); report['health']=h
