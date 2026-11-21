@@ -59,6 +59,11 @@ class RenderBlueprintTests(unittest.TestCase):
         self.assertIn("не гарантирует круглосуточную работу", readme)
         self.assertIn("15 минут", readme)
 
+    def test_hls_health_check_is_independent_of_weather_api(self):
+        workflow = (ROOT / ".github" / "workflows" / "broadcast-health.yml").read_text(encoding="utf-8")
+        self.assertIn("continue-on-error: true", workflow)
+        self.assertGreaterEqual(workflow.count("if: always()"), 2)
+
     def test_render_start_script_has_valid_shell_syntax(self):
         startup = ROOT / "stream-server" / "render-start.sh"
         result = subprocess.run(["bash", "-n", str(startup)], capture_output=True, text=True)
