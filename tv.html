@@ -110,6 +110,9 @@ footer{font-size:13px;color:#9eacd3}
 #holidayBumper[data-holiday="victory"] .hb-bg{background:radial-gradient(circle at 50% 38%,#fff8 0 2%,transparent 35%),linear-gradient(135deg,#164b85,#b34b56 60%,#e7a64b)}
 #holidayBumper[data-holiday="children"] .hb-bg{background:radial-gradient(circle at 50% 38%,#fff8 0 2%,transparent 35%),linear-gradient(135deg,#21a8b4,#4d69c6 55%,#e76c9d)}
 #holidayBumper[data-holiday="knowledge"] .hb-bg{background:radial-gradient(circle at 50% 38%,#fff8 0 2%,transparent 35%),linear-gradient(135deg,#247fbb,#574da4 55%,#e3a64b)}
+#holidayBumper[data-holiday="channel-birthday"] .hb-bg{background:radial-gradient(ellipse at 18% 22%,#ffec9caa 0 5%,transparent 18%),radial-gradient(ellipse at 82% 18%,#ffc4e5aa 0 6%,transparent 20%),radial-gradient(circle at 50% 42%,#fff9 0 2%,transparent 38%),linear-gradient(135deg,#ff7a8a,#8a4bd1 48%,#267fc1)}
+#holidayBumper[data-holiday="channel-birthday"] .hb-character{font-size:clamp(76px,15vw,158px);filter:drop-shadow(0 12px 0 #71356b55)}
+#holidayBumper[data-holiday="channel-birthday"] .hb-logo{background:linear-gradient(90deg,#ffcf5a,#ff8db2);color:#57266f;border-color:#fff7;box-shadow:0 7px 0 #57266f44}
 @keyframes hbFade{from{opacity:0;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
 @keyframes hbSpin{to{transform:rotate(360deg)}}
 @keyframes hbDrift{to{transform:translate3d(-28px,35px,0)}}
@@ -359,7 +362,7 @@ const holidayBumpers={
  'family':{character:'🐼',title:'День семьи, любви и верности',sub:'Самое важное — забота и поддержка близких.'},
  'knowledge':{character:'🦉',title:'С Днём знаний!',sub:'Новый учебный год — новые открытия!'},
  'unity':{character:'🐿️',title:'День народного единства',sub:'Дружба и взаимное уважение объединяют!'},
- 'channel-birthday':{character:'🐰',title:'С Днём рождения канала!',sub:'Спасибо, что встречаете праздники вместе с нами!'}
+ 'channel-birthday':{character:'🎂',title:'С днём рождения, наш канал!',sub:'17 ноября началась наша история. Спасибо, что вы с нами!'}
 };
 function playHolidayBumper(){
  const holiday=holidays.find(h=>h.test(new Date().getMonth()+1,new Date().getDate()));
@@ -371,7 +374,7 @@ function playHolidayBumper(){
  document.getElementById('hbTitle').textContent=data.title;
  document.getElementById('hbSub').textContent=data.sub;
  el.classList.add('show');
- window.setTimeout(()=>el.classList.remove('show'),7500);
+ window.setTimeout(()=>el.classList.remove('show'),holiday.id==='channel-birthday'?10000:7500);
 }
 
 setTimeout(playHolidayBumper,1800);
