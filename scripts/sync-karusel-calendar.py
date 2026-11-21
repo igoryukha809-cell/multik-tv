@@ -24,45 +24,32 @@ def plain(source):
     return " ".join(html.unescape(x) for x in p.parts)
 
 def get_award():
-    index=fetch(BASE+"/news/event")
-    candidates=re.findall(r'href=["\']([^"\']*/news/\d+[^"\']*)["\'][^>]*>(.*?)</a>', index, re.I|re.S)
-    url=None
-    for href, label in candidates:
-        title=plain(label)
-        if "Главные Герои" in title:
-            url=href if href.startswith("http") else BASE+href
-            break
-    # Known official archive fallback: the index can change markup.
-    if not url:
-        for page in ("/news/9302","/news/9317"):
-            body=fetch(BASE+page)
-            if "Главные Герои" in body:
-                url=BASE+page; break
-    if not url: raise RuntimeError("Не найдена официальная новость о премии")
-    body=plain(fetch(url))
-    dates={}
-    patterns={
-      "first_round_end": r"до\s+(\d{1,2})\s+([а-яё]+)",
-      "final_round_end": r"до\s+(\d{1,2})\s+октября",
-      "ceremony": r"(\d{1,2})\s+октября",
-      "broadcast": r"(\d{1,2})\s+ноября"
-    }
+    # Official announcements: initial voting announcement and finalist voting announcement.
+    pages=["/news/9293","/news/9302","/news/9317"]
+    bodies=[]
+    for path in pages:
+        try: bodies.append((BASE+path,plain(fetch(BASE+path))))
+        except Exception: continue
+    if not bodies: raise RuntimeError("Не удалось получить официальные новости о премии")
+    year=datetime.now(timezone.utc).year
+    for url,body in bodies:
+        m=re.search(r"Главные Герои\s*[—–-]\s*(20\d{2})",body)
+        if m: year=max(year,int(m.group(1)))
     months={"января":"01","февраля":"02","марта":"03","апреля":"04","мая":"05","июня":"06","июля":"07","августа":"08","сентября":"09","октября":"10","ноября":"11","декабря":"12"}
-    def iso(d,m,y):
-        return f"{y}-{months[m]}-{int(d):02d}"
-    year_match=re.search(r"Главные Герои\s*[—–-]\s*(20\d{2})", body)
-    year=int(year_match.group(1)) if year_match else datetime.now(timezone.utc).year
-    m=re.search(r"до\s+(\d{1,2})\s+сентября",body,re.I)
-    if m: dates["first_round_end"]=iso(m.group(1),"сентября",year)
-    m=re.search(r"до\s+(\d{1,2})\s+октября",body,re.I)
-    if m: dates["final_round_end"]=iso(m.group(1),"октября",year)
-    m=re.search(r"(?:состоится|прошли|прошла)[^.!]{0,100}?(\d{1,2})\s+октября",body,re.I)
-    if m: dates["ceremony"]=iso(m.group(1),"октября",year)
-    m=re.search(r"(?:4 ноября|в эфире[^.!]{0,100}?(\d{1,2})\s+ноября)",body,re.I)
-    if m:
-        day=m.group(1) or "4"; dates["broadcast"]=iso(day,"ноября",year)
-    if not dates: raise RuntimeError("В новости не распознаны даты премии")
-    return {"year":year,"source":url,"dates":dates}
+    dates={}
+    def find(pattern,key,body,month):
+        m=re.search(pattern,body,re.I)
+        if m: dates[key]=f"{year}-{months[month]}-{int(m.group(1)):02d}"
+    for url,body in bodies:
+        find(r"до\s+(\d{1,2})\s+августа","applications_end",body,"августа")
+        find(r"с\s+(\d{1,2})\s+августа[^.]{0,100}?до\s+\d{1,2}\s+сентября","first_round_start",body,"августа")
+        find(r"до\s+(\d{1,2})\s+сентября","first_round_end",body,"сентября")
+        find(r"до\s+(\d{1,2})\s+октября","final_round_end",body,"октября")
+        find(r"(?:состоится|прошли|прошла)[^.!]{0,120}?(\d{1,2})\s+октября","ceremony",body,"октября")
+        find(r"(?:4 ноября|в эфире[^.!]{0,120}?(\d{1,2})\s+ноября)","broadcast",body,"ноября")
+    if not dates: raise RuntimeError("В официальных новостях не распознаны даты премии")
+    source=next((u for u,b in bodies if "9293" in u),bodies[0][0])
+    return {"year":year,"source":source,"dates":dates}
 
 def get_contests():
     page=fetch(BASE+"/contest")
