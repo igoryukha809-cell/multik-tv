@@ -45,7 +45,7 @@ cleanup() {
   [[ -z "$FFMPEG_PID" ]] || kill "$FFMPEG_PID" 2>/dev/null || true
   [[ -z "$DOWNLOAD_PID" ]] || kill "$DOWNLOAD_PID" 2>/dev/null || true
   kill "$SRS_PID" 2>/dev/null || true
-  wait || true
+  # Let the main loop reap children and inspect their exit status.
 }
 trap cleanup TERM INT
 
@@ -707,6 +707,7 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
   restart_delay=2
   while kill -0 "$SRS_PID" 2>/dev/null; do
     write_health "starting" "Starting continuous MP4 publisher"
+    scheduled_weather_date=""
     result=0
     ffmpeg -hide_banner -nostdin -loglevel info -report -re -stream_loop -1 -i "$COMBINED_FILE" \
       -map 0:v:0 -map 0:a:0? \
@@ -881,7 +882,7 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     wait "$FFMPEG_PID" || wait_result=$?
     if (( result == 0 )); then result=$wait_result; fi
     FFMPEG_PID=""
-    if (( result == 127 )); then
+    if (( result == 127 )) && [[ -n "${scheduled_weather_date:-}" ]]; then
       echo "SCHEDULE: airing weather programme for $scheduled_weather_date (Europe/Moscow)."
       write_health "starting" "Switching to the scheduled daily weather programme"
       play_channel_ident || echo "WARNING: channel ident failed before scheduled weather."
