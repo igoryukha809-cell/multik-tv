@@ -423,6 +423,9 @@ generate_weather_show() {
         *Туман*) spoken+=" На улице будьте особенно внимательны." ;;
         *) spoken+=" Выбирайте одежду по погоде и хорошего вам дня!" ;;
       esac
+      if (( city_index == ${#cities[@]} )); then
+        spoken+=" На этом наш прогноз завершён. Спасибо, что были с нами! До новых встреч!"
+      fi
     fi
     printf '%s\n' "$spoken" > "${WEATHER_DIR}/weather-${count}.speech.txt"
     speech="${WEATHER_DIR}/weather-${count}.wav"
