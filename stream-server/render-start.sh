@@ -7,7 +7,7 @@ PROGRAM_VIDEO_URL="${PROGRAM_VIDEO_URL:-}"
 PROGRAM_RIGHTS_CONFIRMED="${PROGRAM_RIGHTS_CONFIRMED:-false}"
 PROGRAM_FILE="/tmp/multik-tv-program.webm"
 DOWNLOAD_LOG="/tmp/multik-tv-download.log"
-WEATHER_TIME="${WEATHER_TIME:-10:00}"
+WEATHER_TIME="${WEATHER_TIME:-07:30}"
 export TZ="${BROADCAST_TZ:-Europe/Moscow}"
 if [[ ! "$WEATHER_TIME" =~ ^([01][0-9]|2[0-3]):[0-5][0-9]$ ]]; then
   echo "Invalid WEATHER_TIME (expected HH:MM): $WEATHER_TIME" >&2
