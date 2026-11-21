@@ -10,6 +10,20 @@
 <section class="section"><div class="head"><div><h2>💡 Предложить номинанта</h2><p class="muted">Помоги сформировать следующий список финалистов</p></div></div><div class="formbox"><div class="fields"><label>Номинация<select id="suggestCategory"></select></label><label>Имя героя, название передачи или песни<input id="suggestName" maxlength="70" placeholder="Например, герой из нашей программы"></label></div><p>Не указывай личные данные, контакты или ссылки на личные страницы. Предложение сохранится только в этом браузере и пока не отправляется организаторам.</p><button class="btn" id="suggestBtn">Сохранить предложение</button><div class="resultline" id="suggestResult"></div><div id="suggestions" class="muted"></div></div></section>
 <section class="section"><div class="head"><div><h2>🎓 Диплом зрителя-жюри</h2><p class="muted">После голосования можно распечатать памятный диплом без личных данных.</p></div></div><div class="diploma"><div style="font-size:42px">🏆 ⭐ 🏆</div><div class="kicker" style="color:#8b65bd">ЗВЁЗДНЫЙ ВЫБОР</div><h3>Диплом зрителя-жюри</h3><p id="diplomaStatus">Проголосуй в номинациях, чтобы получить диплом участника зрительского жюри.</p><button class="btn" id="printDiploma">Распечатать диплом</button></div></section>
 <section class="section" id="seasonSync"><div class="head"><div><h2>🎉 Премия проходит одновременно с «Главными героями»</h2><p class="muted" id="seasonCaption">Календарь сезона</p></div></div><div class="notice" id="seasonStatus">Проверяем календарь сезона…</div><div class="steps" id="seasonStages"><div class="step"><b>Приём предложений</b><span>Ориентир: начало августа</span></div><div class="step"><b>Формирование финалистов</b><span>Ориентир: август — сентябрь</span></div><div class="step"><b>Голосование</b><span>Ориентир: сентябрь — октябрь</span></div><div class="step"><b>Церемония</b><span>Ориентир: конец октября — начало ноября</span></div></div><p class="muted">Даты следующего сезона появятся здесь после официального объявления телеканала «Карусель». Мы не выдаём примерные даты за подтверждённые.</p></section>
+<section class="section" id="our-contests">
+<div class="head"><div><h2>🎨 Конкурсы нашего канала</h2><p class="muted">Творческие задания, семейные недели и тематические состязания — по календарю конкурсов «Карусели»</p></div></div>
+<div class="notice"><b>Как это работает:</b> мы запускаем собственные конкурсы в те же сезонные периоды, когда на сайте «Карусели» проходят соответствующие тематические конкурсы. Задания, названия и оформление у нас оригинальные. Даты сверяются с официальными анонсами и могут обновляться.</div>
+<div class="grid" id="contestCards">
+<article class="card"><div class="cardtop"><div class="icon">🌊</div><div><h3>Мир удивительных открытий</h3><p>Творческий конкурс рисунков</p></div></div><p>Придумай и нарисуй необычное подводное место, его обитателей или фантастический морской город.</p><p class="muted">Период сезона: 12 ноября — 11 декабря 2026</p><span class="result">Приём работ открыт до 11 декабря</span></article>
+<article class="card"><div class="cardtop"><div class="icon">🔎</div><div><h3>Найди героя в картинке</h3><p>Конкурс внимательности и наблюдательности</p></div></div><p>Рассмотри авторскую иллюстрацию и найди спрятанные предметы и персонажей. Ответы — в игровой форме, без личных данных.</p><p class="muted">Период сезона: 1 — 30 ноября 2026</p><span class="result">Приём ответов открыт до 30 ноября</span></article>
+<article class="card"><div class="cardtop"><div class="icon">👨‍👩‍👧‍👦</div><div><h3>Неделя семейных идей</h3><p>Семейный творческий марафон</p></div></div><p>Каждую неделю новое доброе задание: придумать настольную игру, нарисовать семейную эмблему или сочинить короткую историю.</p><p class="muted">Запуск — в тематические недели сезона</p><span class="result">Следующий этап объявим отдельно</span></article>
+<article class="card"><div class="cardtop"><div class="icon">🧩</div><div><h3>Большая викторина</h3><p>Вопросы и головоломки</p></div></div><p>Раунды на знания, логику и внимательность. Можно проходить самостоятельно или вместе с семьёй.</p><p class="muted">Короткие тематические этапы в течение года</p><span class="result">Скоро новый раунд</span></article>
+<article class="card"><div class="cardtop"><div class="icon">✂️</div><div><h3>Мастерская фантазии</h3><p>Рисунки, поделки и коллажи</p></div></div><p>Создай поделку из безопасных бытовых материалов или нарисуй собственный необычный предмет. Никаких опасных инструментов.</p><p class="muted">Сезонные творческие выпуски</p><span class="result">Ожидает объявления задания</span></article>
+<article class="card"><div class="cardtop"><div class="icon">🎬</div><div><h3>История за минуту</h3><p>Конкурс коротких историй</p></div></div><p>Придумай небольшую историю о дружбе, доброте или открытии. Можно отправить только текст без фотографий и личной информации.</p><p class="muted">Тематические недели в течение года</p><span class="result">Ожидает объявления задания</span></article>
+</div>
+<div class="formbox" style="margin-top:16px"><h3 style="margin-top:0">💡 Предложить идею для следующего конкурса</h3><div class="fields"><label>Тема конкурса<input id="contestIdea" maxlength="80" placeholder="Например, неделя загадок"></label><label>Формат<select id="contestFormat"><option>Рисунок или поделка</option><option>Викторина или головоломка</option><option>Семейное творческое задание</option><option>Короткая история</option></select></label></div><p>Не отправляй имя, адрес, телефон, школу, фотографии или другие личные сведения. Идея сохраняется только в этом браузере и не публикуется.</p><button class="btn" id="contestIdeaBtn">Сохранить идею</button><div class="resultline" id="contestIdeaResult" aria-live="polite"></div></div>
+<p class="muted" style="margin-top:14px">Официальный календарь для сверки дат: <a href="https://www.karusel-tv.ru/contest" target="_blank" rel="noopener">конкурсы телеканала «Карусель»</a>. Их правила и работы не копируются; у нашего канала свои задания и условия.</p>
+</section>
 </main><footer class="footer"><div class="wrap">«Звёздный выбор» — собственная премия канала · <a href="rights-and-content.html">Права на материалы</a></div></footer>
 <script>
 (()=>{
@@ -48,6 +62,19 @@ if(now.getFullYear()===2026){
  seasonCaption.textContent='Ожидание официального календаря '+now.getFullYear()+' года';
  seasonStatus.textContent='Наша премия будет запускаться в период премии «Главные Герои». Точные даты следующего сезона пока не опубликованы телеканалом «Карусель»; календарь обновим после официального анонса.';
 }
+document.getElementById('contestIdeaBtn').addEventListener('click',()=>{
+ const idea=document.getElementById('contestIdea').value.trim();
+ const format=document.getElementById('contestFormat').value;
+ const out=document.getElementById('contestIdeaResult');
+ if(!idea){out.textContent='Сначала напиши тему конкурса.';return;}
+ try{
+  const items=JSON.parse(localStorage.getItem('channel-contest-ideas')||'[]');
+  items.push({idea,format,createdAt:new Date().toISOString()});
+  localStorage.setItem('channel-contest-ideas',JSON.stringify(items));
+  document.getElementById('contestIdea').value='';
+  out.textContent='Идея сохранена на этом устройстве. Она пока не отправлена организаторам.';
+ }catch(e){out.textContent='Не удалось сохранить идею в этом браузере.';}
+});
 const root=document.getElementById('nominations');
 const votes=()=>{try{return JSON.parse(localStorage.getItem('star-awards-votes')||'{}')}catch{return {}}};
 function render(){
