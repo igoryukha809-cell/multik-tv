@@ -40,6 +40,7 @@ printf '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:5\n#EXT-X-MEDIA-SEQUENC
 SRS_PID=$!
 FFMPEG_PID=""
 DOWNLOAD_PID=""
+scheduled_weather_date=""
 
 cleanup() {
   [[ -z "$FFMPEG_PID" ]] || kill "$FFMPEG_PID" 2>/dev/null || true
@@ -651,8 +652,14 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     birthday_today=1
   fi
   PLAY_FIRST_LAUNCH_COUNTDOWN=0
-  claim_response="$(curl -fsS --connect-timeout 5 --max-time 15 -X POST \
-    "https://hryyvwzkyxhmpmvvdqqx.supabase.co/functions/v1/channel-launch-claim" 2>/dev/null || true)"
+  claim_response=""
+  if [[ -n "${CHANNEL_LAUNCH_CLAIM_TOKEN:-}" ]]; then
+    claim_response="$(curl -fsS --connect-timeout 5 --max-time 15 -X POST \
+      -H "Authorization: Bearer ${CHANNEL_LAUNCH_CLAIM_TOKEN}" \
+      "https://hryyvwzkyxhmpmvvdqqx.supabase.co/functions/v1/channel-launch-claim" 2>/dev/null || true)"
+  else
+    echo "STARTUP: CHANNEL_LAUNCH_CLAIM_TOKEN is not configured; skipping persistent first-launch check."
+  fi
   if [[ "${claim_response}" == *'"play_countdown":true'* ]]; then
     PLAY_FIRST_LAUNCH_COUNTDOWN=1
     make_launch_countdown
@@ -919,11 +926,11 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
 
     if kill -0 "$FFMPEG_PID" 2>/dev/null; then kill "$FFMPEG_PID" 2>/dev/null || true; fi
     wait_result=0
-    wait "$FFMPEG_PID" || wait_result=$?
+    wait "$FFMPEG_PID" 2>/dev/null || wait_result=$?
     if (( result == 0 )); then result=$wait_result; fi
     FFMPEG_PID=""
     if (( result == 127 )) && [[ -n "${scheduled_weather_date:-}" ]]; then
-      echo "SCHEDULE: airing weather programme for $scheduled_weather_date (Europe/Moscow)."
+      echo "SCHEDULE: airing weather programme for ${scheduled_weather_date:-unknown} (Europe/Moscow)."
       write_health "starting" "Switching to the scheduled daily weather programme"
       play_channel_ident || echo "WARNING: channel ident failed before scheduled weather."
       if ! ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$WEATHER_VIDEO" \
@@ -935,7 +942,7 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
           -f flv rtmp://127.0.0.1/live/multiktv; then
         echo "WARNING: scheduled weather playback failed; returning to the main programme."
       fi
-      LAST_WEATHER_DATE="$scheduled_weather_date"
+      LAST_WEATHER_DATE="${scheduled_weather_date:-$LAST_WEATHER_DATE}"
       write_health "recovering" "Scheduled weather programme finished; resuming the continuous programme"
       continue
     fi
@@ -958,4 +965,10 @@ else
   while kill -0 "$SRS_PID" 2>/dev/null; do sleep 5; done
 fi
 
-wait "$SRS_PID"
+if wait "$SRS_PID" 2>/dev/null; then
+  :
+else
+  srs_exit_code=$?
+  echo "CRITICAL: SRS process ended (wait status $srs_exit_code); requesting platform restart."
+  exit 1
+fi
