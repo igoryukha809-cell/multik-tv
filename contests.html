@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#fff8ed">
+<title>Звёздный выбор — конкурсы и премия</title>
+<style>
+:root{--ink:#302d52;--muted:#77758d;--purple:#6245b8;--pink:#ed6099;--line:#eee6ed}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);font:15px/1.55 system-ui,Arial,sans-serif;background:linear-gradient(180deg,#fff8ed,#fff 420px)}
+.rainbow{height:7px;background:linear-gradient(90deg,#f15e9c,#ffd65a,#67cda7,#52c7e8,#9273e6)}
+.wrap{width:min(1080px,calc(100% - 32px));margin:auto}header{padding:20px 0 28px}.nav{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-weight:850}.nav a{color:var(--purple);text-decoration:none}
+.hero{margin-top:28px;padding:clamp(24px,5vw,54px);border-radius:26px;background:linear-gradient(120deg,#6347b8,#9a69c9 55%,#ee8db5);color:white;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;width:250px;height:250px;border:35px solid #ffffff20;border-radius:50%;right:-55px;top:-95px}
+.kicker{font-size:12px;font-weight:950;letter-spacing:.12em;text-transform:uppercase;color:#ffefb0}.hero h1{font-size:clamp(34px,6vw,62px);line-height:1.02;margin:12px 0}.hero p{max-width:630px;color:#f4edff}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}.pill{background:#ffffff22;border:1px solid #ffffff55;border-radius:99px;padding:7px 12px;font-size:12px;font-weight:850}
+main{padding:24px 0 55px}.section{margin:26px 0 38px}.head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:15px}.head h2{font-size:clamp(23px,4vw,30px);margin:0}.muted{color:var(--muted);font-size:13px;margin:4px 0 0}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.card{border:1px solid var(--line);border-radius:18px;background:white;padding:17px;box-shadow:0 8px 24px #49345b0a}.icon{height:112px;border-radius:14px;display:grid;place-items:center;font-size:54px;background:linear-gradient(135deg,#ffe6a5,#ffc2d7);margin-bottom:13px}.card:nth-child(3n+2) .icon{background:linear-gradient(135deg,#c8f1e2,#a9dcf5)}.card:nth-child(3n) .icon{background:linear-gradient(135deg,#d9ceff,#f2c4e4)}
+.card h3{margin:0 0 5px;font-size:17px}.card p{color:var(--muted);font-size:13px;margin:0 0 13px}.btn{border:0;border-radius:11px;padding:10px 14px;background:var(--purple);color:white;font-weight:850;cursor:pointer}.btn.alt{background:#f7edf7;color:#6845a4}.btn:disabled{opacity:.55;cursor:default}
+.nominee{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #f0edf3}.nominee:first-of-type{border-top:0}.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#fff0bd;font-size:21px;flex:none}.nominee strong{display:block;font-size:13px}.nominee small{color:var(--muted)}
+.vote{margin-left:auto;white-space:nowrap;padding:8px 10px;font-size:12px}
+.note{border-radius:16px;padding:15px 17px;background:#fff3d9;color:#705324;font-size:13px}
+.challenge{background:#f7f3ff;border-radius:20px;padding:20px}.challenge h3{margin:0 0 8px}.challenge ol{padding-left:22px;color:#595474}.idea{border:1px solid #e4dcef;background:white;border-radius:12px;padding:12px;width:100%;font:inherit;min-height:105px;color:var(--ink)}
+.result{font-size:13px;color:#5a8b65;font-weight:800;min-height:20px}
+footer{background:#2e2851;color:#e8e2f8;padding:22px 0;font-size:12px}footer a{color:white}
+@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:480px){.grid{grid-template-columns:1fr}.wrap{width:calc(100% - 24px)}}
+</style>
+</head>
+<body><div class="rainbow"></div>
+<header class="wrap"><nav class="nav"><a href="index.html">← На главную</a><a href="tv.html">📺 Смотреть эфир</a></nav>
+<section class="hero"><div class="kicker">Конкурсы • творчество • зрительский выбор</div><h1>Звёздный<br>выбор</h1><p>Наши зрители выбирают любимых героев, мультфильмы и программы, а ещё придумывают собственные истории и творческие проекты.</p><div class="pills"><span class="pill">🏆 Ежегодная премия</span><span class="pill">🎨 Творческие задания</span><span class="pill">⭐ Голосование зрителей</span></div></section>
+</header>
+<main class="wrap">
+<section class="section"><div class="head"><div><h2>🏆 Премия «Звёздный выбор»</h2><p class="muted">Пробные номинации первого сезона</p></div></div>
+<div class="note">Это демонстрационный запуск: голоса пока сохраняются только в этом браузере и не попадают в общий рейтинг. Мы не собираем имена, адреса, телефоны или фотографии. Никаких денежных призов или обещаний выигрыша.</div>
+<div class="grid" id="awards">
+<article class="card" data-category="hero"><div class="icon">🦸</div><h3>Главный герой</h3><p>Кто вдохновляет добротой, смелостью и находчивостью?</p><div class="nominee"><span class="avatar">🦊</span><span><strong>Лисёнок Финик</strong><small>Любознательный исследователь</small></span><button class="btn vote" data-vote="hero:finik">Выбрать</button></div><div class="nominee"><span class="avatar">🐻</span><span><strong>Мишка Топ</strong><small>Верный и заботливый друг</small></span><button class="btn vote" data-vote="hero:top">Выбрать</button></div><div class="nominee"><span class="avatar">🐧</span><span><strong>Пингвин Плюх</strong><small>Весёлый изобретатель</small></span><button class="btn vote" data-vote="hero:plyuh">Выбрать</button></div><p class="result" id="result-hero"></p></article>
+<article class="card" data-category="show"><div class="icon">🎬</div><h3>Любимая история</h3><p>Какой формат хочется смотреть снова?</p><div class="nominee"><span class="avatar">🌲</span><span><strong>Лесные открытия</strong><small>Приключения и природа</small></span><button class="btn vote" data-vote="show:forest">Выбрать</button></div><div class="nominee"><span class="avatar">🚀</span><span><strong>Космокоманда</strong><small>Наука и фантазия</small></span><button class="btn vote" data-vote="show:space">Выбрать</button></div><div class="nominee"><span class="avatar">🏡</span><span><strong>Соседи-друзья</strong><small>Добрые комедийные истории</small></span><button class="btn vote" data-vote="show:friends">Выбрать</button></div><p class="result" id="result-show"></p></article>
+<article class="card" data-category="song"><div class="icon">🎵</div><h3>Песня настроения</h3><p>Какой музыкальный стиль поднимает настроение?</p><div class="nominee"><span class="avatar">🌈</span><span><strong>Радужный день</strong><small>Весёлая поп-песня</small></span><button class="btn vote" data-vote="song:rainbow">Выбрать</button></div><div class="nominee"><span class="avatar">🌙</span><span><strong>Звёздная колыбельная</strong><small>Спокойная мелодия</small></span><button class="btn vote" data-vote="song:star">Выбрать</button></div><div class="nominee"><span class="avatar">🥁</span><span><strong>Танец барабанов</strong><small>Ритмичная песня</small></span><button class="btn vote" data-vote="song:drums">Выбрать</button></div><p class="result" id="result-song"></p></article>
+</div></section>
+<section class="section"><div class="head"><div><h2>🎨 Конкурсы недели</h2><p class="muted">Участвуй творчеством — без регистрации и отправки личных данных</p></div></div>
+<div class="grid">
+<article class="card"><div class="icon">✏️</div><h3>Придумай нового героя</h3><p>Создай персонажа, придумай ему имя, характер и суперспособность, которая помогает другим.</p><button class="btn alt" data-prompt="hero">Получить задание</button></article>
+<article class="card"><div class="icon">📚</div><h3>История за 5 картинок</h3><p>Нарисуй пять кадров: знакомство, загадка, неожиданность, решение и счастливый финал.</p><button class="btn alt" data-prompt="story">Получить задание</button></article>
+<article class="card"><div class="icon">🌍</div><h3>Мой удивительный мир</h3><p>Нарисуй место, где всем комфортно, безопасно и интересно. Добавь три необычных правила.</p><button class="btn alt" data-prompt="world">Получить задание</button></article>
+</div><div class="challenge" style="margin-top:14px"><h3 id="taskTitle">Творческая мастерская</h3><p id="taskText">Нажми «Получить задание» в любом конкурсе — здесь появится подробная идея.</p><textarea class="idea" id="draft" placeholder="Можно набросать свою идею здесь. Текст останется только открытым в этой вкладке."></textarea><p class="muted">Черновик никуда не отправляется. Если захочешь участвовать в будущем публичном конкурсе, сначала обсуди это с родителем или опекуном.</p></div></section>
+<section class="section"><div class="head"><div><h2>📅 Как будет проходить сезон</h2><p class="muted">План собственного проекта</p></div></div><div class="grid">
+<article class="card"><h3>1. Творческий этап</h3><p>Публикуем новое задание, участники создают рисунки, истории или поделки у себя дома.</p></article>
+<article class="card"><h3>2. Выбор зрителей</h3><p>После запуска общего сервера можно будет открыть публичное голосование с прозрачными правилами.</p></article>
+<article class="card"><h3>3. Церемония</h3><p>Объявляем результаты и показываем подборку творческих идей с разрешения авторов и взрослых.</p></article>
+</div></section>
+</main><footer><div class="wrap">Звёздный выбор · Собственные персонажи и конкурсы · <a href="rights-and-content.html">Права на материалы</a></div></footer>
+<script>
+(()=>{
+const keys=['hero','show','song'];
+function update(){
+ for(const key of keys){
+  const selected=localStorage.getItem('star-choice-'+key);
+  const out=document.getElementById('result-'+key);
+  if(selected){out.textContent='Твой выбор: '+selected+'. Голос сохранён только на этом устройстве.';}
+  document.querySelectorAll('[data-vote^="'+key+':"]').forEach(b=>{b.disabled=!!selected;b.textContent=selected&&b.dataset.vote===key+':'+selected?'Твой выбор':'Выбрать'});
+ }
+}
+document.querySelectorAll('[data-vote]').forEach(b=>b.addEventListener('click',()=>{
+ const [category,choice]=b.dataset.vote.split(':');
+ if(localStorage.getItem('star-choice-'+category))return;
+ localStorage.setItem('star-choice-'+category,choice);update();
+}));
+const prompts={
+ hero:['Придумай нового героя','Нарисуй персонажа, придумай имя, три черты характера и способность, с помощью которой он решает добрую задачу.'],
+ story:['История за 5 картинок','Нарисуй пять кадров: 1) знакомство с героем; 2) загадка; 3) неожиданное событие; 4) командное решение; 5) финал.'],
+ world:['Мой удивительный мир','Изобрази необычное место, где всем комфортно и безопасно. Добавь трёх жителей и три правила, которые помогают им дружить.']
+};
+document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>{
+ const p=prompts[b.dataset.prompt];document.getElementById('taskTitle').textContent=p[0];document.getElementById('taskText').textContent=p[1];
+}));
+update();
+})();
+</script></body></html>
