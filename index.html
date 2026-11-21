@@ -90,7 +90,7 @@ footer{background:#29234f;color:#e5e0f7;padding:24px 0;font-size:12px}.foot{disp
 
 <script>
 (() => {
-  const pattern = /поддержать\\s+канал|донат|donate|donationalerts/i;
+  const pattern = /поддержать.{0,10}канал|донат|donate|donationalerts/i;
   const selectors = 'a,button,[role="button"],iframe';
   function removeDonationControls(root) {
     const nodes = [];
