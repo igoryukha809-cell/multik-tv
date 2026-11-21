@@ -176,8 +176,42 @@ const airPromos=[
  {type:'КОНКУРС · ИСТОРИЯ',emoji:'📖 ✨ 🎥',title:'Расскажи историю за минуту!',text:'Придумай короткий рассказ о дружбе, добром поступке или неожиданном открытии. Ждём твою историю — только без личных данных.'},
  {type:'НОВОСТИ КАНАЛА',emoji:'📺 🔔 🌈',title:'Не пропусти новости канала!',text:'Новые конкурсы, этапы премии, результаты и специальные события — следи за объявлениями и расписанием на сайте нашего канала!'}
 ];
-let airIndex=0,airTimer=null,airEnabled=false;
+let airIndex=0,airTimer=null,airEnabled=false,airAudioUrl=null,airAudioRequest=0;
 const airEl=document.getElementById('airPromo');
+const piperAudio=new Audio();
+piperAudio.preload='none';
+const PIPER_TTS_URL='https://channel-voice-tts.onrender.com/api/tts';
+async function speakAirPromo(p){
+ if(!airEnabled)return;
+ const requestId=++airAudioRequest;
+ try{
+  const response=await fetch(PIPER_TTS_URL,{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({text:p.title+'. '+p.text,rate:1.0})
+  });
+  if(!response.ok)throw new Error('TTS HTTP '+response.status);
+  const blob=await response.blob();
+  if(requestId!==airAudioRequest||!airEnabled||document.hidden)return;
+  if(airAudioUrl)URL.revokeObjectURL(airAudioUrl);
+  airAudioUrl=URL.createObjectURL(blob);
+  piperAudio.src=airAudioUrl;
+  await piperAudio.play();
+ }catch(error){
+  console.warn('Piper voice unavailable; using browser voice fallback.',error);
+  if(requestId!==airAudioRequest||!airEnabled||!('speechSynthesis'in window))return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(p.title+'. '+p.text);
+  u.lang='ru-RU';u.rate=.94;u.pitch=1.04;
+  const ru=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith('ru'));
+  if(ru)u.voice=ru;
+  speechSynthesis.speak(u);
+ }
+}
+function stopAirAudio(){
+ airAudioRequest++;
+ piperAudio.pause();piperAudio.currentTime=0;
+ if('speechSynthesis'in window)speechSynthesis.cancel();
+}
 function showAirPromo(){
  if(!airEl||document.hidden)return;
  const p=airPromos[airIndex++%airPromos.length];
@@ -186,26 +220,33 @@ function showAirPromo(){
  document.getElementById('airTitle').textContent=p.title;
  document.getElementById('airText').textContent=p.text;
  airEl.classList.add('show');
- if(airEnabled&&'speechSynthesis' in window){
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(p.title+'. '+p.text);
-  u.lang='ru-RU';u.rate=.94;u.pitch=1.08;
-  const voices=speechSynthesis.getVoices();
-  const ru=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith('ru'));
-  if(ru)u.voice=ru;
-  speechSynthesis.speak(u);
- }
+ speakAirPromo(p);
  clearTimeout(airTimer);
- airTimer=setTimeout(()=>{airEl.classList.remove('show');if(airEnabled&&'speechSynthesis'in window)speechSynthesis.cancel();},15000);
+ airTimer=setTimeout(()=>{airEl.classList.remove('show');stopAirAudio();},15000);
 }
-function enableAirAudio(){
+async function enableAirAudio(){
  airEnabled=true;
- if('speechSynthesis'in window){
-  const p=airPromos[airIndex%airPromos.length];
-  const u=new SpeechSynthesisUtterance('Звуковые объявления канала включены.');
-  u.lang='ru-RU';speechSynthesis.speak(u);
- }
- const b=document.getElementById('airAudio');if(b)b.textContent='🔊 Озвучка объявлений включена';
+ const b=document.getElementById('airAudio');
+ if(b){b.disabled=true;b.textContent='⏳ Подключаем голос…';}
+ try{
+  const response=await fetch(PIPER_TTS_URL,{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({text:'Объявления нашего канала теперь озвучиваются отдельным голосом.',rate:1.0})
+  });
+  if(!response.ok)throw new Error('TTS HTTP '+response.status);
+  const blob=await response.blob();
+  if(airAudioUrl)URL.revokeObjectURL(airAudioUrl);
+  airAudioUrl=URL.createObjectURL(blob);piperAudio.src=airAudioUrl;
+  await piperAudio.play();
+  if(b)b.textContent='🔊 Озвучка Piper включена';
+ }catch(error){
+  console.warn('Piper voice connection failed.',error);
+  if(b)b.textContent='🔊 Включена резервная озвучка';
+  if('speechSynthesis'in window){
+   const u=new SpeechSynthesisUtterance('Озвучка объявлений включена.');
+   u.lang='ru-RU';speechSynthesis.speak(u);
+  }
+ }finally{if(b)b.disabled=false;}
 }
 const overlay=document.getElementById('broadcastOverlay');
 const seasons=[
@@ -236,12 +277,12 @@ function applyBroadcastTheme(){
 }
 applyBroadcastTheme();
 const airButton=document.createElement('button');
-airButton.id='airAudio';airButton.type='button';airButton.textContent='🔊 Включить озвучку объявлений';
+airButton.id='airAudio';airButton.type='button';airButton.textContent='🔊 Включить голос Piper';
 airButton.addEventListener('click',enableAirAudio);
 document.querySelector('#live-broadcast .live-note').after(airButton);
 setTimeout(showAirPromo,12000);
 setInterval(()=>{if(!airEl.classList.contains('show'))showAirPromo()},8*60*1000);
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&'speechSynthesis'in window)speechSynthesis.cancel()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAirAudio()});
 
 setInterval(applyBroadcastTheme,60000);
 const $=id=>document.getElementById(id);
