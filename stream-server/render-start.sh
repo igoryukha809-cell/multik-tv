@@ -15,6 +15,7 @@ if [[ ! "$WEATHER_TIME" =~ ^([01][0-9]|2[0-3]):[0-5][0-9]$ ]]; then
 fi
 WEATHER_DIR="/tmp/multik-tv-weather"
 WEATHER_VIDEO="/tmp/multik-tv-weather-show.mp4"
+BIRTHDAY_VIDEO="/tmp/multik-tv-channel-birthday.mp4"
 ORIGINAL_DIR="/usr/local/srs/originals"
 CAPTION_DIR="/usr/local/srs/objs/nginx/html/captions"
 WEATHER_FONT="/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
@@ -74,6 +75,22 @@ play_channel_ident() {
     -filter_complex "[0:v]drawbox=x=(w-430)/2+sin(t*1.4)*42:y=42:w=430:h=5:color=0xff5f9e@0.9:t=fill,drawbox=x=(w-430)/2+sin(t*1.4)*42:y=54:w=430:h=5:color=0xffcf4b@0.9:t=fill,drawbox=x=(w-430)/2+sin(t*1.4)*42:y=66:w=430:h=5:color=0x66d5a7@0.9:t=fill,drawbox=x=(w-430)/2+sin(t*1.4)*42:y=78:w=430:h=5:color=0x53c8ee@0.9:t=fill,drawbox=x=(w-430)/2+sin(t*1.4)*42:y=90:w=430:h=5:color=0x9475e8@0.9:t=fill[bg];[2:v]scale=270:270,format=rgba,fade=t=in:st=0:d=0.6:alpha=1,fade=t=out:st=5.9:d=0.6:alpha=1[logo];[bg][logo]overlay=x=(W-w)/2:y=72+8*sin(t*2):shortest=1,drawtext=fontfile=${WEATHER_FONT}:text='МУЛЬТИК ТВ':fontcolor=white:fontsize=76:x=(w-text_w)/2:y=372:shadowcolor=black@0.5:shadowx=3:shadowy=3,drawtext=fontfile=${WEATHER_FONT}:text='ВМЕСТЕ ИНТЕРЕСНЕЕ':fontcolor=0xffe27d:fontsize=30:x=(w-text_w)/2:y=474,drawtext=fontfile=${WEATHER_FONT}:text='ТВОЙ МИР ИСТОРИЙ И ОТКРЫТИЙ':fontcolor=0xded7ff:fontsize=18:x=(w-text_w)/2:y=535[v];[1:a]afade=t=in:st=0:d=0.08,afade=t=out:st=5.9:d=0.6[a]" \
     -map "[v]" -map "[a]" -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 -b:v 1400k -maxrate 1400k -bufsize 2800k \
     -c:a aac -b:a 128k -ar 44100 -ac 2 -shortest -f flv rtmp://127.0.0.1/live/multiktv
+}
+
+
+make_channel_birthday_bumper() {
+  local title_file="/tmp/channel-birthday-title.txt" sub_file="/tmp/channel-birthday-sub.txt"
+  printf '%s\\n' 'С ДНЁМ РОЖДЕНИЯ, НАШ КАНАЛ!' > "$title_file"
+  printf '%s\\n' '17 НОЯБРЯ — ДЕНЬ НАШЕЙ ИСТОРИИ' 'СПАСИБО, ЧТО ВЫ С НАМИ!' > "$sub_file"
+  echo "Создаю 12-секундную праздничную заставку для общего видеосигнала."
+  ffmpeg -hide_banner -nostdin -loglevel warning -y -t 12 \\
+    -f lavfi -i "color=c=0x542c91:s=1280x720:r=25:d=12" \\
+    -f lavfi -i 'aevalsrc=0.12*(if(between(t\\,0\\,0.45)\\,sin(2*PI*523.25*t)\\,0)+if(between(t\\,0.45\\,0.9)\\,sin(2*PI*659.25*t)\\,0)+if(between(t\\,0.9\\,1.35)\\,sin(2*PI*783.99*t)\\,0)+if(between(t\\,1.35\\,1.8)\\,sin(2*PI*1046.5*t)\\,0)+if(between(t\\,1.8\\,2.25)\\,sin(2*PI*880*t)\\,0)+if(between(t\\,2.25\\,2.7)\\,sin(2*PI*783.99*t)\\,0)+if(between(t\\,2.7\\,3.15)\\,sin(2*PI*659.25*t)\\,0)+if(between(t\\,3.15\\,3.6)\\,sin(2*PI*783.99*t)\\,0)+if(between(t\\,3.6\\,4.5)\\,sin(2*PI*1046.5*t)\\,0)+if(between(t\\,4.5\\,5.4)\\,sin(2*PI*783.99*t)\\,0)+if(between(t\\,5.4\\,12)\\,sin(2*PI*523.25*t)*exp(-(t-5.4)*0.18)\\,0)):s=44100:d=12' \\
+    -loop 1 -framerate 25 -i /usr/local/srs/brand.png \\
+    -filter_complex "[0:v]drawbox=x='80+35*sin(t*1.3)':y=45:w=1120:h=8:color=0xffd45e@0.95:t=fill,drawbox=x='100+65*cos(t*1.1)':y=650:w=1080:h=7:color=0xff8fcf@0.9:t=fill,drawbox=x='120+mod(t*90\\,1000)':y='120+35*sin(t*2)':w=18:h=18:color=0xffdf79@0.9:t=fill,drawbox=x='1000-mod(t*75\\,900)':y='500-30*cos(t*2)':w=16:h=16:color=0xff9ccf@0.9:t=fill,drawtext=fontfile=${WEATHER_FONT}:textfile=${title_file}:fontcolor=white:fontsize=58:borderw=3:bordercolor=0x36205f:x=(w-text_w)/2:y=350:shadowcolor=black@0.4:shadowx=3:shadowy=3,drawtext=fontfile=${WEATHER_FONT}:textfile=${sub_file}:fontcolor=0xffe7a0:fontsize=27:line_spacing=16:x=(w-text_w)/2:y=455:shadowcolor=black@0.4:shadowx=2:shadowy=2[bg];[2:v]scale=210:210,format=rgba,fade=t=in:st=0:d=0.8:alpha=1,fade=t=out:st=11:d=0.8:alpha=1[logo];[bg][logo]overlay=x=(W-w)/2:y=85+10*sin(t*2):shortest=1[v]" \\
+    -map "[v]" -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \\
+    -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest "$BIRTHDAY_VIDEO"
+  ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$BIRTHDAY_VIDEO" >/dev/null
 }
 
 start_test_signal() {
@@ -575,7 +592,9 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     exit 1
   fi
   echo "Единый файл готов; запускаю один циклический MP4-поток."
+  make_channel_birthday_bumper
   restart_delay=2
+  LAST_BIRTHDAY_DATE="$(date -d yesterday +%F)"
   while kill -0 "$SRS_PID" 2>/dev/null; do
     write_health "starting" "Starting continuous MP4 publisher"
     result=0
@@ -670,6 +689,13 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
       while kill -0 "$FFMPEG_PID" 2>/dev/null; do
         current_date="$(date +%F)"
         current_clock="$(date '+%H:%M')"
+        if [[ "$(date '+%m-%d')" == "11-17" && "$current_date" != "$LAST_BIRTHDAY_DATE" ]]; then
+          echo "SCHEDULE: 17 November reached; switching the shared live video signal to the channel birthday bumper."
+          result=128
+          scheduled_birthday_date="$current_date"
+          kill "$FFMPEG_PID" 2>/dev/null || true
+          break
+        fi
         if (( WEATHER_READY )) && [[ "$current_date" != "$LAST_WEATHER_DATE" && ( "$current_clock" == "$WEATHER_TIME" || "$current_clock" > "$WEATHER_TIME" ) ]]; then
           echo "SCHEDULE: Moscow time $WEATHER_TIME reached; preparing today's weather while the main programme remains on air."
           if generate_weather_show && [[ -s "$WEATHER_VIDEO" ]] && ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$WEATHER_VIDEO" >/dev/null 2>&1; then
@@ -752,6 +778,22 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     wait "$FFMPEG_PID" || wait_result=$?
     if (( result == 0 )); then result=$wait_result; fi
     FFMPEG_PID=""
+    if (( result == 128 )); then
+      echo "SCHEDULE: airing channel birthday bumper for $scheduled_birthday_date (Europe/Moscow)."
+      write_health "starting" "Switching the shared live signal to the annual channel birthday bumper"
+      if ! ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$BIRTHDAY_VIDEO" \\
+          -map 0:v:0 -map 0:a:0? \\
+          -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20" \\
+          -c:v libx264 -preset ultrafast -tune zerolatency -threads 1 -pix_fmt yuv420p -r 20 -g 40 \\
+          -b:v 450k -maxrate 450k -bufsize 900k \\
+          -c:a aac -b:a 96k -ar 44100 -ac 2 \\
+          -f flv rtmp://127.0.0.1/live/multiktv; then
+        echo "WARNING: birthday bumper playback failed; returning to the main programme."
+      fi
+      LAST_BIRTHDAY_DATE="$scheduled_birthday_date"
+      write_health "recovering" "Channel birthday bumper finished; resuming the continuous programme"
+      continue
+    fi
     if (( result == 127 )); then
       echo "SCHEDULE: airing weather programme for $scheduled_weather_date (Europe/Moscow)."
       write_health "starting" "Switching to the scheduled daily weather programme"
