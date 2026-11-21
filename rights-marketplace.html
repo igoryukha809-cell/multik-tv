@@ -34,6 +34,25 @@ footer{background:#29234f;color:#e5e0f7;padding:20px 0;font-size:12px}footer a{c
 <article class="card"><span class="tag">Детская анимация</span><h2>ZDF Studios — Junior</h2><p>Отдел международных продаж детских и подростковых программ, включая анимационные сериалы. Условия и территории нужно запрашивать у отдела продаж.</p><a href="https://www.zdf-studios.com/en/company/genre-departments/junior" target="_blank" rel="noopener noreferrer">Программы и лицензирование ↗</a></article>
 </section>
 <section class="steps"><h2>Как МУЛЬТИК ТВ будет подбирать предложения</h2><ol><li>Выбрать детскую анимацию и подходящий возраст.</li><li>Запросить у продавца доступность прав для территории показа и интернет-трансляции.</li><li>Сравнить срок лицензии, языковую дорожку, число показов, эксклюзивность, стоимость и доставку файлов.</li><li>Передать предложение взрослому представителю канала для проверки договора и бюджета.</li><li>После оформления сохранить договор, подтверждение оплаты и сведения о правах в реестре канала.</li></ol><p>Важно уточнять именно права на линейную интернет-трансляцию (linear/FAST), территорию, срок, язык и возможность повторов. Обычная лицензия на VOD или просмотр на сайте может не разрешать прямой эфир.</p></section>
+<section class="steps" id="auto-recommendation"><h2>🤖 Рекомендация для канала</h2><p id="recommendation-text">Проверяем каталог канала и подбираем следующий шаг…</p><p><a href="https://www.mediabank.tv/en/buy-film-and-tv-rights/" target="_blank" rel="noopener noreferrer">Посмотреть предложения MediaBank ↗</a></p></section>
 <section class="steps"><h2>Автоматические рекомендации</h2><p>MediaBank заявляет о персональных предложениях на основе профиля покупателя и его интересов после регистрации. Прямое подключение каталога MediaBank к сайту МУЛЬТИК ТВ без официального API и учётной записи покупателя пока не настроено. Поэтому сейчас эта страница служит каталогом проверенных точек входа, а не автоматическим получателем цен и оферт.</p></section>
+<script>
+(async()=>{
+ const output=document.getElementById('recommendation-text');
+ try{
+  const response=await fetch('./broadcast/playlist.json?ts='+Date.now(),{cache:'no-store'});
+  if(!response.ok) throw new Error('catalog unavailable');
+  const data=await response.json();
+  const count=(data.items||[]).filter(item=>item.rightsConfirmed===true&&item.url).length;
+  if(count<8){
+   output.textContent='В эфирном каталоге сейчас '+count+' внешних материалов с подтверждёнными правами. Рекомендуется подобрать ещё детские мультфильмы и запросить условия лицензии у правообладателей. Покупку и договор проверяет взрослый представитель канала.';
+  }else{
+   output.textContent='В эфирном каталоге сейчас '+count+' внешних материалов с подтверждёнными правами. Можно продолжить подбор новых программ и сравнить условия лицензий.';
+  }
+ }catch(error){
+  output.textContent='Не удалось автоматически проверить каталог. Можно открыть площадки выше и запросить актуальные предложения через взрослого представителя канала.';
+ }
+})();
+</script>
 </main><footer><div class="wrap">© МУЛЬТИК ТВ · <a href="rights-and-content.html">Права на материалы</a> · <a href="admin.html">Админ-панель</a></div></footer>
 </body></html>
