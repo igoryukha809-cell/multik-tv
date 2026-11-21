@@ -44,14 +44,47 @@ footer{font-size:13px;color:#9eacd3}
 #broadcastOverlay .orb-d{left:54%;background:linear-gradient(145deg,#ff9a52,#e94c78)}
 #broadcastOverlay .orb-e{left:72%;background:linear-gradient(145deg,#b6e96c,#43aa72)}
 #broadcastOverlay .brand-name{position:relative;z-index:2;color:#fff;font-size:clamp(12px,2vw,23px);font-weight:1000;letter-spacing:-.07em;text-shadow:0 2px 3px #27304c,0 0 5px #27304c;white-space:nowrap}
+/* Сезонные палитры: обновление 1 марта, 1 июня, 1 сентября и 1 декабря. */
 #broadcastOverlay[data-season="spring"] .orb-a{background:linear-gradient(145deg,#ffd4e4,#ec83b4)}
+#broadcastOverlay[data-season="spring"] .orb-b{background:linear-gradient(145deg,#b9f0ed,#54b9ae)}
+#broadcastOverlay[data-season="spring"] .orb-c{background:linear-gradient(145deg,#f8c6f0,#c56ac4)}
+#broadcastOverlay[data-season="spring"] .orb-d{background:linear-gradient(145deg,#ffe1a8,#ee9b59)}
+#broadcastOverlay[data-season="spring"] .orb-e{background:linear-gradient(145deg,#d4f49b,#7dbb62)}
 #broadcastOverlay[data-season="summer"] .orb-a{background:linear-gradient(145deg,#fff18a,#ff9d38)}
+#broadcastOverlay[data-season="summer"] .orb-b{background:linear-gradient(145deg,#9df2f4,#22a9d5)}
+#broadcastOverlay[data-season="summer"] .orb-c{background:linear-gradient(145deg,#ffb4d6,#ed659b)}
+#broadcastOverlay[data-season="summer"] .orb-d{background:linear-gradient(145deg,#ffd17a,#f07837)}
+#broadcastOverlay[data-season="summer"] .orb-e{background:linear-gradient(145deg,#d6f27d,#64bd54)}
 #broadcastOverlay[data-season="autumn"] .orb-a{background:linear-gradient(145deg,#ffc17c,#bd6743)}
+#broadcastOverlay[data-season="autumn"] .orb-b{background:linear-gradient(145deg,#b9d9ed,#598eaa)}
+#broadcastOverlay[data-season="autumn"] .orb-c{background:linear-gradient(145deg,#e7a4c6,#a85b83)}
+#broadcastOverlay[data-season="autumn"] .orb-d{background:linear-gradient(145deg,#f4a16d,#ce563c)}
+#broadcastOverlay[data-season="autumn"] .orb-e{background:linear-gradient(145deg,#d3d889,#8a9c49)}
 #broadcastOverlay[data-season="winter"] .orb-a{background:linear-gradient(145deg,#e4f8ff,#78b9e6)}
+#broadcastOverlay[data-season="winter"] .orb-b{background:linear-gradient(145deg,#c8e9ff,#668ed8)}
+#broadcastOverlay[data-season="winter"] .orb-c{background:linear-gradient(145deg,#e3d5ff,#9d83d6)}
+#broadcastOverlay[data-season="winter"] .orb-d{background:linear-gradient(145deg,#ffd9e9,#d985ad)}
+#broadcastOverlay[data-season="winter"] .orb-e{background:linear-gradient(145deg,#d6f3ed,#78b8a9)}
+#broadcastOverlay .brand-name:after{display:inline-block;margin-left:.18em;font-size:.78em;vertical-align:.08em}
+#broadcastOverlay[data-season="spring"] .brand-name:after{content:"🌷"}
+#broadcastOverlay[data-season="summer"] .brand-name:after{content:"☀️"}
+#broadcastOverlay[data-season="autumn"] .brand-name:after{content:"🍁"}
+#broadcastOverlay[data-season="winter"] .brand-name:after{content:"❄️"}
+/* Праздничные варианты поверх сезонной палитры. */
 #broadcastOverlay[data-holiday="newyear"] .orb-b{background:linear-gradient(145deg,#fff,#8dd7f5)}
+#broadcastOverlay[data-holiday="newyear"] .brand-name:after{content:"🎄"}
+#broadcastOverlay[data-holiday="defender"] .brand-name:after{content:"⭐"}
 #broadcastOverlay[data-holiday="women"] .orb-c{background:linear-gradient(145deg,#ffd6e8,#e77eae)}
+#broadcastOverlay[data-holiday="women"] .brand-name:after{content:"🌸"}
+#broadcastOverlay[data-holiday="april"] .brand-name:after{content:"🎈"}
 #broadcastOverlay[data-holiday="cosmos"] .orb-b{background:linear-gradient(145deg,#b9d9ff,#7568d7)}
+#broadcastOverlay[data-holiday="cosmos"] .brand-name:after{content:"🚀"}
+#broadcastOverlay[data-holiday="may"] .brand-name:after{content:"🌼"}
 #broadcastOverlay[data-holiday="children"] .orb-e{background:linear-gradient(145deg,#fff0a6,#ff8c9c)}
+#broadcastOverlay[data-holiday="children"] .brand-name:after{content:"🎈"}
+#broadcastOverlay[data-holiday="family"] .brand-name:after{content:"🏡"}
+#broadcastOverlay[data-holiday="unity"] .brand-name:after{content:"🤝"}
+#broadcastOverlay[data-holiday="birthday"] .brand-name:after{content:"🎉"}
 @media(max-width:520px){#broadcastOverlay .channel-bug{top:2.4%;right:2%;width:clamp(100px,25vw,132px);height:clamp(27px,7vw,36px)}}
 /* Пульт и локальные кнопки доступны только в коде страницы, но не показываются зрителям. */
 #viewer-controls{display:none!important}
