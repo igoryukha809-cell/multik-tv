@@ -91,6 +91,40 @@ make_channel_ident_video() {
   ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$CHANNEL_IDENT_VIDEO" >/dev/null
 }
 
+make_channel_opening() {
+  local output="/tmp/multik-tv-opening.mp4"
+  ffmpeg -hide_banner -nostdin -loglevel warning -y -t 8 \
+    -f lavfi -i "color=c=0x183b70:s=1280x720:r=25:d=8" \
+    -f lavfi -i "aevalsrc=0.10*sin(2*PI*523.25*t)+0.07*sin(2*PI*659.25*t)+0.05*sin(2*PI*783.99*t):s=44100:d=8" \
+    -vf "drawbox=x=0:y=0:w=1280:h=16:color=0xffd35c:t=fill,drawbox=x=0:y=704:w=1280:h=16:color=0x62d6df:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='ДОБРО ПОЖАЛОВАТЬ!':fontcolor=0xffdf79:fontsize=48:x=(w-text_w)/2:y=175,drawtext=fontfile=${WEATHER_FONT}:text='ВРЕМЯ УЗНАВАТЬ НОВОЕ И МЕЧТАТЬ':fontcolor=white:fontsize=34:x=(w-text_w)/2:y=270,drawtext=fontfile=${WEATHER_FONT}:text='НАШ ДЕТСКИЙ ТЕЛЕКАНАЛ':fontcolor=0xbdeeff:fontsize=25:x=(w-text_w)/2:y=385" \
+    -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
+    -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest -movflags +faststart "$output"
+  ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$output" >/dev/null
+}
+
+make_programme_intro() {
+  local title="$1" output="$2" title_file="$3"
+  printf '%s\n' "$title" > "$title_file"
+  ffmpeg -hide_banner -nostdin -loglevel warning -y -t 4 \
+    -f lavfi -i "color=c=0x263c72:s=1280x720:r=25:d=4" \
+    -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
+    -vf "drawbox=x=0:y=0:w=1280:h=12:color=0xffd35c:t=fill,drawbox=x=0:y=708:w=1280:h=12:color=0x62d6df:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='СЕЙЧАС В ЭФИРЕ':fontcolor=0xffdf79:fontsize=42:x=(w-text_w)/2:y=185,drawtext=fontfile=${WEATHER_FONT}:textfile=${title_file}:fontcolor=white:fontsize=48:borderw=2:bordercolor=0x13264b:x=(w-text_w)/2:y=300,drawtext=fontfile=${WEATHER_FONT}:text='ПРИЯТНОГО ПРОСМОТРА!':fontcolor=0xbdeeff:fontsize=24:x=(w-text_w)/2:y=435" \
+    -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
+    -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest -movflags +faststart "$output"
+  ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$output" >/dev/null
+}
+
+make_channel_promo() {
+  local output="/tmp/multik-tv-channel-promo.mp4"
+  ffmpeg -hide_banner -nostdin -loglevel warning -y -t 6 \
+    -f lavfi -i "color=c=0x244c73:s=1280x720:r=25:d=6" \
+    -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
+    -vf "drawbox=x=0:y=0:w=1280:h=14:color=0xffd35c:t=fill,drawbox=x=0:y=706:w=1280:h=14:color=0x62d6df:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='ВПЕРЁД К ОТКРЫТИЯМ!':fontcolor=0xffdf79:fontsize=48:x=(w-text_w)/2:y=200,drawtext=fontfile=${WEATHER_FONT}:text='ПОЗНАВАТЕЛЬНЫЕ ИСТОРИИ':fontcolor=white:fontsize=34:x=(w-text_w)/2:y=305,drawtext=fontfile=${WEATHER_FONT}:text='ПРИРОДА  •  КОСМОС  •  НАУКА':fontcolor=0xbdeeff:fontsize=28:x=(w-text_w)/2:y=410" \
+    -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
+    -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest -movflags +faststart "$output"
+  ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$output" >/dev/null
+}
+
 make_next_program_card() {
   local output="$1" schedule_file="$2"
   ffmpeg -hide_banner -nostdin -loglevel warning -y -t 8 \\
@@ -604,6 +638,10 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     make_channel_birthday_bumper
     birthday_today=1
   fi
+  make_channel_opening
+  make_channel_promo
+  printf "file '%s'\\n" "/tmp/multik-tv-opening.mp4" >> "$PLAYLIST_FILE"
+  printf "file '%s'\\n" "/tmp/multik-tv-channel-promo.mp4" >> "$PLAYLIST_FILE"
   item_index=0
   total_programmes=${#PROGRAM_ITEMS[@]}
   for programme in "${PROGRAM_ITEMS[@]}"; do
@@ -628,7 +666,17 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     else
       echo "WARNING: не удалось собрать список будущих программ; продолжаю без него."
     fi
+    programme_intro="/tmp/multik-tv-now-${item_index}.mp4"
+    programme_title_file="/tmp/multik-tv-now-${item_index}.txt"
+    if make_programme_intro "$display_name" "$programme_intro" "$programme_title_file"; then
+      printf "file '%s'\\n" "$programme_intro" >> "$PLAYLIST_FILE"
+    else
+      echo "WARNING: не удалось собрать карточку текущей передачи."
+    fi
     printf "file '%s'\\n" "$programme" >> "$PLAYLIST_FILE"
+    if (( item_index % 2 == 0 )); then
+      printf "file '%s'\\n" "/tmp/multik-tv-channel-promo.mp4" >> "$PLAYLIST_FILE"
+    fi
     if (( birthday_today && item_index == 1 )); then
       printf "file '%s'\\n" "$BIRTHDAY_VIDEO" >> "$PLAYLIST_FILE"
       birthday_today=0
@@ -662,7 +710,7 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     result=0
     ffmpeg -hide_banner -nostdin -loglevel info -report -re -stream_loop -1 -i "$COMBINED_FILE" \
       -map 0:v:0 -map 0:a:0? \
-      -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20" \
+      -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20,drawtext=fontfile=${WEATHER_FONT}:text='НАШ КАНАЛ':fontcolor=white@0.94:fontsize=15:box=1:boxcolor=0x14264dcc:boxborderw=7:x=w-tw-14:y=12" \
       -c:v libx264 -preset ultrafast -tune zerolatency -threads 1 -pix_fmt yuv420p -r 20 -g 40 \
       -b:v 450k -maxrate 450k -bufsize 900k \
       -c:a aac -b:a 96k -ar 44100 -ac 2 \
