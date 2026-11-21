@@ -1,0 +1,31 @@
+name: Verify Piper browser playback
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "ai-studio.html"
+      - "ai-studio.js"
+      - "ai-studio.css"
+      - "tests/voice-browser-e2e.mjs"
+      - ".github/workflows/voice-browser-e2e.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser-playback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Test actual Piper audio playback in Chromium
+        run: node tests/voice-browser-e2e.mjs
