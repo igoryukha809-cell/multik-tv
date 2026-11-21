@@ -5,10 +5,37 @@ $('make-script').onclick=()=>{const title=$('story-title').value.trim()||'Нов
 $('make-board').onclick=()=>{const title=$('story-title').value.trim()||'Новая история',heroes=$('story-heroes').value.trim()||'Герои',topic=$('story-topic').value.trim()||'Неожиданное приключение',place=$('story-place').value.trim()||'Сказочный мир';const shots=[['Общий план','Показать '+place+'. Камера медленно приближается.','Установочный кадр, 4–5 секунд'],['Знакомство с героями','Показать '+heroes+', которые собираются вместе.','Средний план, плавное движение камеры, 4 секунды'],['Завязка','Герои замечают необычное событие: '+topic+'.','Крупный план удивлённых лиц, 3 секунды'],['Реакция','Один герой указывает на событие, остальные смотрят в ту сторону.','Чередование крупных планов, 4 секунды'],['Решение','Герои договариваются помочь и отправляются вместе.','Общий план, движение вслед за героями, 5 секунд'],['Финал сцены','Герои уходят навстречу приключению. Надпись: '+title+'.','Плавное затемнение, 3 секунды']];$('board-output').value='РАСКАДРОВКА: '+title+'\nМесто: '+place+'\nГерои: '+heroes+'\nТема: '+topic+'\n\n'+shots.map((s,i)=>(i+1)+'. '+s[0]+'\nДействие: '+s[1]+'\nПостановка: '+s[2]).join('\n\n')+'\n\nПримечание: это текстовый план кадров; готовые изображения и анимация не создаются.'};
 async function copyField(id,buttonId){const el=$(id),b=$(buttonId);try{await navigator.clipboard.writeText(el.value);b.textContent='Скопировано!'}catch(e){el.select();document.execCommand('copy');b.textContent='Скопировано!'}}
 $('copy-script').onclick=()=>copyField('script-output','copy-script');$('copy-board').onclick=()=>copyField('board-output','copy-board');
-function loadVoices(){const sel=$('voice-select'),old=sel.value;sel.innerHTML='<option value="">Автоматически выбрать русский голос</option>';if(!('speechSynthesis'in window)){$('voice-status').textContent='Этот браузер не поддерживает синтез речи.';return}speechSynthesis.getVoices().forEach((v,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=v.name+' ('+v.lang+')';sel.append(o)});if(old)sel.value=old;$('voice-status').textContent='Доступно голосов: '+speechSynthesis.getVoices().length+'. Русские голоса зависят от устройства.'}
-if('speechSynthesis'in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
-$('speak').onclick=()=>{if(!('speechSynthesis'in window))return;const t=$('voice-text').value.trim();if(!t)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t),vs=speechSynthesis.getVoices(),i=$('voice-select').value;u.lang='ru-RU';if(i!==''&&vs[+i])u.voice=vs[+i];u.onstart=()=>$('voice-status').textContent='Идёт озвучка…';u.onend=()=>$('voice-status').textContent='Озвучка завершена.';u.onerror=e=>$('voice-status').textContent='Ошибка: '+e.error;speechSynthesis.speak(u)};
-$('stop-speech').onclick=()=>{if('speechSynthesis'in window)speechSynthesis.cancel();$('voice-status').textContent='Озвучка остановлена.'};
+let currentAudio=null,currentAudioUrl=null,currentAbort=null;
+function stopPiperAudio(){
+ if(currentAbort){currentAbort.abort();currentAbort=null}
+ if(currentAudio){currentAudio.pause();currentAudio.removeAttribute('src');currentAudio.load();currentAudio=null}
+ if(currentAudioUrl){URL.revokeObjectURL(currentAudioUrl);currentAudioUrl=null}
+}
+$('speak').onclick=async()=>{
+ const text=$('voice-text').value.trim(),status=$('voice-status'),button=$('speak');
+ if(!text){status.textContent='Сначала введи текст для озвучки.';return}
+ if(text.length>1200){status.textContent='Слишком длинный текст: максимум 1200 символов.';return}
+ stopPiperAudio();
+ currentAbort=new AbortController();button.disabled=true;
+ status.textContent='Подключаю русский голос Piper и создаю аудио…';
+ try{
+  const response=await fetch('https://channel-voice-tts.onrender.com/api/tts',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({text}),signal:currentAbort.signal
+  });
+  if(!response.ok){let detail='HTTP '+response.status;try{const data=await response.json();if(data.detail)detail=data.detail}catch(e){}throw new Error(detail)}
+  const blob=await response.blob();
+  if(!blob.size||blob.type!=='audio/wav')throw new Error('Сервер вернул пустой или неверный WAV-файл.');
+  currentAudioUrl=URL.createObjectURL(blob);currentAudio=new Audio(currentAudioUrl);
+  currentAudio.onended=()=>{status.textContent='Озвучка Piper завершена.';stopPiperAudio()};
+  currentAudio.onerror=()=>{status.textContent='Не удалось воспроизвести WAV-аудио.';stopPiperAudio()};
+  await currentAudio.play();status.textContent='Идёт озвучка русским голосом Piper…';
+ }catch(error){
+  if(error.name==='AbortError'){status.textContent='Озвучка остановлена.'}
+  else{status.textContent='Ошибка Piper: '+error.message+'. Проверь подключение к серверу.'}
+ }finally{button.disabled=false;currentAbort=null}
+};
+$('stop-speech').onclick=()=>{stopPiperAudio();$('voice-status').textContent='Озвучка остановлена.'};
 const c=$('art-canvas'),x=c.getContext('2d');
 function star(cx,cy,r){x.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.42:r;x.lineTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr)}x.closePath();x.fill()}
 function drawArt(){const theme=$('art-theme').value;x.clearRect(0,0,c.width,c.height);const g=x.createLinearGradient(0,0,0,c.height);g.addColorStop(0,theme==='cloud'?'#6bc7f5':'#5c39a6');g.addColorStop(1,theme==='forest'?'#1b754b':'#f19ac4');x.fillStyle=g;x.fillRect(0,0,1200,675);
