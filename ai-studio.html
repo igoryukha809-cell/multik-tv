@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self' https://channel-voice-tts.onrender.com; object-src 'none'; base-uri 'self'">
 <meta name="referrer" content="no-referrer">
 <title>МУЛЬТИК ТВ — Бесплатная AI-мастерская</title>
 <link rel="stylesheet" href="ai-studio.css"><script src="ai-studio.js" defer></script>
@@ -32,9 +32,9 @@
 <button class="secondary" id="copy-board">Скопировать раскадровку</button>
 </section>
 <section class="panel tool" id="tool-voice">
-<h2>2. Студия озвучки</h2><p class="note">Использует голоса, доступные в браузере и на устройстве. Наличие естественных русских голосов зависит от Android/браузера; отдельная голосовая модель на сайт не загружается.</p>
+<h2>2. Студия озвучки</h2><p class="note">Основная озвучка работает через отдельный сервер Piper с русской голосовой моделью. Текст отправляется на сервер и возвращается в виде WAV-аудио.</p>
 <label>Текст реплики<textarea id="voice-text" rows="5">Радужка: Какой чудесный сегодня день! Интересно, какие приключения нас ждут?</textarea></label>
-<label>Голос устройства<select id="voice-select"><option value="">Автоматически выбрать русский голос</option></select></label>
+<p class="note">Голос: русский Piper · Денис (средний тембр)</p>
 <div class="actions"><button id="speak">▶ Озвучить</button><button class="secondary" id="stop-speech">■ Остановить</button></div><p id="voice-status" class="note" aria-live="polite">Проверяю доступные голоса…</p>
 </section>
 <section class="panel tool" id="tool-image">
