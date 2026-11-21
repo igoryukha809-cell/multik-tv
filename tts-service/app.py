@@ -65,14 +65,8 @@ def synthesize(payload: SpeechRequest, request: Request):
     # Speed control will be re-enabled after confirming the installed API.
     output = io.BytesIO()
     with voice_lock:
-        chunks = list(voice.synthesize(text))
-        if not chunks:
-            raise HTTPException(status_code=500, detail="Piper produced no audio")
         with wave.open(output, "wb") as wav_file:
-            wav_file.setnchannels(chunks[0].sample_channels)
-            wav_file.setsampwidth(2)
-            wav_file.setframerate(chunks[0].sample_rate)
-            wav_file.writeframes(b"".join(chunk.audio_int16_bytes for chunk in chunks))
+            voice.synthesize(text, wav_file)
     return Response(
         content=output.getvalue(),
         media_type="audio/wav",
