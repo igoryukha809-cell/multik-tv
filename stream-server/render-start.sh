@@ -437,10 +437,10 @@ generate_weather_show() {
     if [[ -n "$speech" ]]; then
       if ! ffmpeg -hide_banner -nostdin -loglevel error \
         -f lavfi -i "color=c=0x14558B:s=1280x720:r=25:d=40" -i "$speech" \
-        -vf "drawtext=fontfile=\${WEATHER_FONT}:textfile=\${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
+        -vf "drawtext=fontfile=${WEATHER_FONT}:textfile=${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
         -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
         -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest -movflags +faststart "$clip"; then
-        echo "Не удалось собрать погодный экран с голосом для \${city}; сохраняю город с экранной карточкой."
+        echo "Не удалось собрать погодный экран с голосом для ${city}; сохраняю город с экранной карточкой."
         speech=""
       fi
     fi
@@ -448,10 +448,10 @@ generate_weather_show() {
       if ! ffmpeg -hide_banner -nostdin -loglevel error \
         -f lavfi -i "color=c=0x14558B:s=1280x720:r=25:d=12" \
         -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
-        -vf "drawtext=fontfile=\${WEATHER_FONT}:textfile=\${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
+        -vf "drawtext=fontfile=${WEATHER_FONT}:textfile=${txt}:fontcolor=white:fontsize=42:line_spacing=22:x=(w-text_w)/2:y=(h-text_h)/2:box=1:boxcolor=0x071B3C@0.68:boxborderw=34" \
         -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
         -c:a aac -b:a 48k -ar 44100 -ac 2 -shortest -movflags +faststart "$clip"; then
-        echo "Не удалось собрать даже экранную карточку погоды для \${city}."
+        echo "Не удалось собрать даже экранную карточку погоды для ${city}."
         continue
       fi
     fi
