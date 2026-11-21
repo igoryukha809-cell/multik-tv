@@ -85,7 +85,7 @@ const minutes=t=>{const [h,m]=t.split(":").map(Number);return h*60+m};
 function ordered(){return rows.filter(r=>Array.isArray(r)&&/^([01]\d|2[0-3]):[0-5]\d$/.test(r[0])&&typeof r[1]==="string").sort((a,b)=>a[0].localeCompare(b[0]))}
 function partsAt(date,zone){return new Intl.DateTimeFormat("en-GB",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(date).reduce((o,p)=>(o[p.type]=p.value,o),{})}
 function wallTimeToDate(y,m,d,h,min,zone){let guess=Date.UTC(y,m-1,d,h,min);for(let i=0;i<3;i++){const p=partsAt(new Date(guess),zone),asUtc=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute);guess+=Date.UTC(y,m-1,d,h,min)-asUtc}return new Date(guess)}
-function selectedZone(){return Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC"}
+function selectedZone(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC"}catch(e){return "UTC"}}
 const programs=[
 ["🌅 Доброе утро, друзья!","Утреннее шоу, календарь дня, гости и короткие рубрики","Рыжик и Пик"],
 ["🧭 Навстречу открытиям","Репортажи, интервью, места и интересные люди","Пик"],
@@ -104,22 +104,45 @@ function drawPrograms(){const root=$("originalPrograms");if(!root)return;root.re
 const roster=[["🦊 Рыжик","Утреннее шоу — приветствия и новости дня"],["🐿️ Пик","Репортажи, интервью и путешествия"],["🐻‍❄️ Умка","Погода и времена года"],["🦉 Профессор Бублик","Наука, опыты и ответы на вопросы"],["🐸 Топа","Игры, конкурсы и викторины"],["🦔 Соня","Кулинария, творчество и полезные советы"],["🦫 Бор","Техника, мастерские и изобретения"],["🐦‍⬛ Кира","Новости животных и природы"],["🦝 Рокки","Спорт и активные игры"],["🌙 Луна","Вечерняя программа"]];
 function drawRoster(){const root=$("presenterRoster");if(!root)return;root.replaceChildren();roster.forEach(([name,job])=>{const el=document.createElement("div");el.className="item";const a=document.createElement("strong");a.textContent=name;const b=document.createElement("small");b.textContent=job;const d=document.createElement("div");d.append(a,b);el.append(d);root.append(el)})}
 function draw(){drawPrograms();drawRoster();
- const list=ordered(),now=new Date(),parts=partsAt(now,"Europe/Moscow"),n=Number(parts.hour)*60+Number(parts.minute),zone=selectedZone();
+ const list=ordered(),now=new Date(),zone=selectedZone(),moscow=partsAt(now,"Europe/Moscow");
+ const scheduleDate={year:+moscow.year,month:+moscow.month,day:+moscow.day};
+ const occurrences=[];
+ for(let offset=-1;offset<=1;offset++){
+   const day=new Date(Date.UTC(scheduleDate.year,scheduleDate.month-1,scheduleDate.day+offset));
+   const y=day.getUTCFullYear(),m=day.getUTCMonth()+1,d=day.getUTCDate();
+   list.forEach((r,i)=>{
+     const [hh,mm]=r[0].split(":").map(Number);
+     occurrences.push({index:i,row:r,start:wallTimeToDate(y,m,d,hh,mm,"Europe/Moscow")});
+   });
+ }
+ occurrences.sort((a,b)=>a.start-b.start||a.index-b.index);
+ let activeOccurrence=null,nextOccurrence=null;
+ for(let i=0;i<occurrences.length;i++){
+   if(occurrences[i].start<=now)activeOccurrence=occurrences[i];
+   else {nextOccurrence=occurrences[i];break}
+ }
  $("schedule").replaceChildren();
- let active=-1,next=-1;
- list.forEach((r,i)=>{if(minutes(r[0])<=n)active=i});
- if(active>=0&&active<list.length-1)next=active+1;
- list.forEach((r,i)=>{const el=document.createElement("div");el.className="item"+(i===active?" active":"");
- const t=document.createElement("div");t.className="time";const [hh,mm]=r[0].split(":").map(Number);const eventDate=wallTimeToDate(+parts.year,+parts.month,+parts.day,hh,mm,"Europe/Moscow");t.textContent=eventDate.toLocaleTimeString("ru-RU",{timeZone:zone,hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
- const d=document.createElement("div"),s=document.createElement("strong"),sm=document.createElement("small");
- s.textContent=r[1];sm.textContent=r[2]||"Авторская передача МУЛЬТИК ТВ";d.append(s,sm);
- el.append(t,d);if(!base.some(b=>b[0]===r[0]&&b[1]===r[1])){const del=document.createElement("button");del.className="danger";del.textContent="Удалить";del.setAttribute("aria-label","Удалить "+r[1]);del.onclick=()=>{rows=rows.filter((_,j)=>j!==i);save("Передача удалена.")};el.append(del)}
- $("schedule").append(el)});
- $("current").textContent=active>=0?list[active][1]+" · "+list[active][0]:"По сетке эфир ещё не начался";
- $("next").textContent=next>=0?list[next][1]+" · "+list[next][0]:"Следующая передача будет в расписании завтра";
+ list.forEach((r,i)=>{
+   const el=document.createElement("div");
+   el.className="item"+(activeOccurrence&&activeOccurrence.index===i?" active":"");
+   const t=document.createElement("div");t.className="time";
+   const [hh,mm]=r[0].split(":").map(Number);
+   const eventDate=wallTimeToDate(scheduleDate.year,scheduleDate.month,scheduleDate.day,hh,mm,"Europe/Moscow");
+   t.textContent=eventDate.toLocaleTimeString("ru-RU",{timeZone:zone,hour:"2-digit",minute:"2-digit",hourCycle:"h23"});
+   const d=document.createElement("div"),s=document.createElement("strong"),sm=document.createElement("small");
+   s.textContent=r[1];sm.textContent=r[2]||"Авторская передача канала";d.append(s,sm);
+   el.append(t,d);
+   if(!base.some(b=>b[0]===r[0]&&b[1]===r[1])){
+     const del=document.createElement("button");del.className="danger";del.textContent="Удалить";
+     del.setAttribute("aria-label","Удалить "+r[1]);del.onclick=()=>{rows=rows.filter((_,j)=>j!==i);save("Передача удалена.")};el.append(del);
+   }
+   $("schedule").append(el);
+ });
+ $("current").textContent=activeOccurrence?activeOccurrence.row[1]+" · "+activeOccurrence.row[0]:"По сетке эфир ещё не начался";
+ $("next").textContent=nextOccurrence?nextOccurrence.row[1]+" · "+nextOccurrence.row[0]:"Следующая передача будет в расписании завтра";
 }
 function save(message){localStorage.setItem(key,JSON.stringify(rows));draw();$("notice").textContent=message||"Изменения сохранены на этом устройстве."}
-window.addEventListener("storage",event=>{if(event.key==="multiktv-city-zone"){if($("citySelect"))$("citySelect").value=selectedZone();tick();return}if(event.key!==key)return;try{const incoming=JSON.parse(event.newValue||"[]");if(Array.isArray(incoming)){rows=incoming;draw();$("notice").textContent="Расписание обновлено из другой вкладки этого браузера."}}catch(e){$("notice").textContent="Не удалось обновить расписание из другой вкладки."}});
+window.addEventListener("storage",event=>{if(event.key==="multiktv-city-zone"){tick();return}if(event.key!==key)return;try{const incoming=JSON.parse(event.newValue||"[]");if(Array.isArray(incoming)){rows=incoming;draw();$("notice").textContent="Расписание обновлено из другой вкладки этого браузера."}}catch(e){$("notice").textContent="Не удалось обновить расписание из другой вкладки."}});
 $("add").onclick=()=>{const time=$("newTime").value,title=$("newTitle").value.trim(),desc=$("newDesc").value.trim();
  if(!time||!title){$("notice").textContent="Укажи время и название передачи.";return}
  if(rows.some(r=>r[0]===time)){$("notice").textContent="На это время уже запланирована передача. Выбери другое время.";return}
