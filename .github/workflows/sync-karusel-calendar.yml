@@ -5,9 +5,6 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - "scripts/sync-karusel-calendar.py"
-      - ".github/workflows/sync-karusel-calendar.yml"
 permissions:
   contents: write
 concurrency:
