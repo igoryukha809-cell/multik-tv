@@ -141,6 +141,17 @@ footer{font-size:13px;color:#9eacd3}
 @keyframes airIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 @keyframes airProgress{to{width:100%}}
 #airAudio{display:inline-flex;align-items:center;gap:7px;margin-top:10px;font-size:12px}
+
+/* Дополнительная эфирная графика: часы, рубрика и бегущая строка. Это экранный слой страницы, не часть исходного видеопотока. */
+#broadcastInfo{position:absolute;z-index:8;left:2.5%;right:2.5%;bottom:3%;display:grid;gap:7px;pointer-events:none;font-family:Arial,system-ui,sans-serif;text-shadow:0 1px 3px #000}
+#broadcastInfo .bi-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#broadcastInfo .bi-clock,#broadcastInfo .bi-block{background:#111a35dd;border:1px solid #ffffff55;border-radius:9px;padding:6px 10px;font-weight:900;font-size:clamp(10px,1.5vw,15px);color:#fff}
+#broadcastInfo .bi-lower{display:flex;align-items:center;gap:10px;background:linear-gradient(90deg,#4933a5ee,#7652c8e8,#ed6099e8);border-left:6px solid #ffe17a;border-radius:10px;padding:8px 12px;min-height:43px}
+#broadcastInfo .bi-lower strong{font-size:clamp(12px,1.8vw,18px)}#broadcastInfo .bi-lower span{font-size:clamp(10px,1.4vw,14px);opacity:.96}
+#broadcastTicker{overflow:hidden;white-space:nowrap;background:#10152be8;border-radius:7px;padding:6px 0;font-size:clamp(10px,1.3vw,13px);font-weight:800;color:#fff}
+#broadcastTicker span{display:inline-block;padding-left:100%;animation:biTicker 32s linear infinite}
+@keyframes biTicker{to{transform:translateX(-100%)}}
+@media(max-width:520px){#broadcastInfo{left:2%;right:2%;bottom:2%}#broadcastInfo .bi-lower{padding:6px 8px;gap:6px}}
 </style>
 </head>
 <body>
@@ -155,7 +166,7 @@ footer{font-size:13px;color:#9eacd3}
 <h2>🔴 Прямой эфир МУЛЬТИК ТВ</h2>
 <div class="screen">
   <div class="live-player">
-    <div id="holidayBumper" aria-live="polite" aria-atomic="true"><div class="hb-bg"></div><div class="hb-rays"></div><div class="hb-confetti"></div><div class="hb-content"><div class="hb-character" id="hbCharacter">🦊</div><div class="hb-title" id="hbTitle">С праздником!</div><p class="hb-sub" id="hbSub">Пусть каждый день будет ярким!</p><div class="hb-logo">НАШ КАНАЛ</div></div></div><div id="airPromo" aria-live="polite" aria-atomic="true"><div class="promo-inner"><div class="promo-label">ОБЪЯВЛЕНИЕ НАШЕГО КАНАЛА</div><div class="promo-deco" id="airEmoji">⭐ 🏆 ✨</div><h2 id="airTitle">Скоро в эфире!</h2><p id="airText"></p><div class="promo-progress"><i></i></div></div></div><div id="broadcastOverlay" aria-hidden="true">
+    <div id="holidayBumper" aria-live="polite" aria-atomic="true"><div class="hb-bg"></div><div class="hb-rays"></div><div class="hb-confetti"></div><div class="hb-content"><div class="hb-character" id="hbCharacter">🦊</div><div class="hb-title" id="hbTitle">С праздником!</div><p class="hb-sub" id="hbSub">Пусть каждый день будет ярким!</p><div class="hb-logo">НАШ КАНАЛ</div></div></div><div id="airPromo" aria-live="polite" aria-atomic="true"><div class="promo-inner"><div class="promo-label">ОБЪЯВЛЕНИЕ НАШЕГО КАНАЛА</div><div class="promo-deco" id="airEmoji">⭐ 🏆 ✨</div><h2 id="airTitle">Скоро в эфире!</h2><p id="airText"></p><div class="promo-progress"><i></i></div></div></div><div id="broadcastInfo" aria-live="off"><div class="bi-top"><span class="bi-block" id="biBlock">ЭФИРНЫЙ БЛОК</span><span class="bi-clock" id="biClock">--:--</span></div><div class="bi-lower"><strong id="biTitle">Добро пожаловать!</strong><span id="biSubtitle">Впереди новые открытия</span></div><div id="broadcastTicker"><span id="biTickerText">Новости канала · Погода · Игры и открытия · Следите за расписанием на сайте</span></div></div><div id="broadcastOverlay" aria-hidden="true">
       <div class="channel-bug">
         <span class="brand-orbit"><i class="orb orb-a"></i><i class="orb orb-b"></i><i class="orb orb-c"></i><i class="orb orb-d"></i><i class="orb orb-e"></i></span>
         <span class="brand-name">НАШ КАНАЛ</span>
@@ -170,7 +181,7 @@ footer{font-size:13px;color:#9eacd3}
       loading="eager"></iframe>
   </div>
 </div>
-<p class="live-note">Это общий плеер трансляции Kinescope. Если эфир не начался автоматически, нажми ▶ в плеере. Для просмотра со звуком может потребоваться разрешить звук вручную.</p>
+<p class="live-note">Это общий плеер трансляции Kinescope. Часы, рубрики и бегущая строка — информационное оформление этой веб-страницы; они не встраиваются в исходный видеосигнал. Если эфир не начался автоматически, нажми ▶ в плеере.</p>
 </section>
 
 <section class="screen">
@@ -315,6 +326,20 @@ async function enableAirAudio(){
   }
  }finally{if(b)b.disabled=false;}
 }
+
+/* Информационная эфирная графика: расписание — редакционный план, а не подтверждение наличия сигнала. */
+const biBlocks=[
+ {from:6,to:10,label:'УТРЕННИЙ БЛОК',title:'Доброе утро, друзья!',sub:'Настраиваемся на новый день: новости, погода и открытия.'},
+ {from:10,to:13,label:'ВРЕМЯ ОТКРЫТИЙ',title:'Учимся и играем',sub:'Научные истории, загадки и творческие задания.'},
+ {from:13,to:17,label:'ДНЕВНОЙ БЛОК',title:'Время приключений',sub:'Программы, мультфильмы и специальные рубрики.'},
+ {from:17,to:20,label:'ВЕЧЕРНИЙ БЛОК',title:'Вечер вместе',sub:'Новости дня, гости, викторины и премьеры.'},
+ {from:20,to:23,label:'СПОКОЙНЫЙ ВЕЧЕР',title:'Вечерняя история',sub:'Истории, открытия и планы на завтра.'},
+ {from:23,to:6,label:'НОЧНОЙ РЕЖИМ',title:'Ночной повтор',sub:'Архивные и повторные выпуски по плану канала.'}
+];
+const biTickerItems=['Новости канала: новые выпуски публикуются после проверки','Погода: прогноз по городам — в погодной рубрике','Творческая мастерская: присылай идеи без личных данных','«Звёздный выбор»: сезонная премия авторских проектов','Телепрограмма и архив доступны на сайте канала'];
+function updateBroadcastInfo(){const d=new Date(),h=d.getHours(),m=d.getMinutes();const b=biBlocks.find(x=>x.from<x.to?h>=x.from&&h<x.to:h>=x.from||h<x.to)||biBlocks[0];const clock=document.getElementById('biClock');if(clock)clock.textContent=d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});const label=document.getElementById('biBlock');if(label)label.textContent=b.label;const title=document.getElementById('biTitle');if(title)title.textContent=b.title;const sub=document.getElementById('biSubtitle');if(sub)sub.textContent=b.sub;const ticker=document.getElementById('biTickerText');if(ticker)ticker.textContent=biTickerItems.join('  ✦  ');}
+updateBroadcastInfo();setInterval(updateBroadcastInfo,30000);
+
 const overlay=document.getElementById('broadcastOverlay');
 const seasons=[
  {name:'winter'},
