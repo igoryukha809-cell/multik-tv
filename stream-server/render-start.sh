@@ -710,7 +710,7 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     result=0
     ffmpeg -hide_banner -nostdin -loglevel info -report -re -stream_loop -1 -i "$COMBINED_FILE" \
       -map 0:v:0 -map 0:a:0? \
-      -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20,drawtext=fontfile=${WEATHER_FONT}:text='НАШ КАНАЛ':fontcolor=white@0.94:fontsize=15:box=1:boxcolor=0x14264dcc:boxborderw=7:x=w-tw-14:y=12" \
+      -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20,drawbox=x=0:y=h-30:w=iw:h=30:color=0x14264dcc:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='НАШ КАНАЛ':fontcolor=white@0.94:fontsize=15:box=1:boxcolor=0x14264dcc:boxborderw=7:x=w-tw-14:y=12,drawtext=fontfile=${WEATHER_FONT}:text='0+':fontcolor=white:fontsize=13:box=1:boxcolor=0x7132a8@0.95:boxborderw=5:x=12:y=12,drawtext=fontfile=${WEATHER_FONT}:text='АВТОРСКИЕ ПРОГРАММЫ  •  ПОГОДА  •  ВОПРОС ДНЯ  •  ПРИРОДА И КОСМОС':fontcolor=white:fontsize=12:x=12:y=h-th-9" \\
       -c:v libx264 -preset ultrafast -tune zerolatency -threads 1 -pix_fmt yuv420p -r 20 -g 40 \
       -b:v 450k -maxrate 450k -bufsize 900k \
       -c:a aac -b:a 96k -ar 44100 -ac 2 \
