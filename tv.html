@@ -32,32 +32,37 @@ button,.filebtn{border:0;border-radius:10px;padding:11px 15px;background:#ffe17a
 .status{color:#baffdc;font-weight:700}.meta{font-size:13px;color:#aab8df}
 ol{padding-left:24px}li{padding:7px 0;color:#e3e9ff}
 footer{font-size:13px;color:#9eacd3}
-/* Телевизионная графика поверх изображения прямого эфира */
+/* Авторская эфирная графика: яркие сезонные цвета, бумажные геометрические персонажи и логотип в углу */
 .live-player{position:relative;isolation:isolate;overflow:hidden}
 #broadcastOverlay{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden;font-family:Arial,system-ui,sans-serif}
-#broadcastOverlay .bug{position:absolute;top:4.5%;left:3.5%;display:flex;align-items:center;gap:8px;padding:8px 13px;border-radius:9px;background:#10152bd9;color:#fff;font-size:clamp(12px,2vw,22px);font-weight:950;letter-spacing:.06em;text-shadow:0 2px 5px #000}
-#broadcastOverlay .bug-mark{font-size:1.5em;filter:drop-shadow(0 2px 5px #0008)}
-#broadcastOverlay .onair-clock{position:absolute;top:4.5%;right:3.5%;padding:7px 11px;border-radius:8px;background:#10152bd9;color:#fff;font-weight:850;font-size:clamp(11px,1.7vw,19px);font-variant-numeric:tabular-nums}
-#broadcastOverlay .lower-third{position:absolute;left:3.5%;bottom:7%;max-width:78%;padding:11px 17px 12px 15px;border-radius:4px 13px 13px 4px;border-left:6px solid var(--ov-accent,#ffe17a);background:linear-gradient(100deg,var(--ov-panel,#20143def),#171e39d9);color:#fff;box-shadow:0 5px 20px #0007}
-#broadcastOverlay .lower-kicker{display:block;margin-bottom:3px;color:var(--ov-accent,#ffe17a);font-size:clamp(9px,1.2vw,13px);font-weight:900;letter-spacing:.1em}
-#broadcastOverlay .lower-title{display:block;font-size:clamp(14px,2.5vw,28px);font-weight:950;line-height:1.12}
-#broadcastOverlay .confetti{position:absolute;inset:0;opacity:0;pointer-events:none}
-#broadcastOverlay[data-holiday="newyear"] .confetti{opacity:.75;background:radial-gradient(circle at 12% 25%,#fff 0 2px,transparent 3px),radial-gradient(circle at 86% 22%,#ffe17a 0 3px,transparent 4px),radial-gradient(circle at 74% 72%,#fff 0 2px,transparent 3px),radial-gradient(circle at 24% 76%,#b7eaff 0 3px,transparent 4px)}
-#broadcastOverlay[data-holiday="women"] .confetti{opacity:.7;background:radial-gradient(ellipse at 13% 30%,#ffc6dc 0 5px,transparent 6px),radial-gradient(ellipse at 88% 27%,#ffd7e6 0 6px,transparent 7px),radial-gradient(ellipse at 78% 80%,#f5a8c7 0 5px,transparent 6px)}
-#broadcastOverlay[data-holiday="cosmos"] .confetti{opacity:.8;background:radial-gradient(circle at 15% 22%,#d9f6ff 0 2px,transparent 3px),radial-gradient(circle at 84% 30%,#9cecff 0 2px,transparent 3px),radial-gradient(circle at 76% 76%,#fff 0 2px,transparent 3px)}
-#broadcastOverlay[data-holiday="children"] .confetti{opacity:.8;background:radial-gradient(circle at 14% 24%,#ffe17a 0 4px,transparent 5px),radial-gradient(circle at 85% 30%,#ff9cc5 0 4px,transparent 5px),radial-gradient(circle at 76% 78%,#91e8dc 0 4px,transparent 5px)}
-#broadcastOverlay[data-season="spring"]{--ov-accent:#ffc2d5;--ov-panel:#184f49ef}
-#broadcastOverlay[data-season="summer"]{--ov-accent:#ffe17a;--ov-panel:#124e68ef}
-#broadcastOverlay[data-season="autumn"]{--ov-accent:#ffd08a;--ov-panel:#663b2def}
-#broadcastOverlay[data-season="winter"]{--ov-accent:#d9f3ff;--ov-panel:#24476def}
-#broadcastOverlay[data-holiday="newyear"]{--ov-accent:#ffe17a;--ov-panel:#123d70ef}
-#broadcastOverlay[data-holiday="defender"],#broadcastOverlay[data-holiday="may"],#broadcastOverlay[data-holiday="unity"]{--ov-accent:#ffe09b;--ov-panel:#71352eef}
-#broadcastOverlay[data-holiday="women"]{--ov-accent:#ffd2df;--ov-panel:#743c78ef}
-#broadcastOverlay[data-holiday="april"]{--ov-accent:#fff0a5;--ov-panel:#47723cef}
-#broadcastOverlay[data-holiday="cosmos"]{--ov-accent:#9cecff;--ov-panel:#273b7aef}
-#broadcastOverlay[data-holiday="children"],#broadcastOverlay[data-holiday="family"]{--ov-accent:#ffe17a;--ov-panel:#176b70ef}
-#broadcastOverlay[data-holiday="birthday"]{--ov-accent:#ffe17a;--ov-panel:#65368fef}
-@media(max-width:520px){#broadcastOverlay .bug{padding:5px 8px}#broadcastOverlay .lower-third{max-width:88%;bottom:5%;padding:8px 11px}#broadcastOverlay .onair-clock{padding:5px 7px}}
+#broadcastOverlay .channel-bug{position:absolute;top:4%;right:3.5%;display:flex;align-items:center;gap:5px;padding:7px 11px 7px 8px;border-radius:22px;background:#fff;color:#24335d;box-shadow:0 3px 12px #0003;font-size:clamp(11px,1.8vw,19px);font-weight:1000;letter-spacing:-.035em}
+#broadcastOverlay .bug-symbol{width:1.65em;height:1.65em;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ffcf47,#ff7a9c 48%,#54c9d6);color:#fff;font-size:1.1em}
+#broadcastOverlay .paper-shape{position:absolute;width:clamp(28px,5vw,64px);aspect-ratio:1;opacity:.88;filter:drop-shadow(0 5px 5px #0002);animation:paper-drift 7s ease-in-out infinite}
+#broadcastOverlay .paper-shape:before,#broadcastOverlay .paper-shape:after{content:"";position:absolute;inset:0;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+#broadcastOverlay .paper-shape:before{background:var(--paper-a,#ffcb4a)}
+#broadcastOverlay .paper-shape:after{background:var(--paper-b,#ff719c);clip-path:polygon(50% 0,100% 50%,50% 50%)}
+#broadcastOverlay .shape-one{left:3%;top:18%;--paper-a:#55c9dc;--paper-b:#2789c8}
+#broadcastOverlay .shape-two{right:4%;bottom:17%;width:clamp(25px,4vw,52px);--paper-a:#ffd45c;--paper-b:#ff8b4d;animation-delay:-2s}
+#broadcastOverlay .shape-three{left:8%;bottom:12%;width:clamp(18px,3vw,40px);--paper-a:#b4df65;--paper-b:#57b879;animation-delay:-4s}
+#broadcastOverlay .shape-four{right:14%;top:20%;width:clamp(17px,2.6vw,34px);--paper-a:#d59be9;--paper-b:#9874d9;animation-delay:-1s}
+@keyframes paper-drift{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-13px) rotate(18deg)}}
+#broadcastOverlay[data-season="spring"] .channel-bug{background:#fff0f5}
+#broadcastOverlay[data-season="summer"] .channel-bug{background:#fff6d8}
+#broadcastOverlay[data-season="autumn"] .channel-bug{background:#fff0df}
+#broadcastOverlay[data-season="winter"] .channel-bug{background:#eaf8ff}
+#broadcastOverlay[data-season="spring"] .shape-one{--paper-a:#ffc4d8;--paper-b:#f28eb4}
+#broadcastOverlay[data-season="summer"] .shape-one{--paper-a:#ffe17a;--paper-b:#ff9d42}
+#broadcastOverlay[data-season="autumn"] .shape-one{--paper-a:#efaa63;--paper-b:#bd6743}
+#broadcastOverlay[data-season="winter"] .shape-one{--paper-a:#c7edff;--paper-b:#78b9e6}
+#broadcastOverlay[data-holiday="newyear"] .channel-bug{background:#e9f8ff}
+#broadcastOverlay[data-holiday="women"] .channel-bug{background:#ffe7f0}
+#broadcastOverlay[data-holiday="cosmos"] .channel-bug{background:#e8eaff}
+#broadcastOverlay[data-holiday="children"] .channel-bug{background:#fff4c8}
+#broadcastOverlay[data-holiday="newyear"] .shape-two{--paper-a:#fff;--paper-b:#9ed9f4}
+#broadcastOverlay[data-holiday="women"] .shape-two{--paper-a:#ffc6dd;--paper-b:#e77eae}
+#broadcastOverlay[data-holiday="cosmos"] .shape-two{--paper-a:#a9d8ff;--paper-b:#8874dc}
+#broadcastOverlay[data-holiday="children"] .shape-two{--paper-a:#ffe17a;--paper-b:#ff8c9c}
+@media(max-width:520px){#broadcastOverlay .channel-bug{top:3%;right:3%;padding:5px 8px}}
 /* Пульт и локальные кнопки доступны только в коде страницы, но не показываются зрителям. */
 #viewer-controls{display:none!important}
 
@@ -80,13 +85,11 @@ footer{font-size:13px;color:#9eacd3}
 <div class="screen">
   <div class="live-player">
     <div id="broadcastOverlay" aria-hidden="true">
-      <div class="confetti"></div>
-      <div class="bug"><span class="bug-mark">🌈</span><span>МУЛЬТИК ТВ</span></div>
-      <div class="onair-clock" id="broadcastClock">--:--</div>
-      <div class="lower-third">
-        <span class="lower-kicker" id="broadcastKicker">СЕЗОННЫЙ ЭФИР</span>
-        <span class="lower-title" id="broadcastTitle">Добрые истории и приключения</span>
-      </div>
+      <div class="channel-bug"><span class="bug-symbol">✦</span><span>НАШ КАНАЛ</span></div>
+      <span class="paper-shape shape-one"></span>
+      <span class="paper-shape shape-two"></span>
+      <span class="paper-shape shape-three"></span>
+      <span class="paper-shape shape-four"></span>
     </div>
     <iframe
       src="https://kinescope.io/embed/0cGaBsxQyyGHNevtvjRBfC"
@@ -158,34 +161,33 @@ footer{font-size:13px;color:#9eacd3}
 (()=>{
 const overlay=document.getElementById('broadcastOverlay');
 const seasons=[
- {name:'winter',label:'ЗИМНИЙ ЭФИР'},
- {name:'spring',label:'ВЕСЕННИЙ ЭФИР'},
- {name:'summer',label:'ЛЕТНИЙ ЭФИР'},
- {name:'autumn',label:'ОСЕННИЙ ЭФИР'}
+ {name:'winter'},
+ {name:'spring'},
+ {name:'summer'},
+ {name:'autumn'}
 ];
 const holidays=[
- {id:'newyear',label:'НОВОГОДНИЙ ЭФИР',test:(m,d)=>(m===12&&d>=28)||(m===1&&d<=15)},
- {id:'defender',label:'ПРАЗДНИЧНЫЙ ЭФИР · 23 ФЕВРАЛЯ',test:(m,d)=>m===2&&d>=22&&d<=23},
- {id:'women',label:'ПРАЗДНИЧНЫЙ ЭФИР · 8 МАРТА',test:(m,d)=>m===3&&d>=6&&d<=8},
- {id:'april',label:'ВЕСЁЛЫЙ ПРАЗДНИЧНЫЙ ЭФИР',test:(m,d)=>m===4&&(d===1||(d>=7&&d<=8))},
- {id:'cosmos',label:'КОСМИЧЕСКИЙ ЭФИР',test:(m,d)=>m===4&&d>=11&&d<=12},
- {id:'may',label:'ПРАЗДНИЧНЫЙ ЭФИР · МАЙ',test:(m,d)=>(m===4&&d>=28)||(m===5&&(d===1||d===9))},
- {id:'children',label:'ДЕТСКИЙ ПРАЗДНИЧНЫЙ ЭФИР',test:(m,d)=>(m===5&&d===31)||(m===6&&d===1)},
- {id:'family',label:'СЕМЕЙНЫЙ ПРАЗДНИЧНЫЙ ЭФИР',test:(m,d)=>m===7&&d===8},
- {id:'unity',label:'ПРАЗДНИЧНЫЙ ЭФИР · 4 НОЯБРЯ',test:(m,d)=>m===11&&d===4},
- {id:'birthday',label:'ДЕНЬ РОЖДЕНИЯ КАНАЛА',test:(m,d)=>m===12&&d===27}
+ {id:'newyear',test:(m,d)=>(m===12&&d>=28)||(m===1&&d<=15)},
+ {id:'defender',test:(m,d)=>m===2&&d>=22&&d<=23},
+ {id:'women',test:(m,d)=>m===3&&d>=6&&d<=8},
+ {id:'april',test:(m,d)=>m===4&&(d===1||(d>=7&&d<=8))},
+ {id:'cosmos',test:(m,d)=>m===4&&d>=11&&d<=12},
+ {id:'may',test:(m,d)=>(m===4&&d>=28)||(m===5&&(d===1||d===9))},
+ {id:'children',test:(m,d)=>(m===5&&d===31)||(m===6&&d===1)},
+ {id:'family',test:(m,d)=>m===7&&d===8},
+ {id:'unity',test:(m,d)=>m===11&&d===4},
+ {id:'birthday',test:(m,d)=>m===12&&d===27}
 ];
 function applyBroadcastTheme(){
  const now=new Date(),m=now.getMonth()+1,d=now.getDate();
  const season=m===12||m<=2?seasons[0]:m<=5?seasons[1]:m<=8?seasons[2]:seasons[3];
  const holiday=holidays.find(h=>h.test(m,d));
  overlay.dataset.season=season.name;
- if(holiday){overlay.dataset.holiday=holiday.id;document.getElementById('broadcastKicker').textContent=holiday.label;document.getElementById('broadcastTitle').textContent='Праздник продолжается вместе с нами!'}
- else{delete overlay.dataset.holiday;document.getElementById('broadcastKicker').textContent=season.label;document.getElementById('broadcastTitle').textContent='Добрые истории и приключения'}
+ if(holiday)overlay.dataset.holiday=holiday.id;
+ else delete overlay.dataset.holiday;
 }
-function updateBroadcastClock(){document.getElementById('broadcastClock').textContent=new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}
-applyBroadcastTheme();updateBroadcastClock();
-setInterval(()=>{applyBroadcastTheme();updateBroadcastClock()},60000);
+applyBroadcastTheme();
+setInterval(applyBroadcastTheme,60000);
 const $=id=>document.getElementById(id);
 const source='https://upload.wikimedia.org/wikipedia/commons/8/8d/Morevna_Project_-_Pepper%26Carrot_%28animated_comic%29_-_Episode_6_-_The_Potion_Contest_%28Russian_variant%29.webm';
 const credit='Morevna Project · Pepper & Carrot — «Конкурс зельеваров» · CC BY-SA 4.0';
