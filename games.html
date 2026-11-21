@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6045bd">
+<title>Игры и викторины — детский телеканал</title>
+<style>
+:root{--ink:#29264e;--purple:#6045bd;--pink:#ef6b9d;--line:#ece9f4}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font:16px/1.5 system-ui,Arial,sans-serif}.rainbow{height:7px;background:linear-gradient(90deg,#f15e9c,#ffd65a,#67cda7,#52c7e8,#9273e6)}
+header{border-bottom:1px solid var(--line);background:#fff}.head{max-width:1050px;margin:auto;padding:16px 20px;display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap}.brand{font-size:20px;font-weight:1000;color:var(--purple);text-decoration:none}.nav{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;font-weight:800}.nav a{color:#514d6c;text-decoration:none}
+main{max-width:900px;margin:auto;padding:24px 18px 48px}.hero{padding:26px;border-radius:22px;background:linear-gradient(110deg,#4933a5,#7652c8 58%,#ed80ae);color:#fff}.hero h1{font-size:clamp(30px,6vw,48px);margin:5px 0}.panel{margin-top:18px;border:1px solid var(--line);border-radius:20px;padding:22px}.muted{color:#77758d}.question{font-size:21px;font-weight:900;margin:0 0 14px}.answers{display:grid;gap:10px}.answers button{border:1px solid #ded8ee;border-radius:13px;padding:13px;text-align:left;background:#faf9fd;color:var(--ink);font:inherit;font-weight:750;cursor:pointer}.answers button:hover{border-color:var(--purple);background:#f5f0ff}.answers button:disabled{cursor:default;opacity:.8}.answers button.correct{background:#e8f8ee;border-color:#57b77a}.answers button.wrong{background:#fff0f2;border-color:#e68b9b}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.actions button,.actions a{border:0;border-radius:12px;padding:11px 16px;background:#6045bd;color:#fff;font-weight:850;text-decoration:none;cursor:pointer}.score{font-weight:900;color:var(--purple)}
+</style></head>
+<body><div class="rainbow"></div><header><div class="head"><a class="brand" href="index.html">🌈 Детский телеканал</a><nav class="nav"><a href="live.html">Эфир</a><a href="guide.html">Телепрограмма</a><a href="online-catalog.html">Мультфильмы</a><a href="weather-show.html">Погода</a><a href="games.html">Игры</a></nav></div></header>
+<main><section class="hero"><div>🎈 ИГРАЕМ И УЗНАЁМ НОВОЕ</div><h1>Минутка смекалки</h1><p>Небольшая викторина из пяти вопросов. Выбирай ответ — и сразу узнаешь результат.</p></section>
+<section class="panel" aria-live="polite"><div class="muted" id="progress">Вопрос 1 из 5</div><h2 class="question" id="question"></h2><div class="answers" id="answers"></div><p id="feedback" class="muted"></p><div class="actions"><button id="next" hidden>Следующий вопрос</button><button id="restart" hidden>Сыграть ещё раз</button></div><p class="score" id="score"></p></section><p><a href="index.html">← На главную</a></p></main>
+<script>
+const quiz=[
+{q:"Какая планета известна как Красная планета?",a:["Венера","Марс","Юпитер"],c:1,e:"Марс кажется красноватым из-за железистых минералов на поверхности."},
+{q:"Сколько ног у паука?",a:["Шесть","Восемь","Десять"],c:1,e:"У пауков восемь ног."},
+{q:"Как называется дом пчёл?",a:["Улей","Нора","Берлога"],c:0,e:"Пчёлы живут колониями в ульях."},
+{q:"Какой океан самый большой?",a:["Атлантический","Индийский","Тихий"],c:2,e:"Тихий океан — самый большой на Земле."},
+{q:"Что растения обычно поглощают из воздуха при фотосинтезе?",a:["Кислород","Углекислый газ","Гелий"],c:1,e:"При фотосинтезе растения используют углекислый газ и выделяют кислород."}
+];
+let pos=0,score=0,answered=false;
+const $=id=>document.getElementById(id);
+function render(){const item=quiz[pos];answered=false;$("progress").textContent="Вопрос "+(pos+1)+" из "+quiz.length;$("question").textContent=item.q;$("feedback").textContent="";$("score").textContent="";$("answers").innerHTML="";
+item.a.forEach((answer,i)=>{const b=document.createElement("button");b.type="button";b.textContent=answer;b.addEventListener("click",()=>choose(i));$("answers").append(b);});
+$("next").hidden=true;$("restart").hidden=true;}
+function choose(i){if(answered)return;answered=true;const item=quiz[pos];const buttons=[...$("answers").children];buttons.forEach((b,n)=>{b.disabled=true;if(n===item.c)b.classList.add("correct");else if(n===i)b.classList.add("wrong");});if(i===item.c){score++;$("feedback").textContent="Верно! "+item.e;}else{$("feedback").textContent="Почти! Правильный ответ: "+item.a[item.c]+". "+item.e;}
+if(pos<quiz.length-1)$("next").hidden=false;else{$("score").textContent="Твой результат: "+score+" из "+quiz.length;$("restart").hidden=false;}}
+$("next").addEventListener("click",()=>{pos++;render();});$("restart").addEventListener("click",()=>{pos=0;score=0;render();});render();
+</script></body></html>
