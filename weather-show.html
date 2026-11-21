@@ -22,7 +22,9 @@ const presenterTeams=[
  {avatars:"🦉 ☀️",names:"Совёнок Умка и Солнышко Лучик",hello:"Здравствуйте! Приготовили для вас новый прогноз погоды."},
  {avatars:"🐻 🌈",names:"Медвежонок Топа и Радужка",hello:"Привет-привет! Посмотрим прогноз для следующего города!"}
 ];
-const presenterDayIndex=Math.floor(Date.now()/86400000)%presenterTeams.length;
+const moscowDateParts=new Intl.DateTimeFormat("en-US",{timeZone:"Europe/Moscow",year:"numeric",month:"numeric",day:"numeric"}).formatToParts(new Date());
+const moscowPart=type=>Number(moscowDateParts.find(part=>part.type===type).value);
+const presenterDayIndex=Math.floor((Date.UTC(moscowPart("year"),moscowPart("month")-1,moscowPart("day"))-Date.UTC(moscowPart("year"),0,1))/86400000)%presenterTeams.length;
 function updatePresenters(){const team=presenterTeams[presenterDayIndex];$("presenterAvatars").textContent=team.avatars;$("presenterNames").textContent=team.names;$("presenterLine").textContent=team.hello;}
 let data=[],idx=0,timer=null;
 const $=id=>document.getElementById(id);
