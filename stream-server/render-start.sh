@@ -140,11 +140,11 @@ make_channel_promo() {
 
 make_next_program_card() {
   local output="$1" schedule_file="$2"
-  ffmpeg -hide_banner -nostdin -loglevel warning -y -t 8 \\
-    -f lavfi -i "color=c=0x182d58:s=1280x720:r=25:d=8" \\
-    -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \\
-    -vf "drawbox=x=0:y=0:w=1280:h=14:color=0xffc94f:t=fill,drawbox=x=0:y=706:w=1280:h=14:color=0x56c9dc:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='СКОРО В ЭФИРЕ':fontcolor=0xffd76a:fontsize=48:borderw=2:bordercolor=0x102044:x=(w-text_w)/2:y=95,drawtext=fontfile=${WEATHER_FONT}:textfile=${schedule_file}:fontcolor=white:fontsize=36:line_spacing=24:borderw=2:bordercolor=0x102044:x=(w-text_w)/2:y=220:shadowcolor=black@0.5:shadowx=3:shadowy=3,drawtext=fontfile=${WEATHER_FONT}:text='ПРОГРАММА ПО ПОРЯДКУ ЭФИРНОГО ПЛЕЙЛИСТА':fontcolor=0xbfeeff:fontsize=21:x=(w-text_w)/2:y=600" \\
-    -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \\
+  ffmpeg -hide_banner -nostdin -loglevel warning -y -t 8 \
+    -f lavfi -i "color=c=0x182d58:s=1280x720:r=25:d=8" \
+    -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \
+    -vf "drawbox=x=0:y=0:w=1280:h=14:color=0xffc94f:t=fill,drawbox=x=0:y=706:w=1280:h=14:color=0x56c9dc:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='СКОРО В ЭФИРЕ':fontcolor=0xffd76a:fontsize=48:borderw=2:bordercolor=0x102044:x=(w-text_w)/2:y=95,drawtext=fontfile=${WEATHER_FONT}:textfile=${schedule_file}:fontcolor=white:fontsize=36:line_spacing=24:borderw=2:bordercolor=0x102044:x=(w-text_w)/2:y=220:shadowcolor=black@0.5:shadowx=3:shadowy=3,drawtext=fontfile=${WEATHER_FONT}:text='ПРОГРАММА ПО ПОРЯДКУ ЭФИРНОГО ПЛЕЙЛИСТА':fontcolor=0xbfeeff:fontsize=21:x=(w-text_w)/2:y=600" \
+    -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \
     -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest -movflags +faststart "$output"
   ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$output" >/dev/null
 }
