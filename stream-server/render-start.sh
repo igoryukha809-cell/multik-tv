@@ -458,8 +458,10 @@ play_weather_show() {
   fi
   play_channel_ident || echo "WARNING: channel ident failed; continuing to weather show."
   ffmpeg -hide_banner -nostdin -loglevel warning -re -i "$WEATHER_VIDEO" \
-    -an -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 \
-    -b:v 1200k -maxrate 1200k -bufsize 2400k -f flv rtmp://127.0.0.1/live/multiktv
+    -map 0:v:0 -map 0:a:0? \
+    -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 25 -g 50 \
+    -b:v 1200k -maxrate 1200k -bufsize 2400k \
+    -c:a aac -b:a 96k -ar 44100 -ac 2 -f flv rtmp://127.0.0.1/live/multiktv
 }
 
 # External film downloads are opt-in. Wikimedia currently rate-limits this host (HTTP 429),
