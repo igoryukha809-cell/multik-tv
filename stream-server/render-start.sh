@@ -651,12 +651,8 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     birthday_today=1
   fi
   PLAY_FIRST_LAUNCH_COUNTDOWN=0
-  claim_response=""
-  if [[ -n "${CHANNEL_LAUNCH_CLAIM_URL:-}" && -n "${CHANNEL_LAUNCH_CLAIM_TOKEN:-}" ]]; then
-    claim_response="$(curl -fsS --connect-timeout 5 --max-time 15 -X POST \
-      -H "Authorization: Bearer ${CHANNEL_LAUNCH_CLAIM_TOKEN}" \
-      "${CHANNEL_LAUNCH_CLAIM_URL}" 2>/dev/null || true)"
-  fi
+  claim_response="$(curl -fsS --connect-timeout 5 --max-time 15 -X POST \
+    "https://hryyvwzkyxhmpmvvdqqx.supabase.co/functions/v1/channel-launch-claim" 2>/dev/null || true)"
   if [[ "${claim_response}" == *'"play_countdown":true'* ]]; then
     PLAY_FIRST_LAUNCH_COUNTDOWN=1
     make_launch_countdown
