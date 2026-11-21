@@ -283,9 +283,11 @@ generate_weather_show() {
       weather_ua="${WEATHER_USER_AGENT:-MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)}"
       if curl -fsSL --retry 1 --retry-delay 3 --connect-timeout 8 --max-time 20 \
         -H "User-Agent: ${weather_ua}" -H "Accept: application/json" "$url" -o "$json"; then
-        cp "$json" "$cache_file"
-        printf '%s' "$source" > "$cache_source"
-        printf '%s' "$now" > "$cache_time"
+        if [[ -s "$json" ]]; then
+          cp "$json" "$cache_file"
+          printf '%s' "$source" > "$cache_source"
+          printf '%s' "$now" > "$cache_time"
+        fi
       else
         echo "MET Norway недоступен для ${city}; переключаюсь на Open-Meteo."
         source="Open-Meteo"
@@ -297,17 +299,22 @@ generate_weather_show() {
           url="https://wttr.in/${lat},${lon}?format=j1"
           if ! curl -fsSL --retry 1 --retry-delay 2 --connect-timeout 8 --max-time 20 \
             -H "User-Agent: MultikTV/1.0 (https://github.com/igoryukha809-cell/multik-tv)" "$url" -o "$json"; then
-            echo "Все погодные источники недоступны для ${city}; пропускаю город."
-            continue
+            echo "Все погодные источники недоступны для ${city}; добавляю карточку с сообщением о недоступности прогноза."
+            source="Резервная заставка"
           fi
         fi
-        cp "$json" "$cache_file"
-        printf '%s' "$source" > "$cache_source"
-        printf '%s' "$now" > "$cache_time"
+        if [[ -s "$json" ]]; then
+          cp "$json" "$cache_file"
+          printf '%s' "$source" > "$cache_source"
+          printf '%s' "$now" > "$cache_time"
+        fi
       fi
     fi
 
-    if [[ "$source" == "wttr.in" ]]; then
+    if [[ "$source" == "Резервная заставка" ]]; then
+      temp="—"; feels=""; wind="—"; humidity="—"; rain="—"; low="—"; high="—"
+      condition="Прогноз временно недоступен"
+    elif [[ "$source" == "wttr.in" ]]; then
       temp="$(jq -r '.current_condition[0].temp_C // empty' "$json")"
       feels="$(jq -r '.current_condition[0].FeelsLikeC // empty' "$json")"
       wind="$(jq -r '.current_condition[0].windspeedKmph // empty' "$json")"
@@ -358,10 +365,12 @@ generate_weather_show() {
       esac
     fi
 
-    [[ -n "$temp" && -n "$wind" && -n "$humidity" ]] || {
-      echo "Неполные погодные данные от ${source} для ${city}; пропускаю город."
-      continue
-    }
+    if [[ "$source" != "Резервная заставка" ]] && [[ -z "$temp" || -z "$wind" || -z "$humidity" ]]; then
+      echo "Неполные погодные данные от ${source} для ${city}; добавляю резервную карточку."
+      source="Резервная заставка"
+      temp="—"; feels=""; wind="—"; humidity="—"; rain="—"; low="—"; high="—"
+      condition="Прогноз временно недоступен"
+    fi
 
     {
       printf 'КАНАЛ  |  ПРОГНОЗ ПОГОДЫ\n'
@@ -374,16 +383,20 @@ generate_weather_show() {
       printf 'Источник: %s  |  Обновлено: %s\n' "$source" "$(date '+%H:%M %Z')"
     } > "$txt"
 
-    # Russian synthetic voice presents only values taken from the selected forecast source.
-    temp_say="$(printf '%.0f' "$temp" 2>/dev/null || printf '%s' "$temp")"
-    wind_say="$(printf '%.0f' "$wind" 2>/dev/null || printf '%s' "$wind")"
-    feels_say=""
-    if [[ -n "$feels" ]]; then
-      feels_say=" По ощущениям ${feels} градусов."
-    fi
-    spoken="Приве-е-ет, друзья! Это Соня! Давайте вместе узнаем погоду в городе ${city}! Сейчас ${temp_say} градусов. ${condition}!${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов. Пусть ваш день будет чудесным!"
-    if [[ "$rain" != "—" ]]; then
-      spoken+=" Вероятность осадков ${rain} процентов."
+    # The unavailable forecast still gets a visible card and an honest voice-over.
+    if [[ "$source" == "Резервная заставка" ]]; then
+      spoken="Приве-е-ет, друзья! Это Соня! Сейчас мы в городе ${city}. К сожалению, прогноз временно недоступен. Мы обязательно вернёмся к погоде этого города позже!"
+    else
+      temp_say="$(printf '%.0f' "$temp" 2>/dev/null || printf '%s' "$temp")"
+      wind_say="$(printf '%.0f' "$wind" 2>/dev/null || printf '%s' "$wind")"
+      feels_say=""
+      if [[ -n "$feels" ]]; then
+        feels_say=" По ощущениям ${feels} градусов."
+      fi
+      spoken="Приве-е-ет, друзья! Это Соня! Давайте вместе узнаем погоду в городе ${city}! Сейчас ${temp_say} градусов. ${condition}!${feels_say} Ветер ${wind_say} километров в час. Влажность воздуха ${humidity} процентов. Пусть ваш день будет чудесным!"
+      if [[ "$rain" != "—" ]]; then
+        spoken+=" Вероятность осадков ${rain} процентов."
+      fi
     fi
     printf '%s\n' "$spoken" > "${WEATHER_DIR}/weather-${count}.speech.txt"
     speech="${WEATHER_DIR}/weather-${count}.wav"
