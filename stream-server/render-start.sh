@@ -653,7 +653,6 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
   make_launch_countdown
   make_channel_opening
   make_channel_promo
-  printf "file '%s'\\n" "/tmp/multik-tv-launch-countdown.mp4" >> "$PLAYLIST_FILE"
   printf "file '%s'\\n" "/tmp/multik-tv-opening.mp4" >> "$PLAYLIST_FILE"
   printf "file '%s'\\n" "/tmp/multik-tv-channel-promo.mp4" >> "$PLAYLIST_FILE"
   item_index=0
@@ -719,17 +718,29 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
   fi
   echo "Единый файл готов; запускаю один циклический MP4-поток."
   restart_delay=2
+  COUNTDOWN_PENDING=1
   while kill -0 "$SRS_PID" 2>/dev/null; do
     write_health "starting" "Starting continuous MP4 publisher"
     scheduled_weather_date=""
     result=0
-    ffmpeg -hide_banner -nostdin -loglevel info -report -re -stream_loop -1 -i "$COMBINED_FILE" \
-      -map 0:v:0 -map 0:a:0? \
-      -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20,drawbox=x=0:y=h-30:w=iw:h=30:color=0x14264dcc:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='НАШ КАНАЛ':fontcolor=white@0.94:fontsize=15:box=1:boxcolor=0x14264dcc:boxborderw=7:x=w-tw-14:y=12,drawtext=fontfile=${WEATHER_FONT}:text='0+':fontcolor=white:fontsize=13:box=1:boxcolor=0x7132a8@0.95:boxborderw=5:x=12:y=12,drawtext=fontfile=${WEATHER_FONT}:text='АВТОРСКИЕ ПРОГРАММЫ  •  ПОГОДА  •  ВОПРОС ДНЯ  •  ПРИРОДА И КОСМОС':fontcolor=white:fontsize=12:x=12:y=h-th-9" \\
-      -c:v libx264 -preset ultrafast -tune zerolatency -threads 1 -pix_fmt yuv420p -r 20 -g 40 \
-      -b:v 450k -maxrate 450k -bufsize 900k \
-      -c:a aac -b:a 96k -ar 44100 -ac 2 \
-      -f flv rtmp://127.0.0.1/live/multiktv &
+    if (( COUNTDOWN_PENDING )); then
+      echo "STARTUP: playing the five-minute countdown once, then switching to the looping programme playlist."
+      ffmpeg -hide_banner -nostdin -loglevel info -report -re -i "/tmp/multik-tv-launch-countdown.mp4" -re -stream_loop -1 -i "$COMBINED_FILE" \
+        -filter_complex "[0:v:0][0:a:0][1:v:0][1:a:0]concat=n=2:v=1:a=1[vcat][acat];[vcat]scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20,drawbox=x=0:y=h-30:w=iw:h=30:color=0x14264dcc:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='НАШ КАНАЛ':fontcolor=white@0.94:fontsize=15:box=1:boxcolor=0x14264dcc:boxborderw=7:x=w-tw-14:y=12,drawtext=fontfile=${WEATHER_FONT}:text='0+':fontcolor=white:fontsize=13:box=1:boxcolor=0x7132a8@0.95:boxborderw=5:x=12:y=12,drawtext=fontfile=${WEATHER_FONT}:text='АВТОРСКИЕ ПРОГРАММЫ  •  ПОГОДА  •  ВОПРОС ДНЯ  •  ПРИРОДА И КОСМОС':fontcolor=white:fontsize=12:x=12:y=h-th-9[v]" \
+        -map "[v]" -map "[acat]" \
+        -c:v libx264 -preset ultrafast -tune zerolatency -threads 1 -pix_fmt yuv420p -r 20 -g 40 \
+        -b:v 450k -maxrate 450k -bufsize 900k \
+        -c:a aac -b:a 96k -ar 44100 -ac 2 \
+        -f flv rtmp://127.0.0.1/live/multiktv &
+    else
+      ffmpeg -hide_banner -nostdin -loglevel info -report -re -stream_loop -1 -i "$COMBINED_FILE" \
+        -map 0:v:0 -map 0:a:0? \
+        -vf "scale=640:360:force_original_aspect_ratio=decrease,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=20,drawbox=x=0:y=h-30:w=iw:h=30:color=0x14264dcc:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='НАШ КАНАЛ':fontcolor=white@0.94:fontsize=15:box=1:boxcolor=0x14264dcc:boxborderw=7:x=w-tw-14:y=12,drawtext=fontfile=${WEATHER_FONT}:text='0+':fontcolor=white:fontsize=13:box=1:boxcolor=0x7132a8@0.95:boxborderw=5:x=12:y=12,drawtext=fontfile=${WEATHER_FONT}:text='АВТОРСКИЕ ПРОГРАММЫ  •  ПОГОДА  •  ВОПРОС ДНЯ  •  ПРИРОДА И КОСМОС':fontcolor=white:fontsize=12:x=12:y=h-th-9" \
+        -c:v libx264 -preset ultrafast -tune zerolatency -threads 1 -pix_fmt yuv420p -r 20 -g 40 \
+        -b:v 450k -maxrate 450k -bufsize 900k \
+        -c:a aac -b:a 96k -ar 44100 -ac 2 \
+        -f flv rtmp://127.0.0.1/live/multiktv &
+    fi
     FFMPEG_PID=$!
 
     manifest_url="http://127.0.0.1:${HTTP_PORT}/live/multiktv.m3u8"
@@ -797,6 +808,8 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     done
 
     if (( live_confirmed )); then
+      # The startup countdown belongs only to the first successful publisher session.
+      COUNTDOWN_PENDING=0
       restart_delay=2
       last_segment=""
       last_change=$SECONDS
