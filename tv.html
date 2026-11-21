@@ -85,6 +85,13 @@ footer{font-size:13px;color:#9eacd3}
 #broadcastOverlay[data-holiday="family"] .brand-name:after{content:"🏡"}
 #broadcastOverlay[data-holiday="unity"] .brand-name:after{content:"🤝"}
 #broadcastOverlay[data-holiday="birthday"] .brand-name:after{content:"🎉"}
+#broadcastOverlay[data-holiday="inventors"] .brand-name:after{content:"💡"}
+#broadcastOverlay[data-holiday="kids-tv"] .brand-name:after{content:"📺"}
+#broadcastOverlay[data-holiday="victory"] .orb-a{background:linear-gradient(145deg,#fff0a8,#d9a23d)}
+#broadcastOverlay[data-holiday="victory"] .brand-name:after{content:"🌟"}
+#broadcastOverlay[data-holiday="knowledge"] .brand-name:after{content:"🎒"}
+#broadcastOverlay[data-holiday="channel-birthday"] .brand-name:after{content:"🎂"}
+
 @media(max-width:520px){#broadcastOverlay .channel-bug{top:2.4%;right:2%;width:clamp(100px,25vw,132px);height:clamp(27px,7vw,36px)}}
 /* Пульт и локальные кнопки доступны только в коде страницы, но не показываются зрителям. */
 #viewer-controls{display:none!important}
@@ -288,17 +295,22 @@ const seasons=[
  {name:'summer'},
  {name:'autumn'}
 ];
+/* Специальные даты канала: праздничный вариант логотипа включается автоматически.
+   Диапазоны подобраны по открытым примерам праздничного оформления «Карусели»,
+   но графика и эмблемы остаются оригинальными для нашего канала. */
 const holidays=[
- {id:'newyear',test:(m,d)=>(m===12&&d>=28)||(m===1&&d<=15)},
- {id:'defender',test:(m,d)=>m===2&&d>=22&&d<=23},
- {id:'women',test:(m,d)=>m===3&&d>=6&&d<=8},
- {id:'april',test:(m,d)=>m===4&&(d===1||(d>=7&&d<=8))},
- {id:'cosmos',test:(m,d)=>m===4&&d>=11&&d<=12},
- {id:'may',test:(m,d)=>(m===4&&d>=28)||(m===5&&(d===1||d===9))},
- {id:'children',test:(m,d)=>(m===5&&d===31)||(m===6&&d===1)},
+ {id:'newyear',test:(m,d)=>(m===12&&d>=22)||(m===1&&d<=14)},
+ {id:'inventors',test:(m,d)=>m===1&&d===17},
+ {id:'kids-tv',test:(m,d)=>m===1&&d===18},
+ {id:'defender',test:(m,d)=>m===2&&d===23},
+ {id:'women',test:(m,d)=>m===3&&d>=6&&d<=9},
+ {id:'cosmos',test:(m,d)=>m===4&&d===12},
+ {id:'victory',test:(m,d)=>m===5&&d>=8&&d<=11},
+ {id:'children',test:(m,d)=>m===6&&d===1},
  {id:'family',test:(m,d)=>m===7&&d===8},
+ {id:'knowledge',test:(m,d)=>m===9&&d===1},
  {id:'unity',test:(m,d)=>m===11&&d===4},
- {id:'birthday',test:(m,d)=>m===12&&d===27}
+ {id:'channel-birthday',test:(m,d)=>m===12&&d===27}
 ];
 function applyBroadcastTheme(){
  const now=new Date(),m=now.getMonth()+1,d=now.getDate();
