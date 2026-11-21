@@ -526,6 +526,23 @@ PLAYLIST_FILE="/tmp/multik-tv-broadcast.concat"
 if (( PROGRAM_READY )); then
   printf "file '%s'\n" "$PROGRAM_FILE" >> "$PLAYLIST_FILE"
 fi
+LOCAL_PROGRAM_DIR="${LOCAL_PROGRAM_DIR:-/usr/local/srs/programs}"
+LOCAL_COUNT=0
+mkdir -p "$LOCAL_PROGRAM_DIR"
+# Files placed in this channel-owned media folder are picked up automatically.
+# No per-file confirmation flag is needed for locally supplied material.
+shopt -s nullglob nocaseglob
+for local_show in "$LOCAL_PROGRAM_DIR"/*.mp4 "$LOCAL_PROGRAM_DIR"/*.m4v "$LOCAL_PROGRAM_DIR"/*.mov "$LOCAL_PROGRAM_DIR"/*.webm; do
+  [[ -f "$local_show" ]] || continue
+  if ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$local_show" >/dev/null 2>&1; then
+    printf "file '%s'\\n" "$local_show" >> "$PLAYLIST_FILE"
+    LOCAL_COUNT=$((LOCAL_COUNT + 1))
+    echo "Добавлена локальная программа: ${local_show##*/}"
+  else
+    echo "ОШИБКА: локальный файл не прошёл проверку и пропущен: ${local_show##*/}"
+  fi
+done
+shopt -u nullglob nocaseglob
 ORIGINAL_COUNT=0
 for original_show in "$ORIGINAL_DIR"/*.mp4; do
   [[ -f "$original_show" ]] || continue
@@ -537,8 +554,8 @@ for original_show in "$ORIGINAL_DIR"/*.mp4; do
   fi
 done
 # Weather is deliberately excluded from the looping playlist; it airs once daily at WEATHER_TIME.
-if (( PROGRAM_READY || ORIGINAL_COUNT > 0 )); then
-  echo "Starting continuous broadcast playlist: licensed_items=$PROGRAM_READY, original_items=$ORIGINAL_COUNT."
+if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
+  echo "Starting continuous broadcast playlist: external_items=$PROGRAM_READY, local_items=$LOCAL_COUNT, original_items=$ORIGINAL_COUNT."
   echo "Собираю единый MP4-файл, чтобы FFmpeg не перезапускал RTMP при переходе между выпусками."
   COMBINED_FILE="/tmp/multik-tv-continuous.mp4"
   rm -f "$COMBINED_FILE"
