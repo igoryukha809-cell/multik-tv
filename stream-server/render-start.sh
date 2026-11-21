@@ -91,6 +91,18 @@ make_channel_ident_video() {
   ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$CHANNEL_IDENT_VIDEO" >/dev/null
 }
 
+make_next_program_card() {
+  local title="$1" output="$2" title_file="$3"
+  printf '%s\\n' "$title" > "$title_file"
+  ffmpeg -hide_banner -nostdin -loglevel warning -y -t 5 \\
+    -f lavfi -i "color=c=0x182d58:s=1280x720:r=25:d=5" \\
+    -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" \\
+    -vf "drawbox=x=0:y=0:w=1280:h=14:color=0xffc94f:t=fill,drawbox=x=0:y=706:w=1280:h=14:color=0x56c9dc:t=fill,drawtext=fontfile=${WEATHER_FONT}:text='ДАЛЕЕ В ЭФИРЕ':fontcolor=0xffd76a:fontsize=42:borderw=2:bordercolor=0x102044:x=(w-text_w)/2:y=190,drawtext=fontfile=${WEATHER_FONT}:textfile=${title_file}:fontcolor=white:fontsize=48:borderw=3:bordercolor=0x102044:x=(w-text_w)/2:y=310:shadowcolor=black@0.5:shadowx=3:shadowy=3,drawtext=fontfile=${WEATHER_FONT}:text='СМОТРИТЕ СЛЕДУЮЩУЮ ПРОГРАММУ':fontcolor=0xbfeeff:fontsize=24:x=(w-text_w)/2:y=430" \\
+    -map 0:v:0 -map 1:a:0 -c:v libx264 -preset ultrafast -pix_fmt yuv420p -r 25 -g 50 \\
+    -c:a aac -b:a 96k -ar 44100 -ac 2 -shortest -movflags +faststart "$output"
+  ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of csv=p=0 "$output" >/dev/null
+}
+
 make_channel_birthday_bumper() {
   local title_file="/tmp/channel-birthday-title.txt" sub_file="/tmp/channel-birthday-sub.txt"
   printf '%s\n' 'С ДНЁМ РОЖДЕНИЯ, НАШ КАНАЛ!' > "$title_file"
@@ -595,17 +607,28 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
   fi
   item_index=0
   for programme in "${PROGRAM_ITEMS[@]}"; do
-    printf "file '%s'\\n" "$programme" >> "$PLAYLIST_FILE"
     item_index=$((item_index + 1))
-    if (( item_index < ${#PROGRAM_ITEMS[@]} )); then
-      printf "file '%s'\\n" "$CHANNEL_IDENT_VIDEO" >> "$PLAYLIST_FILE"
+    display_name="${programme##*/}"
+    display_name="${display_name%.*}"
+    display_name="${display_name//_/ }"
+    display_name="${display_name//-/ }"
+    card_file="/tmp/multik-tv-next-program-${item_index}.mp4"
+    card_title_file="/tmp/multik-tv-next-program-${item_index}.txt"
+    echo "Готовлю эфирную плашку «Далее в эфире: ${display_name}»."
+    if make_next_program_card "$display_name" "$card_file" "$card_title_file"; then
+      printf "file '%s'\\n" "$card_file" >> "$PLAYLIST_FILE"
+    else
+      echo "WARNING: не удалось собрать плашку следующей программы; продолжаю без неё."
     fi
+    printf "file '%s'\\n" "$programme" >> "$PLAYLIST_FILE"
     if (( birthday_today && item_index == 1 )); then
       printf "file '%s'\\n" "$BIRTHDAY_VIDEO" >> "$PLAYLIST_FILE"
       birthday_today=0
     fi
+    # Keep a station ident at every programme boundary, including the loop boundary.
+    printf "file '%s'\\n" "$CHANNEL_IDENT_VIDEO" >> "$PLAYLIST_FILE"
   done
-  echo "Межпрограммные заставки добавлены между выпусками; праздничная отбивка включается только в день годовщины."
+  echo "Плашки «Далее в эфире» и фирменные перебивки включены в общий эфирный плейлист."
   echo "Собираю единый MP4-файл, чтобы FFmpeg не перезапускал RTMP при переходе между выпусками."
   COMBINED_FILE="/tmp/multik-tv-continuous.mp4"
   rm -f "$COMBINED_FILE"
