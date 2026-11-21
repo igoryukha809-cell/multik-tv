@@ -32,6 +32,18 @@ button,.filebtn{border:0;border-radius:10px;padding:11px 15px;background:#ffe17a
 .status{color:#baffdc;font-weight:700}.meta{font-size:13px;color:#aab8df}
 ol{padding-left:24px}li{padding:7px 0;color:#e3e9ff}
 footer{font-size:13px;color:#9eacd3}
+/* Сезонное оформление канала: меняется автоматически по календарю. */
+.season-badge{display:inline-flex;align-items:center;gap:7px;margin:10px 0;padding:7px 13px;border-radius:999px;background:var(--season-chip,#174b3c);color:var(--season-text,#baffdc);font-size:13px;font-weight:850;letter-spacing:.02em}
+body[data-season="spring"]{--season-a:#238b75;--season-b:#74b96a;--season-c:#f2a6bf;--season-chip:#174f49;--season-text:#d6fff0;background:radial-gradient(ellipse at 50% 0,#276d65,#0b1023 68%)}
+body[data-season="summer"]{--season-a:#087eaa;--season-b:#20b9a2;--season-c:#ffd166;--season-chip:#14556a;--season-text:#e0fbff;background:radial-gradient(ellipse at 50% 0,#176d91,#0b1023 68%)}
+body[data-season="autumn"]{--season-a:#8d4930;--season-b:#d17b39;--season-c:#f2c36b;--season-chip:#663b2d;--season-text:#ffe8c6;background:radial-gradient(ellipse at 50% 0,#70412f,#0b1023 68%)}
+body[data-season="winter"]{--season-a:#315c9b;--season-b:#69a9d2;--season-c:#d9f3ff;--season-chip:#24476d;--season-text:#e5f7ff;background:radial-gradient(ellipse at 50% 0,#294e7b,#0b1023 68%)}
+body[data-season] .stage{background:radial-gradient(circle at 18% 78%,var(--season-c) 0 8%,transparent 9%),radial-gradient(circle at 82% 18%,var(--season-b) 0 10%,transparent 11%),linear-gradient(145deg,var(--season-a),var(--season-b) 55%,#17203d)}
+body[data-season] .art h2{color:var(--season-c)}
+body[data-season] .below{border-top:3px solid var(--season-c)}
+body[data-season] .tag{background:var(--season-chip);color:var(--season-text)}
+body[data-season] .brand{color:var(--season-c)}
+body[data-season] .panel{border-color:color-mix(in srgb,var(--season-b) 48%,#39466f)}
 /* Пульт и локальные кнопки доступны только в коде страницы, но не показываются зрителям. */
 #viewer-controls{display:none!important}
 
@@ -44,7 +56,8 @@ footer{font-size:13px;color:#9eacd3}
 <body>
 <header><div class="top"><div class="brand">🌈 МУЛЬТИК ТВ</div><div><a href="auto-library.html">🤖 Автоподбор мультфильмов</a> · <a href="video-studio.html">🎬 Создать заставку</a> · <a href="index.html">← На главную</a></div></div>
 <h1>МУЛЬТИК ТВ — прямой эфир</h1>
-<span class="tag">🔴 ОНЛАЙН-ТРАНСЛЯЦИЯ</span></header>
+<span class="tag">🔴 ОНЛАЙН-ТРАНСЛЯЦИЯ</span>
+<span class="season-badge" id="seasonBadge" aria-live="polite">🍂 Осеннее оформление</span></header>
 <main>
 
 <section class="panel" id="live-broadcast">
@@ -119,6 +132,22 @@ footer{font-size:13px;color:#9eacd3}
 <footer>МУЛЬТИК ТВ · Бесплатный браузерный показ · Не является общей синхронной трансляцией</footer>
 <script>
 (()=>{
+const seasons=[
+ {name:'winter',label:'Зимнее оформление',icon:'❄️',start:12},
+ {name:'spring',label:'Весеннее оформление',icon:'🌷',start:3},
+ {name:'summer',label:'Летнее оформление',icon:'☀️',start:6},
+ {name:'autumn',label:'Осеннее оформление',icon:'🍂',start:9}
+];
+function applySeason(){
+ const now=new Date(),month=now.getMonth()+1;
+ const season=month===12||month<=2?seasons[0]:month<=5?seasons[1]:month<=8?seasons[2]:seasons[3];
+ document.body.dataset.season=season.name;
+ const badge=document.getElementById('seasonBadge');
+ if(badge)badge.textContent=season.icon+' '+season.label;
+ document.documentElement.style.setProperty('color-scheme','dark');
+}
+applySeason();
+setInterval(applySeason,60000);
 const $=id=>document.getElementById(id);
 const source='https://upload.wikimedia.org/wikipedia/commons/8/8d/Morevna_Project_-_Pepper%26Carrot_%28animated_comic%29_-_Episode_6_-_The_Potion_Contest_%28Russian_variant%29.webm';
 const credit='Morevna Project · Pepper & Carrot — «Конкурс зельеваров» · CC BY-SA 4.0';
