@@ -9,15 +9,15 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
-from piper import PiperVoice, SynthesisConfig
+from piper import PiperVoice
 
 VOICE_PATH = os.getenv("PIPER_MODEL", "/app/voices/ru_RU-denis-medium.onnx")
-ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "https://igoryukha809-cell.github.io/multik-tv")
+ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "https://igoryukha809-cell.github.io")
 MAX_CHARS = 1200
 RATE_LIMIT = 8
 WINDOW_SECONDS = 60
 
-app = FastAPI(title="Channel TTS", version="0.1.0")
+app = FastAPI(title="Channel TTS", version="0.1.1")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[ALLOWED_ORIGIN],
@@ -61,12 +61,12 @@ def synthesize(payload: SpeechRequest, request: Request):
         raise HTTPException(status_code=429, detail="Rate limit reached; try again in a minute")
     history.append(now)
 
-    # Piper length_scale: values above 1 are slower; invert the UI rate.
-    config = SynthesisConfig(length_scale=1.0 / payload.rate)
+    # Keep to the stable PiperVoice API available in piper-tts 1.2.0.
+    # Speed control will be re-enabled after confirming the installed API.
     output = io.BytesIO()
     with voice_lock:
         with wave.open(output, "wb") as wav_file:
-            voice.synthesize_wav(text, wav_file, syn_config=config)
+            voice.synthesize_wav(text, wav_file)
     return Response(
         content=output.getvalue(),
         media_type="audio/wav",
