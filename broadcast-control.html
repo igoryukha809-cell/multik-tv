@@ -12,7 +12,7 @@
 <div class="card"><h2>Состояние сервера</h2><div id="status" class="status">Проверяем подключение…</div><div class="row"><button id="refresh">Обновить</button><button id="start" disabled>▶ Запустить эфир</button><button id="stop" class="stop" disabled>■ Остановить эфир</button></div></div>
 <div class="card"><h2>📁 Видеотека сервера</h2><p class="muted">Добавляй только видео, на которые есть разрешение для публичного показа. Загрузка доступна после подключения защищённого сервера.</p><input id="upload" type="file" accept="video/mp4,video/webm,video/quicktime,video/x-m4v"><button id="uploadBtn" disabled>Загрузить на сервер</button><div id="media" class="status">Список файлов появится после подключения сервера.</div></div>
 <div class="card"><h2>🗓️ Очередь эфира</h2><p class="muted">Добавляй файлы из видеотеки, отмечай подтверждение прав, меняй порядок и сохраняй очередь на сервере.</p><div id="playlist" class="status">Очередь пока не загружена.</div><div class="row"><button id="save" disabled>Сохранить очередь на сервере</button><button id="export" class="secondary">Скачать JSON</button></div><p id="result" class="muted" aria-live="polite"></p></div>
-<div class="card"><h2>🔌 Связь с PulseCast и Kinescope</h2><div class="warn"><b>Автоматическая синхронизация с PulseCast пока недоступна.</b> В публичной документации PulseCast не обнаружен API для загрузки видео и редактирования плейлиста. Поэтому очередь, составленная здесь, не изменяет очередь PulseCast. Не останавливай работающий эфир ради этой настройки.</div><p class="muted">Сейчас можно подготовить очередь в GitHub и скачать её JSON-файлом. Чтобы изменить фактический эфир, владелец канала должен использовать панель PulseCast и выбрать там нужные видео. Kinescope принимает готовый RTMP-поток от PulseCast.</p><div class="row"><a href="https://pulsecast.tv/en/dashboard" target="_blank" rel="noopener">Открыть PulseCast</a><a href="https://app.kinescope.io/" target="_blank" rel="noopener">Открыть Kinescope</a></div><p class="muted">Для серверного управления МУЛЬТИК ТВ отдельно нужны развёрнутый сервер, настроенная авторизация Supabase и защищённые переменные окружения. Эти действия не выполнены; платные ресурсы без подтверждения взрослого не создаются.</p></div>
+<div class="card"><h2>🔌 Связь с PulseCast и Kinescope</h2><div class="warn"><b>Автоматическая синхронизация с PulseCast пока недоступна.</b> В публичной документации PulseCast не обнаружен API для загрузки видео и редактирования плейлиста. Поэтому очередь, составленная здесь, не изменяет очередь PulseCast. Не останавливай работающий эфир ради этой настройки.</div><p class="muted">Сейчас можно подготовить очередь в GitHub и скачать её JSON-файлом. Чтобы изменить фактический эфир, владелец канала должен использовать панель PulseCast и выбрать там нужные видео. Kinescope принимает готовый RTMP-поток от PulseCast.</p><div class="row"><a href="https://pulsecast.tv/en/dashboard" target="_blank" rel="noopener">Открыть PulseCast</a><a href="https://app.kinescope.io/" target="_blank" rel="noopener">Открыть Kinescope</a></div><p class="muted">Для серверного управления требуется развёрнутый API-сервер с авторизацией Logto. Если адрес сервера не настроен, пульт останется в режиме подготовки очереди.</p></div>
 <p><a href="admin.html">← В админ-панель</a> · <a href="https://pulsecast.tv/en/dashboard" target="_blank" rel="noopener">PulseCast</a> · <a href="https://app.kinescope.io/" target="_blank" rel="noopener">Kinescope</a></p>
 </main>
 <script type="module">
@@ -20,7 +20,7 @@ import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2
 import {SUPABASE_URL,SUPABASE_ANON_KEY} from "./admin-config.js";
 const API_BASE="https://YOUR-RAILWAY-SERVICE.up.railway.app";
 const $=id=>document.getElementById(id);
-let token=null,media=[],items=[];
+let token=null,userinfoToken=null,media=[],items=[];
 function say(s){$("result").textContent=s}
 function renderMedia(){
  const box=$("media");box.replaceChildren();
@@ -44,11 +44,11 @@ function renderPlaylist(){
  });
 }
 async function api(path,method="GET",body,extraHeaders={}){
- const r=await fetch(API_BASE+path,{method,headers:{Authorization:"Bearer "+token,...(body?{"Content-Type":"application/json"}:{}),...extraHeaders},body:body||undefined});
+ const r=await fetch(API_BASE+path,{method,headers:{Authorization:"Bearer "+token,"X-Logto-Userinfo-Token":userinfoToken,...(body?{"Content-Type":"application/json"}:{}),...extraHeaders},body:body||undefined});
  const j=await r.json().catch(()=>({error:"Ответ сервера не JSON"}));if(!r.ok)throw Error(j.error||"HTTP "+r.status);return j;
 }
 async function load(){
- if(API_BASE.includes("YOUR-RAILWAY")){$("status").textContent="API сервера не настроен. Пульт и экспорт JSON доступны, но удалённое управление пока отключено.";return}
+ if(API_BASE.includes("YOUR-CLOUD-SERVER")){$("status").textContent="API сервера не настроен. Пульт и экспорт JSON доступны, но удалённое управление пока отключено.";return}
  try{
   const j=await api("/api/admin/status");media=j.media||[];items=j.playlist?.items||[];
   $("status").textContent="Сервер: "+(j.director?.status||"неизвестно")+"\nФайлов: "+media.length+"\nЭлементов очереди: "+items.length+"\nRTMP-приёмник настроен: "+(j.rtmpConfigured?"да":"нет");
@@ -59,13 +59,15 @@ $("refresh").onclick=load;
 $("save").onclick=async()=>{try{const j=await api("/api/admin/playlist","PUT",JSON.stringify({items}));say("Очередь сохранена. Элементов: "+j.items); }catch(e){say("Не удалось сохранить: "+e.message)}};
 $("start").onclick=async()=>{try{await api("/api/admin/broadcast/start","POST","{}");say("Команда запуска отправлена.");await load()}catch(e){say("Запуск не выполнен: "+e.message)}};
 $("stop").onclick=async()=>{try{await api("/api/admin/broadcast/stop","POST","{}");say("Команда остановки отправлена.");await load()}catch(e){say("Остановка не выполнена: "+e.message)}};
-$("uploadBtn").onclick=async()=>{const f=$("upload").files[0];if(!f){say("Сначала выбери видеофайл.");return}try{const r=await fetch(API_BASE+"/api/admin/upload?filename="+encodeURIComponent(f.name),{method:"POST",headers:{Authorization:"Bearer "+token},body:f});const j=await r.json();if(!r.ok)throw Error(j.error||"HTTP "+r.status);say("Файл загружен: "+j.filename);await load()}catch(e){say("Загрузка не выполнена: "+e.message)}};
+$("uploadBtn").onclick=async()=>{const f=$("upload").files[0];if(!f){say("Сначала выбери видеофайл.");return}try{const r=await fetch(API_BASE+"/api/admin/upload?filename="+encodeURIComponent(f.name),{method:"POST",headers:{Authorization:"Bearer "+token,"X-Logto-Userinfo-Token":userinfoToken},body:f});const j=await r.json();if(!r.ok)throw Error(j.error||"HTTP "+r.status);say("Файл загружен: "+j.filename);await load()}catch(e){say("Загрузка не выполнена: "+e.message)}};
 $("export").onclick=()=>{const blob=new Blob([JSON.stringify({items},null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="multik-tv-playlist.json";a.click();URL.revokeObjectURL(url);say("JSON-файл очереди подготовлен.")};
 async function init(){
- if(SUPABASE_URL.includes("YOUR_PROJECT")||SUPABASE_ANON_KEY.includes("YOUR_SUPABASE")){$("status").textContent="Supabase не настроен. Для защищённого управления владелец проекта должен настроить авторизацию.";return}
- try{const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {data:{session}}=await sb.auth.getSession();if(!session){$("status").textContent="Войдите через login.html под учётной записью администратора.";return}
- const {data,error}=await sb.from("admin_users").select("user_id").eq("user_id",session.user.id).maybeSingle();if(error||!data){$("status").textContent="У этой учётной записи нет прав администратора.";return}token=session.access_token;await load()
- }catch(e){$("status").textContent="Ошибка проверки входа: "+e.message}
+ try{
+  if(!await logto.isAuthenticated()){$("status").textContent="Войдите через защищённую страницу Logto.";return}
+  token=await logto.getAccessToken(LOGTO_API_RESOURCE);
+  userinfoToken=await logto.getAccessToken();
+  await load();
+ }catch(e){$("status").textContent="Не удалось получить токены Logto: "+e.message}
 }
 renderPlaylist();init();
 </script></body></html>
