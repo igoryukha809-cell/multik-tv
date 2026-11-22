@@ -33,7 +33,7 @@
 import LogtoClient from "https://cdn.jsdelivr.net/npm/@logto/browser@3.1.2/+esm";
 import {LOGTO_ENDPOINT,LOGTO_APP_ID,LOGTO_API_RESOURCE,LOGTO_REDIRECT_URI,LOGTO_POST_LOGOUT_URI} from "./logto-config.js";
 const API=LOGTO_API_RESOURCE;
-const logtoClient=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE],scopes:["email"]});
+const logtoClient=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE]});
 const $=id=>document.getElementById(id);
 let adminToken="";
 let userinfoToken="";
