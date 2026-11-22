@@ -1,0 +1,32 @@
+name: Read-only broadcast audio-video diagnostics
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+permissions:
+  contents: read
+jobs:
+  inspect-live-hls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Inspect live HLS
+        run: |
+          python3 scripts/broadcast_media_probe.py | tee /tmp/broadcast-report.json
+          {
+            echo "## Проверка изображения и звука"
+            cat /tmp/broadcast-report.json
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: broadcast-media-diagnostic
+          path: /tmp/broadcast-report.json
+          if-no-files-found: ignore
+          retention-days: 7
