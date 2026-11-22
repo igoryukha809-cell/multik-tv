@@ -19,6 +19,8 @@ jobs:
   inspect-live-hls:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Install FFmpeg
