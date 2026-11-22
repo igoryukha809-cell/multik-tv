@@ -87,6 +87,8 @@ def main() -> int:
         lines.append(f"- {'PASS' if item.get('ok') else 'FAIL'} — {item['check']}")
         if not item.get("ok") and item.get("error"):
             lines.append(f"  - {item['error']}")
+        if not item.get("ok") and item.get("output"):
+            lines.extend(["  ```text", item["output"], "  ```"])
     summary = "\n".join(lines) + "\n"
     print(summary)
     if SUMMARY:
