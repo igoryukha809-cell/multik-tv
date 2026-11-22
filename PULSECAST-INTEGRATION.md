@@ -2,7 +2,7 @@
 
 ## Current state
 
-The website queue is maintained in `broadcast.json` and the browser admin page. The current `broadcast-control.html` still contains a placeholder Railway API base URL and Supabase placeholders. No deployed backend or authenticated admin API is configured.
+The website queue is maintained in `broadcast.json` and the browser admin page. The current `broadcast-control.html` uses the cloud server API for authenticated administration.
 
 The public PulseCast documentation reviewed for this project describes playlist-based 24/7 RTMP streaming, but does not document an API for uploading videos or editing/reordering the playlist. Therefore this repository cannot safely synchronize its queue with PulseCast yet.
 
