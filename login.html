@@ -9,7 +9,7 @@
 </head>
 <body><main class="panel">
 <h1>МУЛЬТИК ТВ</h1><p>Вход в аккаунт через GitHub. Отдельный пароль МУЛЬТИК ТВ не требуется.</p>
-<form id="login"><p class="hint">Сейчас откроется GitHub. Войдите в свой аккаунт GitHub привычным способом.</p><button id="submit" type="submit">Продолжить через GitHub</button><button id="github" class="github-button" type="button">Войти через GitHub</button></form>
+<div><p class="hint">Используйте только свой аккаунт GitHub. Пароль и электронная почта отдельно на сайте не вводятся.</p><button id="github" class="github-button" type="button">Войти через GitHub</button></div>
 <div class="status" id="status" role="status" aria-live="polite"></div>
 <p class="hint">Авторизация проходит через GitHub и Logto. Не сообщайте никому коды подтверждения.</p>
 <p><a href="./index.html">← На главную</a></p>
@@ -17,10 +17,9 @@
 <script type="module">
 import LogtoClient from 'https://cdn.jsdelivr.net/npm/@logto/browser@3.1.2/+esm';
 import {LOGTO_ENDPOINT,LOGTO_APP_ID,LOGTO_API_RESOURCE,LOGTO_REDIRECT_URI} from './logto-config.js';
-const client=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE],scopes:['email']});
-const button=document.querySelector('#submit'),githubButton=document.querySelector('#github'),status=document.querySelector('#status');
-async function startGitHubSignIn(){button.disabled=true;githubButton.disabled=true;status.textContent='Перенаправляем на GitHub для входа…';try{await client.signIn({redirectUri:LOGTO_REDIRECT_URI,directSignIn:{method:'social',target:'github'}});}catch(error){button.disabled=false;githubButton.disabled=false;status.textContent='Не удалось открыть GitHub: '+(error?.message||'проверьте, что GitHub подключён в Logto');}}
-document.querySelector('#login').addEventListener('submit',event=>{event.preventDefault();startGitHubSignIn();});
+const client=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE]});
+const githubButton=document.querySelector('#github'),status=document.querySelector('#status');
+async function startGitHubSignIn(){githubButton.disabled=true;status.textContent='Перенаправляем на GitHub для входа…';try{await client.signIn({redirectUri:LOGTO_REDIRECT_URI,directSignIn:{method:'social',target:'github'}});}catch(error){githubButton.disabled=false;status.textContent='Не удалось открыть GitHub: '+(error?.message||'проверьте, что GitHub подключён в Logto');}}
 githubButton.addEventListener('click',startGitHubSignIn);
 // Сначала проверяем сохранённую сессию. Если она есть — сразу открываем защищённый раздел.
 (async()=>{try{if(await client.isAuthenticated()){status.textContent='Вы уже вошли. Открываем аккаунт…';location.replace('./access-keys.html');return;}await startGitHubSignIn();}catch(error){status.textContent='Не удалось проверить сохранённый вход: '+(error?.message||'ошибка авторизации');}})();
