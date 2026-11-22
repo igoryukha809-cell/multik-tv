@@ -44,12 +44,25 @@ jobs:
           PY
       - name: Audit the agent and repository
         run: python scripts/self_improving_agent.py
+      - name: Read intended broadcast state
+        id: channel-state
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          data = json.loads(Path("broadcast/status.json").read_text(encoding="utf-8"))
+          print("streaming=" + str(data.get("streaming", False)).lower())
+          PY
       - name: Probe live stream and real media segment
         id: stream
+        if: steps.channel-state.outputs.streaming == 'true'
         continue-on-error: true
         env:
           STREAM_BASE_URL: https://multik-tv-test-stream-yltl.onrender.com
         run: python scripts/stream_autorepair.py
+      - name: Record intentional offline state
+        if: steps.channel-state.outputs.streaming != 'true'
+        run: echo "Channel is intentionally OFFLINE; live media probe skipped. This is not a failure." >> "$GITHUB_STEP_SUMMARY"
       - name: Save audit report
         if: always()
         uses: actions/upload-artifact@v4
