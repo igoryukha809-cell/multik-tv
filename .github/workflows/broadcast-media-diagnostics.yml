@@ -49,7 +49,7 @@ jobs:
         if: ${{ env.OPENAI_API_KEY == '' }}
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: echo "ИИ-анализ пропущен: добавьте OPENAI_API_KEY в GitHub Actions Secrets." >> "$GITHUB_STEP_SUMMARY"
+        run: 'echo "ИИ-анализ пропущен: добавьте OPENAI_API_KEY в GitHub Actions Secrets." >> "$GITHUB_STEP_SUMMARY"'
       - name: Restore durable recovery cooldown state
         if: always()
         uses: actions/cache/restore@v4
