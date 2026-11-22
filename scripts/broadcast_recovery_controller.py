@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed recovery decision gate for the broadcast monitor.
-
-The controller is deliberately non-mutating: it never restarts or deploys a
-Render service. A durable state file is restored/saved by GitHub Actions cache.
-The cooldown suppresses repeated recovery recommendations for the same hard
-failure; it does not count or trigger real restart attempts.
-"""
+"""Fail-closed, non-mutating recovery decision gate for broadcast diagnostics."""
 import json
 import os
 import sys
@@ -35,25 +29,41 @@ def write_json(path, value):
 
 def main():
     now = datetime.now(timezone.utc)
-    report = read_json(REPORT_PATH, {"findings": [], "reportError": "diagnostic report unavailable"})
-    state = read_json(STATE_PATH, {"lastEligibleAt": None, "lastEligibleCodes": []})
-    findings = report.get("findings") or []
+    report = read_json(REPORT_PATH, {})
+    state = read_json(STATE_PATH, {})
+    if not isinstance(report, dict):
+        report = {}
+    if not isinstance(state, dict):
+        state = {}
+
+    findings = report.get("findings")
+    if not isinstance(findings, list):
+        findings = []
     critical_codes = sorted({
-        str(item.get("code", "UNKNOWN"))
+        str(item.get("code") or "UNKNOWN")
         for item in findings
-        if item.get("severity") == "critical"
+        if isinstance(item, dict) and item.get("severity") == "critical"
     })
     eligible = bool(critical_codes) and set(critical_codes).issubset(RESTARTABLE)
 
     last_at = None
-    if state.get("lastEligibleAt"):
+    raw_last_at = state.get("lastEligibleAt")
+    if isinstance(raw_last_at, str):
         try:
-            last_at = datetime.fromisoformat(state["lastEligibleAt"].replace("Z", "+00:00"))
-        except (TypeError, ValueError):
-            last_at = None
+            parsed = datetime.fromisoformat(raw_last_at.replace("Z", "+00:00"))
+            if parsed.tzinfo is not None:
+                last_at = parsed.astimezone(timezone.utc)
+        except ValueError:
+            pass
 
-    same_incident = eligible and critical_codes == sorted(state.get("lastEligibleCodes") or [])
-    cooling_down = bool(same_incident and last_at and now - last_at < timedelta(hours=COOLDOWN_HOURS))
+    previous_codes = state.get("lastEligibleCodes")
+    if not isinstance(previous_codes, list):
+        previous_codes = []
+    same_incident = eligible and critical_codes == sorted(str(code) for code in previous_codes)
+    cooling_down = bool(
+        same_incident and last_at and
+        timedelta(0) <= now - last_at < timedelta(hours=COOLDOWN_HOURS)
+    )
     should_record = eligible and not cooling_down
 
     if should_record:
@@ -69,7 +79,7 @@ def main():
         "cooldownHours": COOLDOWN_HOURS,
         "criticalCodes": critical_codes,
         "reason": (
-            "Repeated identical incident suppressed by durable cooldown; no action taken."
+            "Repeated identical incident suppressed by cooldown; no action taken."
             if cooling_down else
             "Known hard signal failure recorded for review; automatic Render mutations remain disabled."
             if eligible else
