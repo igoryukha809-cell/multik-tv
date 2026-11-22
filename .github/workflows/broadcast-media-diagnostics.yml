@@ -1,8 +1,17 @@
 name: Read-only broadcast audio-video diagnostics
 on:
   workflow_dispatch:
+    inputs:
+      verify_after_recovery:
+        description: "Run a read-only HLS check after a manual recovery"
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "*/15 * * * *"
+concurrency:
+  group: broadcast-monitor
+  cancel-in-progress: false
 permissions:
   contents: read
   issues: write
@@ -42,6 +51,26 @@ jobs:
       - name: Broadcast recovery controller (safe dry-run)
         if: always()
         run: python3 scripts/broadcast_recovery_controller.py | tee /tmp/broadcast-recovery-report.json
+      - name: Verify stream after manual recovery
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_after_recovery }}
+        env:
+          STREAM_URL: https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8
+          VERIFY_ATTEMPTS: "5"
+          VERIFY_DELAY_SECONDS: "10"
+        run: |
+          python3 scripts/verify_broadcast_recovery.py | tee /tmp/broadcast-post-recovery.json
+          {
+            echo "## Проверка эфира после восстановления"
+            cat /tmp/broadcast-post-recovery.json
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload post-recovery verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: broadcast-post-recovery-verification
+          path: /tmp/broadcast-post-recovery.json
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Upload recovery report
         if: always()
         uses: actions/upload-artifact@v4
