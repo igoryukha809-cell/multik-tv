@@ -3,18 +3,23 @@ const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
 const PORT=Number(process.env.PORT||8080),HLS=path.resolve(process.env.HLS_DIR||'/hls'),DATA=path.resolve(process.env.DATA_DIR||'/data'),MEDIA=path.resolve(process.env.MEDIA_DIR||'/media'),ALLOWED_ORIGIN=process.env.ALLOWED_ORIGIN||'https://igoryukha809-cell.github.io';
 function directorStatus(){try{return JSON.parse(fs.readFileSync(path.join(DATA,'director-status.json'),'utf8'))}catch{return {status:'starting-or-waiting',encoderRunning:false}}}
 const learning=require('./learning');
-const MAX=32768,WRITE_TOKEN=process.env.API_WRITE_TOKEN||'';
-const SUPABASE_URL=(process.env.SUPABASE_URL||'').replace(/\\/$/,'');
-const SUPABASE_ANON_KEY=process.env.SUPABASE_ANON_KEY||'';
+const MAX=32768;
+const ADMIN_EMAIL=(process.env.ADMIN_EMAIL||'').trim().toLowerCase();
+const LOGTO_ENDPOINT=(process.env.LOGTO_ENDPOINT||'').replace(/\\/$/,'');
+const LOGTO_API_RESOURCE=(process.env.LOGTO_API_RESOURCE||'').trim();
+const LOGTO_ISSUER=LOGTO_ENDPOINT?LOGTO_ENDPOINT+'/oidc':'';
+const LOGTO_JWKS=LOGTO_ENDPOINT?require('jose').createRemoteJWKSet(new URL(LOGTO_ENDPOINT+'/oidc/jwks')):null;
 async function adminUser(req){
- const token=(req.headers.authorization||'').replace(/^Bearer\\s+/i,'');
- if(!token||!SUPABASE_URL||!SUPABASE_ANON_KEY)return null;
+ const token=String(req.headers.authorization||'').replace(/^Bearer\\s+/i,'').trim();
+ const userinfoToken=String(req.headers['x-logto-userinfo-token']||'').trim();
+ if(!token||!userinfoToken||!ADMIN_EMAIL||!LOGTO_API_RESOURCE||!LOGTO_JWKS)return null;
  try{
-  const headers={apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+token};
-  const auth=await fetch(SUPABASE_URL+'/auth/v1/user',{headers,signal:AbortSignal.timeout(8000)});
-  if(!auth.ok)return null;const user=await auth.json();if(!user.id)return null;
-  const role=await fetch(SUPABASE_URL+'/rest/v1/admin_users?select=user_id&user_id=eq.'+encodeURIComponent(user.id),{headers,signal:AbortSignal.timeout(8000)});
-  if(!role.ok)return null;const rows=await role.json();return rows.length?user:null;
+  const {payload}=await require('jose').jwtVerify(token,LOGTO_JWKS,{issuer:LOGTO_ISSUER,audience:LOGTO_API_RESOURCE,algorithms:['RS256']});
+  const response=await fetch(LOGTO_ENDPOINT+'/oidc/me',{headers:{Authorization:'Bearer '+userinfoToken},signal:AbortSignal.timeout(8000)});
+  if(!response.ok)return null;
+  const user=await response.json();
+  if(!user.email||user.email.toLowerCase()!==ADMIN_EMAIL||user.email_verified!==true)return null;
+  return {id:payload.sub,email:user.email};
  }catch{return null;}
 }
 async function authorized(req){return !!(await adminUser(req));}
@@ -31,7 +36,7 @@ function send(res,status,data,type='application/json; charset=utf-8'){res.writeH
 function safeFile(base,p){let d;try{d=decodeURIComponent(p)}catch{return null}const f=path.resolve(base,'.'+d);return f.startsWith(base+path.sep)?f:null}
 function body(req){return new Promise((resolve,reject)=>{let s='';req.on('data',c=>{s+=c;if(s.length>MAX){reject(Error('Request too large'));req.destroy();}});req.on('end',()=>{try{resolve(JSON.parse(s||'{}'))}catch{reject(Error('Invalid JSON'))}});req.on('error',reject)})}
 const server=http.createServer(async(req,res)=>{let u;try{u=new URL(req.url,'http://localhost')}catch{return send(res,400,{error:'Bad URL'})}
-if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Origin':ALLOWED_ORIGIN,'Vary':'Origin','Access-Control-Allow-Methods':'GET,POST,PUT,HEAD,OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization'});return res.end()}
+if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Origin':ALLOWED_ORIGIN,'Vary':'Origin','Access-Control-Allow-Methods':'GET,POST,PUT,HEAD,OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization, X-Logto-Userinfo-Token'});return res.end()}
 if(!['GET','HEAD','POST','PUT'].includes(req.method))return send(res,405,{error:'Method not allowed'});
 if(req.method==='GET'&&u.pathname==='/health')return send(res,200,{service:'МУЛЬТИК ТВ',status:'online',director:directorStatus().status});
 if(req.method==='GET'&&u.pathname==='/api/channel'){const playlist='/live/multiktv.m3u8',exists=fs.existsSync(path.join(HLS,playlist));return send(res,200,{channel:'МУЛЬТИК ТВ',server:'online',broadcast:exists?'signal-detected':'offline',playlist:exists?'/hls'+playlist:null,director:directorStatus(),updatedAt:new Date().toISOString()})}
