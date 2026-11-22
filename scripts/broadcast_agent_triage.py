@@ -70,7 +70,7 @@ def main():
         request("POST", f"/repos/{REPO}/issues/{existing['number']}/comments", {"body": f"Новое обнаружение ({checked}):\n\n{summary}"})
         print(f"Updated existing triage issue #{existing['number']}.")
     else:
-        created = request("POST", f"/repos/{REPO}/issues", {"title":title,"body":body,"labels":["bug"]})
+        created = request("POST", f"/repos/{REPO}/issues", {"title":title,"body":body})
         print(f"Created triage issue #{created.get('number')}.")
     return 0
 
