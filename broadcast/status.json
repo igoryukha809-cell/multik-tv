@@ -1,23 +1,10 @@
 {
   "channel": "МУЛЬТИК ТВ",
-  "state": "playlist_has_errors",
-  "checkedAt": "2026-11-22T19:33:03Z",
+  "state": "playlist_ready_server_required",
+  "checkedAt": "2026-11-22T19:58:59Z",
   "activeItem": null,
   "itemsChecked": 1,
-  "sourcesChecked": 1,
-  "sourceChecks": [
-    {
-      "title": "Pepper & Carrot — Episode 6: The Potion Contest (русская версия)",
-      "reachable": false,
-      "detail": "HTTP Error 429: Too many requests. Please contact the Wikimedia SRE team at noc@wikimedia.org and refer to this message. (daab851)"
-    }
-  ],
-  "errors": [
-    "Запись 1: нет поля startAt",
-    "Запись 1: нет поля endAt",
-    "Запись 1: startAt/endAt должны быть ISO-датами с часовым поясом, endAt позже startAt",
-    "Запись 1: источник недоступен (HTTP Error 429: Too many requests. Please contact the Wikimedia SRE team at noc@wikimedia.org and refer to this message. (daab851))"
-  ],
-  "message": "Проверка расписания или видеоссылок обнаружила ошибки. Эфир не запущен.",
+  "errors": [],
+  "message": "Записи прошли проверку заполнения и декларации прав. Работающий видеосервер всё ещё необходим.",
   "streaming": false
 }
