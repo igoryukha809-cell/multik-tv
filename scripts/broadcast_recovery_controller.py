@@ -30,7 +30,7 @@ def write_json(path, value):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as stream:
         json.dump(value, stream, ensure_ascii=False, indent=2)
-        stream.write("\\n")
+        stream.write("\n")
 
 
 def main():
