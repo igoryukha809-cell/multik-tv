@@ -52,6 +52,14 @@ input,select{max-width:100%;font:inherit;padding:9px;border:1px solid #cfc5dc;bo
 <div class="row"><button id="clear" class="danger">Очистить видеотеку</button><span id="count" class="small">0 видео</span></div>
 <div id="list"><p class="muted">Пока нет файлов.</p></div>
 <div class="panel" style="margin-top:14px">
+<h3>☁️ Перенос видеотеки в облако</h3>
+<p class="muted">Загружает сохранённые здесь видео в защищённое облачное хранилище проекта. Ключ вводится только на этой странице и не сохраняется. Локальные копии не удаляются автоматически.</p>
+<label for="cloud-key">Ключ загрузки из раздела «Ключи доступа»</label>
+<input id="cloud-key" type="password" autocomplete="off" placeholder="Вставь ключ загрузки" style="width:100%;margin:8px 0">
+<div class="row"><button id="cloud-check" class="secondary">Проверить хранилище</button><button id="cloud-upload">☁️ Перенести все видео</button></div>
+<p id="cloud-status" class="status" role="status" aria-live="polite">Сначала проверь доступность облачного хранилища.</p>
+</div>
+<div class="panel" style="margin-top:14px">
 <h3>🤖 Распознавание названия по заставке</h3>
 <p class="muted">Нажми «Распознать заставку» напротив импортированного ролика. Помощник просмотрит первые 12 секунд прямо в браузере, предложит название и после подтверждения добавит его в телепрограмму.</p>
 <p id="intro-status" class="status" role="status">Выбери видео в списке выше.</p>
@@ -280,6 +288,38 @@ function checkSchedule(){
   }
  }
 }
+
+const CLOUD_API='https://multik-tv-storage-api.onrender.com';
+function cloudSay(message){$('cloud-status').textContent=message;}
+function cloudHeaders(){const key=$('cloud-key').value.trim();if(!key)throw Error('Введи ключ загрузки.');return {Authorization:'Bearer '+key};}
+async function checkCloud(){
+ try{const response=await fetch(CLOUD_API+'/health');if(!response.ok)throw Error('HTTP '+response.status);const data=await response.json();if(!data.configured)throw Error('Сервер доступен, но облачное хранилище ещё не настроено.');cloudSay('Облачное хранилище доступно. Backblaze B2 настроен.');return true;}
+ catch(error){cloudSay('Проверка не пройдена: '+error.message);return false;}
+}
+async function uploadOneToCloud(item){
+ const form=new FormData();form.append('video',item.blob,item.name);
+ const response=await fetch(CLOUD_API+'/api/upload',{method:'POST',headers:cloudHeaders(),body:form});
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok)throw Error(data.error||('HTTP '+response.status));
+ return data;
+}
+$('cloud-check').onclick=checkCloud;
+$('cloud-upload').onclick=async()=>{
+ if(!items.length){cloudSay('Локальная видеотека пуста.');return;}
+ try{
+  cloudHeaders();
+  if(!await checkCloud())return;
+  $('cloud-upload').disabled=true;
+  let done=0,failed=[];
+  for(const item of items){
+   try{await uploadOneToCloud(item);done++;cloudSay('Загружено '+done+' из '+items.length+': '+item.name);}
+   catch(error){failed.push(item.name+' — '+error.message);}
+  }
+  cloudSay('Перенос завершён: '+done+' из '+items.length+' файлов загружено в облако.'+(failed.length?' Ошибки: '+failed.join('; '):' Локальные копии сохранены для проверки.'));
+ }catch(error){cloudSay('Не удалось начать перенос: '+error.message);}
+ finally{$('cloud-upload').disabled=false;}
+};
+
 $('files').addEventListener('change',async event=>{try{await addFiles([...event.target.files]);}catch(error){say('Не удалось сохранить видео. Возможно, в браузере недостаточно места.');}event.target.value='';});
 
 function runLocalAssistant(){
