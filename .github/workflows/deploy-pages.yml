@@ -42,10 +42,24 @@ jobs:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
           set -euo pipefail
-          for page in index.html channel.html live.html online-catalog.html video-studio.html tv.html open-animation.html guide.html weather-show.html games.html; do
+          for page in index.html channel.html live.html online-catalog.html video-studio.html tv.html open-animation.html guide.html weather-show.html games.html playout.html; do
             echo "Checking $page"
             curl --fail --silent --show-error --retry 5 --retry-delay 3 "$SITE_URL$page" -o /dev/null
           done
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 "$SITE_URL/playout.html" -o /tmp/playout.html
+          grep -q 'intro-candidates' /tmp/playout.html
+          grep -q 'Распознать заставку' /tmp/playout.html
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path("/tmp/playout.html").read_text(encoding="utf-8")
+          scripts = re.findall(r"<script>(.*?)</script>", html, flags=re.S | re.I)
+          if not scripts:
+              raise SystemExit("playout.html has no inline script")
+          Path("/tmp/playout-inline.js").write_text("\\n".join(scripts), encoding="utf-8")
+          PY
+          node --check /tmp/playout-inline.js
+          echo "Playout page and inline JavaScript syntax verified."
           curl --fail --silent --show-error --retry 5 --retry-delay 3 "$SITE_URL/live.html" -o /tmp/live.html
           grep -q 'id="maintenance"' /tmp/live.html
           grep -q '.screen:before' /tmp/live.html
