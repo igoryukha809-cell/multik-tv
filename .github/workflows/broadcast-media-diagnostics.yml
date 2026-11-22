@@ -9,6 +9,8 @@ jobs:
   inspect-live-hls:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Install FFmpeg
@@ -24,7 +26,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: AI review of sampled video and audio
-        if: ${{ secrets.OPENAI_API_KEY != '' }}
+        if: ${{ env.OPENAI_API_KEY != '' }}
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           STREAM_URL: https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8
@@ -35,7 +37,7 @@ jobs:
             cat /tmp/broadcast-ai-report.json
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Explain AI review is not configured
-        if: ${{ secrets.OPENAI_API_KEY == '' }}
+        if: ${{ env.OPENAI_API_KEY == '' }}
         run: 'echo "ИИ-анализ пропущен: добавьте OPENAI_API_KEY в GitHub Actions Secrets." >> "$GITHUB_STEP_SUMMARY"'
       - name: Upload AI report
         if: always()
