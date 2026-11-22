@@ -1,44 +1,39 @@
 # Подключение административного доступа МУЛЬТИК ТВ
 
-## Что уже подготовлено
-- Админ-панель `admin.html` со ссылками на инструменты сайта.
-- Защитная проверка для страниц управления через `admin-guard.js`.
-- Общедоступными остаются только просмотр `tv.html` / `watch.html` и телепрограмма `guide.html`.
-- Вход использует существующую страницу `login.html` (Supabase magic link).
+## Единственный способ авторизации — Logto
 
-## Важное ограничение
-GitHub Pages — статический хостинг. Проверка в браузере закрывает страницы от обычного посетителя, но не является полноценной серверной защитой секретов или серверных операций. Не храните в репозитории секреты, пароли или service_role key. Для защищённых данных и действий используйте серверные функции и RLS.
+Архитектура проекта определяется файлом [auth-setup.md](auth-setup.md). Вход в сайт и проверка прав администратора выполняются только через Logto.
 
-## Настройка владельцем проекта (с участием взрослого администратора)
-1. Создать проект Supabase и включить Authentication → Email.
-2. В Supabase URL Configuration добавить адреса:
-   - `https://igoryukha809-cell.github.io/multik-tv/login.html`
-   - `https://igoryukha809-cell.github.io/multik-tv/admin.html`
-3. В `admin-config.js` заменить `SUPABASE_URL` и `SUPABASE_ANON_KEY` на Project URL и публичный anon/publishable key. Не вставлять service_role key.
-4. В SQL Editor выполнить:
+- `login.html` — вход через Logto.
+- `logto-config.js` — публичные настройки Logto SPA.
+- `admin-guard.js` — проверка доступа к административным страницам через серверный API.
+- `admin.html` — административная панель.
+- `storage-api/server.js` — серверная проверка JWT Logto и подтверждённого email.
 
-```sql
-create table if not exists public.admin_users (
-  user_id uuid primary key references auth.users(id) on delete cascade,
-  created_at timestamptz not null default now()
-);
-alter table public.admin_users enable row level security;
-create policy "admins can read their own role"
-on public.admin_users for select to authenticated
-using (auth.uid() = user_id);
-```
+Supabase Auth, Supabase magic links, Supabase JWT и таблица `admin_users` не используются для входа или назначения прав администратора. Не добавляйте второй провайдер авторизации.
 
-5. Взрослый владелец входит через `login.html`. После первого входа добавить его UUID в `admin_users` через SQL Editor, используя email, с которым он вошёл:
+## Параметры Logto
 
-```sql
-insert into public.admin_users(user_id)
-select id from auth.users where email = 'ADMIN_EMAIL_HERE'
-on conflict do nothing;
-```
+Используйте значения и URI из [auth-setup.md](auth-setup.md). Redirect URI, post-sign-out URI и API resource в Logto должны совпадать с этой инструкцией и конфигурацией сайта.
 
-6. После настройки открыть `admin.html` и проверить вход.
+## Переменные сервера
 
-## Не делайте
-- Не добавляйте всех зарегистрированных пользователей в admin_users.
-- Не вставляйте service_role key в HTML/JavaScript или GitHub.
-- Не используйте этот клиентский замок как единственную защиту финансовых, персональных или иных секретных операций.
+Для `multik-tv-access-api` задаются параметры:
+- `LOGTO_ENDPOINT` — endpoint проекта Logto.
+- `LOGTO_API_RESOURCE` — URI API resource.
+- `ADMIN_EMAIL` — подтверждённый email администратора.
+
+Не заменяйте существующие значения секретных переменных без необходимости и не публикуйте секреты в GitHub, HTML/JavaScript или сообщениях.
+
+## Как сервер принимает решение
+
+1. Клиент получает access token для API resource Logto.
+2. Сервер проверяет подпись JWT по Logto JWKS, issuer, audience и срок действия.
+3. Сервер отдельно получает профиль через Logto UserInfo endpoint.
+4. Административный доступ выдаётся только если email подтверждён (`email_verified === true`) и совпадает с `ADMIN_EMAIL`.
+
+Проверка только в браузере не считается защитой серверных операций. Любая административная операция должна проверять Logto-сессию на сервере.
+
+## Границы ответственности Supabase
+
+Наличие проекта Supabase или таблиц приложения не означает, что Supabase является провайдером входа. Supabase не участвует в аутентификации и авторизации администратора. Не включайте Supabase Auth и не создавайте параллельные учётные записи для этой задачи.
