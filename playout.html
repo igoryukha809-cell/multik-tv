@@ -39,6 +39,12 @@ input,select{max-width:100%;font:inherit;padding:9px;border:1px solid #cfc5dc;bo
 <p id="wake" class="small">Защита от сна экрана: проверяем поддержку браузера…</p>
 </section>
 <section class="panel">
+<section class="panel">
+<h2>🤖 Локальный помощник эфира</h2>
+<p class="muted">Понимает короткие команды и управляет видеотекой только в этой открытой вкладке. Не передаёт видео в интернет и не предоставляет удалённый доступ к устройству.</p>
+<div class="row"><input id="assistant-command" type="text" placeholder="Например: включи первое видео" aria-label="Команда помощнику" style="flex:1;min-width:220px"><button id="assistant-run">Выполнить команду</button></div>
+<p id="assistant-result" class="status" role="status" aria-live="polite">Готов к командам после загрузки видеотеки.</p>
+</section>
 <h2>Моя видеотека</h2>
 <label for="files">Добавить видеофайлы</label><br>
 <input id="files" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.ogv,.mov" multiple>
