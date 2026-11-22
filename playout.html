@@ -51,6 +51,16 @@ input,select{max-width:100%;font:inherit;padding:9px;border:1px solid #cfc5dc;bo
 <p class="muted">Файлы сохраняются в IndexedDB на этом устройстве. Если очистить данные сайта или хранилище браузера, файлы могут удалиться. Не добавляй материалы, на которые у тебя нет прав.</p>
 <div class="row"><button id="clear" class="danger">Очистить видеотеку</button><span id="count" class="small">0 видео</span></div>
 <div id="list"><p class="muted">Пока нет файлов.</p></div>
+<div class="panel" style="margin-top:14px">
+<h3>🤖 Распознавание названия по заставке</h3>
+<p class="muted">Нажми «Распознать заставку» напротив импортированного ролика. Помощник просмотрит первые 12 секунд прямо в браузере, предложит название и после подтверждения добавит его в телепрограмму.</p>
+<p id="intro-status" class="status" role="status">Выбери видео в списке выше.</p>
+<div id="intro-result" hidden>
+<label for="intro-title">Предполагаемое название передачи</label>
+<input id="intro-title" type="text" maxlength="100" style="width:100%;padding:12px;margin:8px 0;border-radius:9px">
+<div class="row"><button id="intro-save">Сохранить название и добавить в телепрограмму</button><button id="intro-cancel" class="secondary">Отмена</button></div>
+</div>
+</div>
 </section>
 <section class="panel">
 <h2>🗓️ Ежедневное расписание</h2>
@@ -118,8 +128,9 @@ function render(){
   const meta=document.createElement('small');meta.className='small';meta.textContent=' · '+(item.size/1048576).toFixed(1)+' МБ';info.append(meta);
   const controls=document.createElement('div');
   const play=document.createElement('button');play.textContent='▶ Включить';play.onclick=()=>playItem(i,true);
+  const identify=document.createElement('button');identify.textContent='🔎 Распознать заставку';identify.className='secondary';identify.onclick=()=>recognizeItem(i);
   const remove=document.createElement('button');remove.textContent='Удалить';remove.className='danger';remove.onclick=()=>removeItem(item.id);
-  controls.append(play,remove);row.append(info,controls);root.append(row);
+  controls.append(play,identify,remove);row.append(info,controls);root.append(row);
  });
  const select=$('schedule-video');const previous=select.value;select.replaceChildren();
  if(!items.length){const option=document.createElement('option');option.value='';option.textContent='Сначала добавь видео';select.append(option);}
@@ -164,6 +175,56 @@ async function addFiles(files){
  }
  await refresh();say(added?'Добавлено файлов: '+added+'. Они сохранены в этом браузере.':'Подходящие видеофайлы не выбраны.');
 }
+let introIndex=-1,introWorker=null;
+async function loadIntroOCR(){
+ if(window.Tesseract)return window.Tesseract;
+ return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=()=>resolve(window.Tesseract);s.onerror=()=>reject(Error('Не удалось загрузить OCR'));document.head.append(s);});
+}
+async function recognizeItem(i){
+ introIndex=i;const item=items[i],status=$('intro-status'),result=$('intro-result');
+ result.hidden=true;status.textContent='Загружаю распознавание текста…';
+ try{
+  const T=await loadIntroOCR();if(!introWorker)introWorker=await T.createWorker('rus+eng');
+  const temp=document.createElement('video'),url=URL.createObjectURL(item.blob),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');temp.muted=true;temp.preload='auto';temp.src=url;
+  try{
+   await new Promise((ok,no)=>{temp.onloadedmetadata=ok;temp.onerror=()=>no(Error('Не удалось открыть видео'));});
+   const duration=Math.min(12,Math.max(1,temp.duration||8));canvas.width=960;canvas.height=540;let found=[];
+   for(let t=0;t<duration;t+=1.5){
+    status.textContent='Анализ заставки: '+Math.min(Math.round(t+1.5),Math.ceil(duration))+' из '+Math.ceil(duration)+' сек.';
+    temp.currentTime=Math.min(t,Math.max(0,(temp.duration||1)-0.1));
+    await new Promise((ok,no)=>{temp.onseeked=ok;temp.onerror=()=>no(Error('Не удалось прочитать кадр'));});
+    ctx.drawImage(temp,0,0,canvas.width,canvas.height);
+    const r=await introWorker.recognize(canvas);
+    for(const line of (r.data.text||'').split(/\n+/).map(x=>x.trim()).filter(x=>x.length>=3&&!/мультик\s*тв|multik\s*tv|телеканал|представляет/i.test(x)))found.push({text:line,confidence:r.data.confidence||0});
+   }
+   found.sort((a,b)=>b.confidence-a.confidence||b.text.length-a.text.length);
+   const best=found.find(x=>x.confidence>=45&&/[а-яёa-z]/i.test(x.text));
+   if(best){$('intro-title').value=best.text.slice(0,100);status.textContent='Предполагаемое название (уверенность '+Math.round(best.confidence)+'%). Проверь его.';result.hidden=false;}
+   else status.textContent='Не удалось уверенно прочитать название. Попробуй более чёткую заставку или введи название вручную.';
+  }finally{URL.revokeObjectURL(url);temp.remove();}
+ }catch(e){status.textContent='Ошибка распознавания: '+e.message;}
+}
+function addRecognizedTitle(title,item){
+ const key='multiktv-guide-v3';let rows=[];
+ try{const data=JSON.parse(localStorage.getItem(key)||'null');if(Array.isArray(data))rows=data;}catch{}
+ const used=new Set(rows.filter(r=>Array.isArray(r)&&/^([01]\\d|2[0-3]):[0-5]\\d$/.test(r[0])).map(r=>r[0]));
+ const now=new Date(),start=Math.ceil((now.getHours()*60+now.getMinutes()+1)/30)*30;let time='';
+ for(let n=0;n<48;n++){const total=(start+n*30)%1440,t=String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0');if(!used.has(t)){time=t;break;}}
+ if(!time)time='23:30';
+ const at=rows.findIndex(r=>Array.isArray(r)&&r[1]===title),entry=[time,title,'Передача из видеотеки · '+item.name];
+ if(at>=0)rows[at]=entry;else rows.push(entry);
+ rows.sort((a,b)=>String(a[0]).localeCompare(String(b[0])));localStorage.setItem(key,JSON.stringify(rows));return time;
+}
+$('intro-save').onclick=async()=>{
+ if(introIndex<0||!items[introIndex])return;
+ const title=$('intro-title').value.trim();if(!title){$('intro-status').textContent='Введи название передачи.';return;}
+ const item=items[introIndex];item.programmeTitle=title;
+ await transaction('readwrite',store=>store.put(item));
+ const time=addRecognizedTitle(title,item);await refresh();
+ $('intro-status').textContent='Сохранено: «'+title+'». Добавлено в телепрограмму на '+time+'.';
+ $('intro-result').hidden=true;
+};
+$('intro-cancel').onclick=()=>{$('intro-result').hidden=true;$('intro-status').textContent='Распознавание отменено.';};
 function next(){if(!items.length)return;const nextIndex=index+1;if(nextIndex<items.length)playItem(nextIndex);else if($('repeat').checked)playItem(0);else{say('Очередь завершена.');releaseWakeLock();}}
 function checkSchedule(){
  if(!scheduleOn)return;
