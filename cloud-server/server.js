@@ -1,5 +1,5 @@
 'use strict';
-const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const PORT=Number(process.env.PORT||8080),HLS=path.resolve(process.env.HLS_DIR||'/hls'),DATA=path.resolve(process.env.DATA_DIR||'/data'),MEDIA=path.resolve(process.env.MEDIA_DIR||'/media'),ALLOWED_ORIGIN=process.env.ALLOWED_ORIGIN||'https://igoryukha809-cell.github.io';
 function directorStatus(){try{return JSON.parse(fs.readFileSync(path.join(DATA,'director-status.json'),'utf8'))}catch{return {status:'starting-or-waiting',encoderRunning:false}}}
 const learning=require('./learning');
@@ -8,13 +8,34 @@ const ADMIN_EMAIL=(process.env.ADMIN_EMAIL||'').trim().toLowerCase();
 const LOGTO_ENDPOINT=(process.env.LOGTO_ENDPOINT||'').replace(/\\/$/,'');
 const LOGTO_API_RESOURCE=(process.env.LOGTO_API_RESOURCE||'').trim();
 const LOGTO_ISSUER=LOGTO_ENDPOINT?LOGTO_ENDPOINT+'/oidc':'';
-const LOGTO_JWKS=LOGTO_ENDPOINT?require('jose').createRemoteJWKSet(new URL(LOGTO_ENDPOINT+'/oidc/jwks')):null;
+let jwksCache=null,jwksFetchedAt=0;
+async function verifyLogtoToken(token){
+ const parts=token.split('.');
+ if(parts.length!==3)throw Error('Invalid token');
+ const header=JSON.parse(Buffer.from(parts[0],'base64url').toString('utf8'));
+ const payload=JSON.parse(Buffer.from(parts[1],'base64url').toString('utf8'));
+ if(header.alg!=='RS256'||!header.kid)throw Error('Unsupported token');
+ if(!jwksCache||Date.now()-jwksFetchedAt>300000){
+  const response=await fetch(LOGTO_ENDPOINT+'/oidc/jwks',{signal:AbortSignal.timeout(8000)});
+  if(!response.ok)throw Error('JWKS unavailable');
+  jwksCache=await response.json();jwksFetchedAt=Date.now();
+ }
+ const jwk=(jwksCache.keys||[]).find(key=>key.kid===header.kid&&key.kty==='RSA');
+ if(!jwk)throw Error('Signing key not found');
+ const publicKey=crypto.createPublicKey({key:jwk,format:'jwk'});
+ const valid=crypto.verify('RSA-SHA256',Buffer.from(parts[0]+'.'+parts[1]),publicKey,Buffer.from(parts[2],'base64url'));
+ if(!valid)throw Error('Bad signature');
+ const aud=Array.isArray(payload.aud)?payload.aud:[payload.aud];
+ const now=Math.floor(Date.now()/1000);
+ if(payload.iss!==LOGTO_ISSUER||!aud.includes(LOGTO_API_RESOURCE)||!payload.sub||!payload.exp||payload.exp<=now||(payload.nbf&&payload.nbf>now))throw Error('Invalid claims');
+ return payload;
+}
 async function adminUser(req){
  const token=String(req.headers.authorization||'').replace(/^Bearer\\s+/i,'').trim();
  const userinfoToken=String(req.headers['x-logto-userinfo-token']||'').trim();
- if(!token||!userinfoToken||!ADMIN_EMAIL||!LOGTO_API_RESOURCE||!LOGTO_JWKS)return null;
+ if(!token||!userinfoToken||!ADMIN_EMAIL||!LOGTO_API_RESOURCE||!LOGTO_ENDPOINT)return null;
  try{
-  const {payload}=await require('jose').jwtVerify(token,LOGTO_JWKS,{issuer:LOGTO_ISSUER,audience:LOGTO_API_RESOURCE,algorithms:['RS256']});
+  const payload=await verifyLogtoToken(token);
   const response=await fetch(LOGTO_ENDPOINT+'/oidc/me',{headers:{Authorization:'Bearer '+userinfoToken},signal:AbortSignal.timeout(8000)});
   if(!response.ok)return null;
   const user=await response.json();
