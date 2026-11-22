@@ -99,3 +99,7 @@ export async function submitChannelIdea({ title, description, category = "idea" 
   writeStore(store);
   return idea;
 }
+
+export function getChannelIdeas() {
+  return [...readStore().ideas].sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
