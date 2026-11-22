@@ -182,7 +182,7 @@ async function loadIntroOCR(){
  return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';s.onload=()=>resolve(window.Tesseract);s.onerror=()=>reject(Error('Не удалось загрузить OCR'));document.head.append(s);});
 }
 function cleanIntroLine(value){
- return String(value||'').replace(/[|¦_~=*]+/g,' ').replace(/\s+/g,' ').trim().replace(/^[^а-яёa-z0-9]+|[^а-яёa-z0-9!?)] +$/gi,'').trim();
+ return String(value||'').replace(/[|¦_~=*]+/g,' ').replace(/\s+/g,' ').trim().replace(/^[^а-яёa-z0-9]+/i,'').trim();
 }
 function introLineKey(value){return cleanIntroLine(value).toLocaleLowerCase('ru').replace(/ё/g,'е').replace(/[^а-яa-z0-9]+/g,' ').trim();}
 function addIntroCandidateButton(candidate){
