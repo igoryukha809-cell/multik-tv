@@ -5,7 +5,7 @@ function directorStatus(){try{return JSON.parse(fs.readFileSync(path.join(DATA,'
 const learning=require('./learning');
 const MAX=32768;
 const ADMIN_EMAIL=(process.env.ADMIN_EMAIL||'').trim().toLowerCase();
-const LOGTO_ENDPOINT=(process.env.LOGTO_ENDPOINT||'').replace(/\\/$/,'');
+const LOGTO_ENDPOINT=(process.env.LOGTO_ENDPOINT||'').replace(/\/$/,'');
 const LOGTO_API_RESOURCE=(process.env.LOGTO_API_RESOURCE||'').trim();
 const LOGTO_ISSUER=LOGTO_ENDPOINT?LOGTO_ENDPOINT+'/oidc':'';
 let jwksCache=null,jwksFetchedAt=0;
@@ -31,7 +31,7 @@ async function verifyLogtoToken(token){
  return payload;
 }
 async function adminUser(req){
- const token=String(req.headers.authorization||'').replace(/^Bearer\\s+/i,'').trim();
+ const token=String(req.headers.authorization||'').replace(/^Bearer\s+/i,'').trim();
  const userinfoToken=String(req.headers['x-logto-userinfo-token']||'').trim();
  if(!token||!userinfoToken||!ADMIN_EMAIL||!LOGTO_API_RESOURCE||!LOGTO_ENDPOINT)return null;
  try{
