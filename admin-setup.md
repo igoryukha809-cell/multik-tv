@@ -10,7 +10,6 @@
 - `admin.html` — административная панель.
 - `storage-api/server.js` — серверная проверка JWT Logto и подтверждённого email.
 
-Supabase Auth, Supabase magic links, Supabase JWT и таблица `admin_users` не используются для входа или назначения прав администратора. Не добавляйте второй провайдер авторизации.
 
 ## Параметры Logto
 
