@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 URL=os.environ.get("STREAM_URL","https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8")
 API=os.environ.get("OPENAI_API_KEY")
-VISION_MODEL=os.environ.get("OPENAI_VISION_MODEL","gpt-6")
+VISION_MODEL=os.environ.get("OPENAI_VISION_MODEL","gpt-5.5")
 TRANSCRIBE_MODEL=os.environ.get("OPENAI_TRANSCRIBE_MODEL","gpt-transcribe")
 SECONDS=int(os.environ.get("AI_SAMPLE_SECONDS","20"))
 
@@ -41,12 +41,13 @@ def main():
         frame=os.path.join(d,"frame-%02d.jpg"); audio=os.path.join(d,"audio.mp3")
         v=ffmpeg(["-t",str(SECONDS),"-vf","fps=1/8,scale=768:-1","-frames:v","2",frame])
         a=ffmpeg(["-t",str(SECONDS),"-vn","-ac","1","-ar","16000","-b:a","48k",audio])
-        if v.returncode or not os.path.exists(frame): raise RuntimeError("Could not extract a video frame from HLS")
+        frame_paths=sorted(os.path.join(d,name) for name in os.listdir(d) if name.startswith("frame-") and name.endswith(".jpg"))
+        if v.returncode or not frame_paths: raise RuntimeError("Could not extract a video frame from HLS")
         images=[]
-        for name in sorted(os.listdir(d)):
-            if name.endswith(".jpg"):
-                raw=open(os.path.join(d,name),"rb").read()
-                images.append("data:image/jpeg;base64,"+base64.b64encode(raw).decode())
+        for path in frame_paths:
+            with open(path,"rb") as image_file:
+                raw=image_file.read()
+            images.append("data:image/jpeg;base64,"+base64.b64encode(raw).decode())
         transcript=""
         if a.returncode==0 and os.path.exists(audio) and os.path.getsize(audio)>1000:
             transcript=transcribe(audio)
