@@ -16,7 +16,7 @@ def main():
         with urllib.request.urlopen(req, timeout=12) as response:
             playlist = response.read(256000).decode("utf-8", "replace")
             report["checks"]["playlistHttp"] = response.status
-        segments = re.findall(r"^[^#\\s].*\\.(?:ts|m4s|mp4)(?:\\?.*)?$", playlist, re.M)
+        segments = re.findall(r"^[^#\s].*\.(?:ts|m4s|mp4)(?:\?.*)?$", playlist, re.M)
         report["checks"]["playlistHasMediaSegments"] = bool(segments)
         if not segments:
             report["findings"].append({"severity": "critical", "code": "NO_MEDIA_SEGMENTS", "message": "No media segments in HLS playlist"})
