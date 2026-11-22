@@ -22,7 +22,7 @@ const button=document.querySelector('#submit'),githubButton=document.querySelect
 async function startGitHubSignIn(){button.disabled=true;githubButton.disabled=true;status.textContent='Перенаправляем на GitHub для входа…';try{await client.signIn({redirectUri:LOGTO_REDIRECT_URI,directSignIn:{method:'social',target:'github'}});}catch(error){button.disabled=false;githubButton.disabled=false;status.textContent='Не удалось открыть GitHub: '+(error?.message||'проверьте, что GitHub подключён в Logto');}}
 document.querySelector('#login').addEventListener('submit',event=>{event.preventDefault();startGitHubSignIn();});
 githubButton.addEventListener('click',startGitHubSignIn);
-// При открытии страницы сразу начинаем вход через GitHub, без промежуточной формы Logto.
-startGitHubSignIn();
+// Сначала проверяем сохранённую сессию. Если она есть — сразу открываем защищённый раздел.
+(async()=>{try{if(await client.isAuthenticated()){status.textContent='Вы уже вошли. Открываем аккаунт…';location.replace('./access-keys.html');return;}await startGitHubSignIn();}catch(error){status.textContent='Не удалось проверить сохранённый вход: '+(error?.message||'ошибка авторизации');}})();
 </script>
 </body></html>
