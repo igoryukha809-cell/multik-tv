@@ -39,14 +39,17 @@ def get_award():
     dates={}
     def find(pattern,key,body,month):
         m=re.search(pattern,body,re.I)
-        if m: dates[key]=f"{year}-{months[month]}-{int(m.group(1)):02d}"
+        if m:
+            day = next((group for group in m.groups() if group is not None), None)
+            if day is not None:
+                dates[key]=f"{year}-{months[month]}-{int(day):02d}"
     for url,body in bodies:
         find(r"до\s+(\d{1,2})\s+августа","applications_end",body,"августа")
         find(r"с\s+(\d{1,2})\s+августа[^.]{0,100}?до\s+\d{1,2}\s+сентября","first_round_start",body,"августа")
         find(r"до\s+(\d{1,2})\s+сентября","first_round_end",body,"сентября")
         find(r"до\s+(\d{1,2})\s+октября","final_round_end",body,"октября")
         find(r"(?:состоится|прошли|прошла)[^.!]{0,120}?(\d{1,2})\s+октября","ceremony",body,"октября")
-        find(r"(?:4 ноября|в эфире[^.!]{0,120}?(\d{1,2})\s+ноября)","broadcast",body,"ноября")
+        find(r"(?:(4)\s+ноября|в эфире[^.!]{0,120}?(\d{1,2})\s+ноября)","broadcast",body,"ноября")
     if not dates: raise RuntimeError("В официальных новостях не распознаны даты премии")
     source=next((u for u,b in bodies if "9293" in u),bodies[0][0])
     return {"year":year,"source":source,"dates":dates}
