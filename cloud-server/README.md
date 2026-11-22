@@ -11,6 +11,10 @@
 - `POST /api/learning/event` и `POST /api/learning/recommend` — требуют `Authorization: Bearer <API_WRITE_TOKEN>`. Если токен не задан, запись и запрос рекомендаций закрыты.
 - `GET /hls/live/multiktv.m3u8` — видеопоток.
 
+## Административный доступ
+
+Административные запросы защищены только через Logto. Перед запуском задайте в локальном `.env` переменные `ADMIN_EMAIL`, `LOGTO_ENDPOINT` и `LOGTO_API_RESOURCE`. Используйте тот же Logto tenant и API resource, что и в `logto-config.js`. Сервер проверяет подпись JWT, issuer, audience, срок действия и подтверждённую почту через Logto UserInfo. Не добавляйте в браузер секретные ключи.
+
 ## Автоэфир
 Положите видеофайлы, на которые подтверждены права публичного показа, в Docker volume `media-data`. Создайте `schedule.json` в volume `schedule-data`:
 ```json
