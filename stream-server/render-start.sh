@@ -652,20 +652,14 @@ if (( PROGRAM_READY || LOCAL_COUNT > 0 || ORIGINAL_COUNT > 0 )); then
     birthday_today=1
   fi
   PLAY_FIRST_LAUNCH_COUNTDOWN=0
-  claim_response=""
-  if [[ -n "${CHANNEL_LAUNCH_CLAIM_TOKEN:-}" ]]; then
-    claim_response="$(curl -fsS --connect-timeout 5 --max-time 15 -X POST \
-      -H "Authorization: Bearer ${CHANNEL_LAUNCH_CLAIM_TOKEN}" \
-      "https://hryyvwzkyxhmpmvvdqqx.supabase.co/functions/v1/channel-launch-claim" 2>/dev/null || true)"
-  else
-    echo "STARTUP: CHANNEL_LAUNCH_CLAIM_TOKEN is not configured; skipping persistent first-launch check."
-  fi
-  if [[ "${claim_response}" == *'"play_countdown":true'* ]]; then
+  FIRST_LAUNCH_MARKER="$HEALTH_DIR/.first-launch-countdown-played"
+  if [[ ! -f "$FIRST_LAUNCH_MARKER" ]]; then
     PLAY_FIRST_LAUNCH_COUNTDOWN=1
     make_launch_countdown
-    echo "STARTUP: database confirmed this is the channel's first-ever launch."
+    touch "$FIRST_LAUNCH_MARKER"
+    echo "STARTUP: first-launch countdown generated locally."
   else
-    echo "STARTUP: first-launch countdown already used or persistent claim service unavailable; skipping countdown."
+    echo "STARTUP: first-launch countdown was already played; skipping it."
   fi
   make_channel_opening
   make_channel_promo
