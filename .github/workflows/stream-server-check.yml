@@ -53,6 +53,17 @@ jobs:
       - name: Compile AI repair agent
         run: python -m py_compile scripts/ai_stream_repair.py
 
+      - name: Compile broadcast monitoring and recovery agents
+        run: |
+          python -m py_compile scripts/broadcast_media_probe.py
+          python -m py_compile scripts/ai_broadcast_review.py
+          python -m py_compile scripts/broadcast_agent_triage.py
+          python -m py_compile scripts/broadcast_recovery_controller.py
+          python -m py_compile scripts/verify_broadcast_recovery.py
+
+      - name: Validate broadcast diagnostics workflow YAML
+        run: ruby -e 'require "yaml"; YAML.load_file(".github/workflows/broadcast-media-diagnostics.yml"); puts "Broadcast workflow YAML is valid."'
+
       - name: Check shell script syntax
         run: |
           bash -n stream-server/playlist/loop.sh

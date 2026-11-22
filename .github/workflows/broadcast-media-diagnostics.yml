@@ -1,8 +1,17 @@
 name: Read-only broadcast audio-video diagnostics
 on:
   workflow_dispatch:
+    inputs:
+      verify_after_recovery:
+        description: "Run a read-only HLS check after a manual recovery"
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: "*/15 * * * *"
+concurrency:
+  group: broadcast-monitor
+  cancel-in-progress: false
 permissions:
   contents: read
   issues: write
@@ -10,6 +19,8 @@ jobs:
   inspect-live-hls:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Install FFmpeg
@@ -38,7 +49,52 @@ jobs:
         if: ${{ env.OPENAI_API_KEY == '' }}
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: echo "ИИ-анализ пропущен: добавьте OPENAI_API_KEY в GitHub Actions Secrets." >> "$GITHUB_STEP_SUMMARY"
+        run: 'echo "ИИ-анализ пропущен: добавьте OPENAI_API_KEY в GitHub Actions Secrets." >> "$GITHUB_STEP_SUMMARY"'
+      - name: Restore durable recovery cooldown state
+        if: always()
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/broadcast-recovery-state
+          key: broadcast-recovery-state-${{ github.run_id }}
+          restore-keys: |
+            broadcast-recovery-state-
+      - name: Broadcast recovery controller (safe dry-run)
+        if: always()
+        run: python3 scripts/broadcast_recovery_controller.py | tee /tmp/broadcast-recovery-report.json
+      - name: Save durable recovery cooldown state
+        if: always() && hashFiles('/tmp/broadcast-recovery-state/state.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/broadcast-recovery-state
+          key: broadcast-recovery-state-${{ github.run_id }}
+      - name: Verify stream after manual recovery
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.verify_after_recovery }}
+        env:
+          STREAM_URL: https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8
+          VERIFY_ATTEMPTS: "5"
+          VERIFY_DELAY_SECONDS: "10"
+        run: |
+          python3 scripts/verify_broadcast_recovery.py | tee /tmp/broadcast-post-recovery.json
+          {
+            echo "## Проверка эфира после восстановления"
+            cat /tmp/broadcast-post-recovery.json
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload post-recovery verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: broadcast-post-recovery-verification
+          path: /tmp/broadcast-post-recovery.json
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload recovery report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: broadcast-recovery-report
+          path: /tmp/broadcast-recovery-report.json
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Agent triage and deduplicated alert
         if: always()
         env:
