@@ -10,7 +10,7 @@ on:
       - 'broadcast.json'
       - 'render.yaml'
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
@@ -22,7 +22,7 @@ concurrency:
 jobs:
   runtime-check:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - name: Check live status and actual HLS segment
@@ -32,12 +32,28 @@ jobs:
           STREAM_BASE_URL: https://multik-tv-test-stream-yltl.onrender.com
         run: |
           set +e
-          python3 scripts/stream_autorepair.py 2>&1 | tee /tmp/stream-diagnosis.txt
-          result=${PIPESTATUS[0]}
+          deadline=$((SECONDS + 540))
+          attempt=0
+          result=1
+          while (( SECONDS < deadline )); do
+            attempt=$((attempt + 1))
+            : > /tmp/stream-check-summary.md
+            GITHUB_STEP_SUMMARY=/tmp/stream-check-summary.md python3 scripts/stream_autorepair.py > /tmp/stream-diagnosis.txt 2>&1
+            result=$?
+            if (( result == 0 )); then
+              break
+            fi
+            if (( SECONDS >= deadline )); then
+              break
+            fi
+            echo "Попытка $attempt: сервер ещё готовит эфир; повторная проверка через 20 секунд."
+            sleep 20
+          done
           {
             echo '## Автоматическая диагностика видеопотока'
             echo
-            echo '- Проверка завершилась с кодом: '"$result"
+            echo '- Число попыток: '"$attempt"
+            echo '- Итоговый код: '"$result"
             echo
             echo '```text'
             cat /tmp/stream-diagnosis.txt
