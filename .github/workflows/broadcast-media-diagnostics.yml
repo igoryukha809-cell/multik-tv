@@ -22,6 +22,30 @@ jobs:
             echo "## Проверка изображения и звука"
             cat /tmp/broadcast-report.json
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: AI review of sampled video and audio
+        if: ${{ secrets.OPENAI_API_KEY != '' }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          STREAM_URL: https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8
+        run: |
+          python3 scripts/ai_broadcast_review.py | tee /tmp/broadcast-ai-report.json
+          {
+            echo "## ИИ-анализ видео и звука"
+            cat /tmp/broadcast-ai-report.json
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Explain AI review is not configured
+        if: ${{ secrets.OPENAI_API_KEY == '' }}
+        run: echo "ИИ-анализ пропущен: добавьте OPENAI_API_KEY в GitHub Actions Secrets." >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload AI report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: broadcast-ai-review
+          path: /tmp/broadcast-ai-report.json
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
