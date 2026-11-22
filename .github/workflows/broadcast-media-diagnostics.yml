@@ -39,6 +39,17 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: echo "ИИ-анализ пропущен: добавьте OPENAI_API_KEY в GitHub Actions Secrets." >> "$GITHUB_STEP_SUMMARY"
+      - name: Broadcast recovery controller (safe dry-run)
+        if: always()
+        run: python3 scripts/broadcast_recovery_controller.py | tee /tmp/broadcast-recovery-report.json
+      - name: Upload recovery report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: broadcast-recovery-report
+          path: /tmp/broadcast-recovery-report.json
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Agent triage and deduplicated alert
         if: always()
         env:
