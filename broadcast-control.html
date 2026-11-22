@@ -16,9 +16,10 @@
 <p><a href="admin.html">← В админ-панель</a> · <a href="https://pulsecast.tv/en/dashboard" target="_blank" rel="noopener">PulseCast</a> · <a href="https://app.kinescope.io/" target="_blank" rel="noopener">Kinescope</a></p>
 </main>
 <script type="module">
-import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-import {SUPABASE_URL,SUPABASE_ANON_KEY} from "./admin-config.js";
-const API_BASE="https://YOUR-RAILWAY-SERVICE.up.railway.app";
+import LogtoClient from "https://cdn.jsdelivr.net/npm/@logto/browser@3.1.2/+esm";
+import {LOGTO_ENDPOINT,LOGTO_APP_ID,LOGTO_API_RESOURCE} from "./logto-config.js";
+const API_BASE="https://YOUR-CLOUD-SERVER.example";
+const logto=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE],scopes:["email"]});
 const $=id=>document.getElementById(id);
 let token=null,userinfoToken=null,media=[],items=[];
 function say(s){$("result").textContent=s}
