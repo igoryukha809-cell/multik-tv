@@ -51,7 +51,8 @@ def main():
         transcript=""
         if a.returncode==0 and os.path.exists(audio) and os.path.getsize(audio)>1000:
             transcript=transcribe(audio)
-        content=[{"type":"input_text","text":"Ты — осторожный технический аналитик телевизионного эфира. По кадрам и расшифровке оцени только наблюдаемые признаки: что видно на экране, есть ли признаки чёрного/пустого кадра, соответствует ли звук содержанию, слышна ли речь/музыка/тишина, есть ли вероятный технический сбой. Не угадывай названия передач и людей. Если данных мало, так и напиши. Верни краткий JSON с полями summary, visual_findings, audio_findings, possible_issues, confidence. Расшифровка аудио: "+(transcript or "[аудио не удалось расшифровать]"))]
+        prompt = ("Ты — осторожный технический аналитик телевизионного эфира. По кадрам и расшифровке оцени только наблюдаемые признаки: что видно на экране, есть ли признаки чёрного/пустого кадра, соответствует ли звук содержанию, слышна ли речь/музыка/тишина, есть ли вероятный технический сбой. Не угадывай названия передач и людей. Если данных мало, так и напиши. Верни краткий JSON с полями summary, visual_findings, audio_findings, possible_issues, confidence. Расшифровка аудио: " + (transcript or "[аудио не удалось расшифровать]"))
+        content=[{"type":"input_text","text":prompt}]
         content.extend([{"type":"input_image","image_url":im,"detail":"low"} for im in images])
         result=api_json("responses",{"model":VISION_MODEL,"store":False,"input":[{"role":"user","content":content}]})
         output=[]
