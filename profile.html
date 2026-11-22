@@ -4,6 +4,6 @@
 import{getChannelProfile,saveChannelProfile}from"./channel-backend.js";
 const $=id=>document.getElementById(id);function preview(){$("preview").textContent=$("avatar").value+" "+($("nick").value.trim()||"Гость")}
 $("nick").oninput=preview;$("avatar").onchange=preview;
-(async()=>{try{const{profile}=await getChannelProfile();$("connection").textContent="Локальный профиль готов.";if(profile){$("nick").value=profile.nickname;$("avatar").value=profile.avatar;preview()}else{preview()}}catch(e){$("status").textContent="Локальный профиль недоступен: "+e.message"}})();
+(async()=>{try{const{profile}=await getChannelProfile();$("connection").textContent="Локальный профиль готов.";if(profile){$("nick").value=profile.nickname;$("avatar").value=profile.avatar;preview()}else{preview()}}catch(e){$("status").textContent="Локальный профиль недоступен: "+e.message}})();
 $("save").onclick=async()=>{try{await saveChannelProfile($("nick").value,$("avatar").value);$("status").textContent="Профиль сохранён в этом браузере.";preview()}catch(e){$("status").textContent="Не удалось сохранить: "+e.message}};
 </script></body></html>
