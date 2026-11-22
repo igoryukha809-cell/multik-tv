@@ -269,7 +269,8 @@ function runLocalAssistant(){
 }
 $('assistant-run').onclick=runLocalAssistant;
 $('assistant-command').addEventListener('keydown',event=>{if(event.key==='Enter')runLocalAssistant();});
-\n$('play').onclick=()=>{if(!items.length){say('Сначала добавь видеофайлы.');return;}playItem(index,true);};
+
+$('play').onclick=()=>{if(!items.length){say('Сначала добавь видеофайлы.');return;}playItem(index,true);};
 $('pause').onclick=()=>{$('player').pause();say('Пауза.');};
 $('next').onclick=next;
 $('stop').onclick=async()=>{$('player').pause();$('player').removeAttribute('src');$('player').load();if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=null;await releaseWakeLock();$('now').textContent='Воспроизведение остановлено.';say('Эфир остановлен на этом устройстве.');};
