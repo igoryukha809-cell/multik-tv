@@ -67,7 +67,7 @@ def get_contests():
         if pos < 0:
             continue
         snippet = text[pos:pos + 220]
-        m = re.search(r"с\\s+(\\d{1,2})\\s+([а-яё]+)\\s+по\\s+(\\d{1,2})\\s+([а-яё]+)(?:\\s+(20\\d{2}))?", snippet, re.I)
+        m = re.search(r"[сc]\s+(\d{1,2})\s+([а-яё]+)\s+по\s+(\d{1,2})\s+([а-яё]+)(?:\s+(20\d{2}))?", snippet, re.I)
         if not m:
             continue
         try:
