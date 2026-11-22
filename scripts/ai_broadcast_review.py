@@ -38,7 +38,7 @@ def main():
         report["status"]="skipped"; report["reason"]="OPENAI_API_KEY secret is not configured"
         print(json.dumps(report,ensure_ascii=False,indent=2)); return 0
     with tempfile.TemporaryDirectory() as d:
-        frame=os.path.join(d,"frame.jpg"); audio=os.path.join(d,"audio.mp3")
+        frame=os.path.join(d,"frame-%02d.jpg"); audio=os.path.join(d,"audio.mp3")
         v=ffmpeg(["-t",str(SECONDS),"-vf","fps=1/8,scale=768:-1","-frames:v","2",frame])
         a=ffmpeg(["-t",str(SECONDS),"-vn","-ac","1","-ar","16000","-b:a","48k",audio])
         if v.returncode or not os.path.exists(frame): raise RuntimeError("Could not extract a video frame from HLS")
