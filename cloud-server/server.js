@@ -48,7 +48,7 @@ function scheduleRead(){try{return JSON.parse(fs.readFileSync(path.join(DATA,'sc
 function safeSchedule(value){
  if(!value||!Array.isArray(value.items)||value.items.length>500)throw Error('Invalid playlist');
  const items=value.items.map(x=>{
-  if(!x||typeof x.title!=='string'||typeof x.file!=='string'||!/^[\\w .()-]{1,180}$/.test(x.file)||typeof x.rightsCleared!=='boolean')throw Error('Invalid playlist item');
+  if(!x||typeof x.title!=='string'||typeof x.file!=='string'||!/^[\w .()-]{1,180}$/.test(x.file)||typeof x.rightsCleared!=='boolean')throw Error('Invalid playlist item');
   return {title:x.title.slice(0,160),file:x.file,rightsCleared:x.rightsCleared};
  });
  return {items};
@@ -70,7 +70,7 @@ if(req.method==='GET'&&u.pathname==='/api/admin/status'){
 if(req.method==='POST'&&u.pathname==='/api/admin/upload'){
  if(!await authorized(req))return send(res,403,{error:'Admin access required'});
  const name=u.searchParams.get('filename')||'';
- if(!/^[\\w .()-]{1,160}\\.(mp4|m4v|mov|webm)$/i.test(name))return send(res,400,{error:'Use a safe video filename ending in mp4, m4v, mov or webm'});
+ if(!/^[\w .()-]{1,160}\.(mp4|m4v|mov|webm)$/i.test(name))return send(res,400,{error:'Use a safe video filename ending in mp4, m4v, mov or webm'});
  fs.mkdirSync(MEDIA,{recursive:true});const target=path.join(MEDIA,name);let size=0,failed=false;
  const out=fs.createWriteStream(target,{flags:'wx'});
  req.on('data',chunk=>{size+=chunk.length;if(size>524288000&&!failed){failed=true;req.destroy();out.destroy();}});
@@ -84,7 +84,7 @@ if(req.method==='PUT'&&u.pathname==='/api/admin/playlist'){
 if(req.method==='POST'&&u.pathname==='/api/admin/broadcast/start'){
  if(!await authorized(req))return send(res,403,{error:'Admin access required'});
  const items=scheduleRead().items||[];if(!items.length||items.some(x=>x.rightsCleared!==true))return send(res,400,{error:'Add approved programme items before starting'});
- if(!process.env.RTMP_TARGET||!/^rtmps?:\\/\\//.test(process.env.RTMP_TARGET))return send(res,503,{error:'RTMP target is not configured on the server'});
+ if(!process.env.RTMP_TARGET||!/^rtmps?:\/\//.test(process.env.RTMP_TARGET))return send(res,503,{error:'RTMP target is not configured on the server'});
  fs.mkdirSync(DATA,{recursive:true});fs.writeFileSync(path.join(DATA,'director-control.json'),JSON.stringify({enabled:true,updatedAt:new Date().toISOString()}));return send(res,202,{accepted:true,status:'starting'});
 }
 if(req.method==='POST'&&u.pathname==='/api/admin/broadcast/stop'){
