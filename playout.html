@@ -173,7 +173,36 @@ function checkSchedule(){
  }
 }
 $('files').addEventListener('change',async event=>{try{await addFiles([...event.target.files]);}catch(error){say('Не удалось сохранить видео. Возможно, в браузере недостаточно места.');}event.target.value='';});
-$('play').onclick=()=>{if(!items.length){say('Сначала добавь видеофайлы.');return;}playItem(index,true);};
+
+function runLocalAssistant(){
+ const raw=$('assistant-command').value.trim().toLocaleLowerCase('ru');
+ const out=$('assistant-result');
+ if(!raw){out.textContent='Напиши команду: включи первое видео, пауза, следующее или останови.';return;}
+ if(/^(пауза|поставь на паузу|приостанови)$/.test(raw)){
+  $('player').pause();say('Пауза.');out.textContent='Поставил воспроизведение на паузу.';return;
+ }
+ if(/^(останови|стоп|выключи эфир)$/.test(raw)){
+  $('stop').click();out.textContent='Остановил воспроизведение в этой вкладке.';return;
+ }
+ if(/^(следующее|следующее видео|дальше)$/.test(raw)){
+  if(!items.length){out.textContent='Видеотека пока пуста.';return;}
+  next();out.textContent='Переключаю на следующий ролик.';return;
+ }
+ if(/^(запусти очередь|включи очередь|начни эфир)$/.test(raw)){
+  if(!items.length){out.textContent='Видеотека пока пуста. Сначала добавь видео.';return;}
+  playItem(index,true);out.textContent='Запускаю очередь в этой вкладке.';return;
+ }
+ const requested=raw.replace(/^(включи|запусти|проиграй|поставь)\s+/,'').trim();
+ let target=-1;
+ if(/^(первое видео|первое|первый ролик)$/.test(requested))target=0;
+ else if(/^(последнее видео|последнее|последний ролик)$/.test(requested))target=items.length-1;
+ else target=items.findIndex(item=>item.name.toLocaleLowerCase('ru').includes(requested));
+ if(target>=0&&items.length){playItem(target,true);out.textContent='Запускаю: '+items[target].name;return;}
+ out.textContent='Не нашёл такую команду или видео. Попробуй: «включи первое видео», «запусти очередь», «пауза», «следующее», «останови».';
+}
+$('assistant-run').onclick=runLocalAssistant;
+$('assistant-command').addEventListener('keydown',event=>{if(event.key==='Enter')runLocalAssistant();});
+\n$('play').onclick=()=>{if(!items.length){say('Сначала добавь видеофайлы.');return;}playItem(index,true);};
 $('pause').onclick=()=>{$('player').pause();say('Пауза.');};
 $('next').onclick=next;
 $('stop').onclick=async()=>{$('player').pause();$('player').removeAttribute('src');$('player').load();if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=null;await releaseWakeLock();$('now').textContent='Воспроизведение остановлено.';say('Эфир остановлен на этом устройстве.');};
