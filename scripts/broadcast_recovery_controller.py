@@ -79,7 +79,7 @@ def main():
         "cooldownHours": COOLDOWN_HOURS,
         "criticalCodes": critical_codes,
         "reason": (
-            "Repeated identical incident suppressed by cooldown; no action taken."
+            "Repeated identical incident suppressed by best-effort cooldown cache; no action taken."
             if cooling_down else
             "Known hard signal failure recorded for review; automatic Render mutations remain disabled."
             if eligible else
