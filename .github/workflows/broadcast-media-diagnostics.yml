@@ -5,6 +5,7 @@ on:
     - cron: "*/15 * * * *"
 permissions:
   contents: read
+  issues: write
 jobs:
   inspect-live-hls:
     runs-on: ubuntu-latest
@@ -22,9 +23,8 @@ jobs:
             echo "## Проверка изображения и звука"
             cat /tmp/broadcast-report.json
           } >> "$GITHUB_STEP_SUMMARY"
-
       - name: AI review of sampled video and audio
-        if: ${{ secrets.OPENAI_API_KEY != '' }}
+        if: ${{ env.OPENAI_API_KEY != '' }}
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           STREAM_URL: https://multik-tv-test-stream-yltl.onrender.com/live/multiktv.m3u8
@@ -35,9 +35,17 @@ jobs:
             cat /tmp/broadcast-ai-report.json
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Explain AI review is not configured
-        if: ${{ secrets.OPENAI_API_KEY == '' }}
+        if: ${{ env.OPENAI_API_KEY == '' }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: echo "ИИ-анализ пропущен: добавьте OPENAI_API_KEY в GitHub Actions Secrets." >> "$GITHUB_STEP_SUMMARY"
-      - name: Agent triage and deduplicated alert\n        if: always()\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n          GITHUB_REPOSITORY: ${{ github.repository }}\n        run: python3 scripts/broadcast_agent_triage.py\n      - name: Upload AI report
+      - name: Agent triage and deduplicated alert
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python3 scripts/broadcast_agent_triage.py
+      - name: Upload AI report
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -45,7 +53,6 @@ jobs:
           path: /tmp/broadcast-ai-report.json
           if-no-files-found: ignore
           retention-days: 7
-
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
