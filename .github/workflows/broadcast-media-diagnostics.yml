@@ -37,7 +37,7 @@ jobs:
       - name: Explain AI review is not configured
         if: ${{ secrets.OPENAI_API_KEY == '' }}
         run: echo "ИИ-анализ пропущен: добавьте OPENAI_API_KEY в GitHub Actions Secrets." >> "$GITHUB_STEP_SUMMARY"
-      - name: Upload AI report
+      - name: Agent triage and deduplicated alert\n        if: always()\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n          GITHUB_REPOSITORY: ${{ github.repository }}\n        run: python3 scripts/broadcast_agent_triage.py\n      - name: Upload AI report
         if: always()
         uses: actions/upload-artifact@v4
         with:
