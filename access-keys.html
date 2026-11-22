@@ -12,7 +12,7 @@
 <section class="panel">
 <h2>Вход по электронной почте</h2>
 <p class="muted">Используется подтверждённая сессия Logto. Если вы ещё не вошли, перейдите на защищённую страницу входа.</p>
-<div id="status" role="status" class="notice">Проверяем вход…</div>
+<div id="status" role="status" class="notice">Проверяем вход через Logto…</div>
 <button id="login" class="secondary">Войти по почте</button>
 <button id="logout" class="secondary" hidden>Выйти</button>
 </section>
@@ -37,7 +37,7 @@ const logtoClient=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,re
 const $=id=>document.getElementById(id);
 let adminToken="";
 let userinfoToken="";
-async function connectSession(){try{const params=new URLSearchParams(location.search);if(params.has("code")||params.has("error"))await logtoClient.handleSignInCallback(location.href);const authenticated=await logtoClient.isAuthenticated();if(!authenticated){showStatus("Войдите через Logto, чтобы открыть управление ключами.","error");$("login").hidden=false;return;}adminToken=await logtoClient.getAccessToken(LOGTO_API_RESOURCE);userinfoToken=await logtoClient.getAccessToken();await loadKeys();$("manager").hidden=false;$("listPanel").hidden=false;$("logout").hidden=false;$("login").hidden=true;showStatus("Вход выполнен. Проверка администратора пройдена.","success");}catch(e){adminToken="";$("manager").hidden=true;$("listPanel").hidden=true;showStatus("Не удалось подтвердить вход: "+(e?.message||"неизвестная ошибка"),"error");$("login").hidden=false;console.error("Logto sign-in failed:",e);}}
+async function connectSession(){try{const params=new URLSearchParams(location.search);if(params.has("code")||params.has("error"))await logtoClient.handleSignInCallback(location.href);const authenticated=await logtoClient.isAuthenticated();if(!authenticated){showStatus("Для управления ключами войдите через Logto. Supabase для этого проекта не используется.","error");$("login").hidden=false;return;}adminToken=await logtoClient.getAccessToken(LOGTO_API_RESOURCE);userinfoToken=await logtoClient.getAccessToken();await loadKeys();$("manager").hidden=false;$("listPanel").hidden=false;$("logout").hidden=false;$("login").hidden=true;showStatus("Вход выполнен. Проверка администратора пройдена.","success");}catch(e){adminToken="";$("manager").hidden=true;$("listPanel").hidden=true;showStatus("Ошибка проверки сессии Logto: "+(e?.message||"неизвестная ошибка"),"error");$("login").hidden=false;console.error("Logto sign-in failed:",e);}}
 // getSession() ниже запускает обработку callback URL; не вызываем getSession повторно из onAuthStateChange.
 $("login").addEventListener("click",()=>location.href="./login.html");
 $("logout").addEventListener("click",()=>logtoClient.signOut(LOGTO_POST_LOGOUT_URI));
