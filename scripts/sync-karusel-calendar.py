@@ -55,37 +55,34 @@ def get_award():
     return {"year":year,"source":source,"dates":dates}
 
 def get_contests():
-    page=fetch(BASE+"/contest")
-    # Extract links to contest rules/details and date ranges from nearby visible text.
-    links=re.findall(r'href=["\']([^"\']*/contest/[^"\']+)["\'][^>]*>(.*?)</a>',page,re.I|re.S)
-    items=[]; seen=set()
-    for href,label in links:
-        title=plain(label)
-        if not title or href in seen: continue
-        seen.add(href)
-        m=re.search(r"с\s+(\d{1,2})\s+([а-яё]+)\s+по\s+(\d{1,2})\s+([а-яё]+)(?:\s+(20\d{2})\s*г?\.?)?",title,re.I)
-        if not m: continue
-        months={"января":"01","февраля":"02","марта":"03","апреля":"04","мая":"05","июня":"06","июля":"07","августа":"08","сентября":"09","октября":"10","ноября":"11","декабря":"12"}
-        year=int(m.group(5) or datetime.now(timezone.utc).year)
+    contest_base = "https://free.karusel-tv.ru"
+    page = fetch(contest_base + "/contest")
+    text = plain(page)
+    titles = ("Путешествие в подводный мир", "Нарисуй, где спрятался Турбозавр")
+    months = {"января":"01","февраля":"02","марта":"03","апреля":"04","мая":"05","июня":"06","июля":"07","августа":"08","сентября":"09","октября":"10","ноября":"11","декабря":"12"}
+    items = []
+    current_year = datetime.now(timezone.utc).year
+    for title in titles:
+        pos = text.find(title)
+        if pos < 0:
+            continue
+        snippet = text[pos:pos + 220]
+        m = re.search(r"с\\s+(\\d{1,2})\\s+([а-яё]+)\\s+по\\s+(\\d{1,2})\\s+([а-яё]+)(?:\\s+(20\\d{2}))?", snippet, re.I)
+        if not m:
+            continue
         try:
-            start=f"{year}-{months[m.group(2).lower()]}-{int(m.group(1)):02d}"
-            endyear=year+(1 if months[m.group(4).lower()] < months[m.group(2).lower()] else 0)
-            end=f"{endyear}-{months[m.group(4).lower()]}-{int(m.group(3)):02d}"
-        except KeyError: continue
-        items.append({"title":title,"start":start,"end":end,"url":href if href.startswith("http") else BASE+href})
-    # If active listing markup changes, keep the known current official list via strict textual extraction.
+            start_month = months[m.group(2).lower()]
+            end_month = months[m.group(4).lower()]
+            year = int(m.group(5) or current_year)
+            start = f"{year}-{start_month}-{int(m.group(1)):02d}"
+            end_year = year + (1 if int(end_month) < int(start_month) else 0)
+            end = f"{end_year}-{end_month}-{int(m.group(3)):02d}"
+        except (KeyError, ValueError):
+            continue
+        slug = "podvodniy_mir" if title == titles[0] else "turbozavry"
+        items.append({"title": title, "start": start, "end": end, "url": contest_base + "/contest/" + slug})
     if not items:
-        text=plain(page)
-        for title in ("Путешествие в подводный мир","Нарисуй, где спрятался Турбозавр"):
-            pos=text.find(title)
-            if pos<0: continue
-            snippet=text[pos:pos+180]
-            m=re.search(r"с\s+(\d{1,2})\s+([а-яё]+)\s+по\s+(\d{1,2})\s+([а-яё]+)(?:\s+(20\d{2}))?",snippet,re.I)
-            if m:
-                months={"января":"01","февраля":"02","марта":"03","апреля":"04","мая":"05","июня":"06","июля":"07","августа":"08","сентября":"09","октября":"10","ноября":"11","декабря":"12"}
-                y=int(m.group(5) or datetime.now(timezone.utc).year)
-                items.append({"title":title,"start":f"{y}-{months[m.group(2).lower()]}-{int(m.group(1)):02d}","end":f"{y}-{months[m.group(4).lower()]}-{int(m.group(3)):02d}","url":BASE+"/contest"})
-    if not items: raise RuntimeError("Не удалось распознать даты конкурсов; предыдущие данные не перезаписываются")
+        raise RuntimeError("Не удалось распознать даты конкурсов на официальной странице; предыдущие данные не перезаписываются")
     return items
 
 def main():
