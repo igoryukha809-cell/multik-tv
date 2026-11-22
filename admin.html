@@ -62,7 +62,8 @@ try{
  const client=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE],scopes:["email"]});
  if(!await client.isAuthenticated()){location.href="./login.html";throw new Error("Выполняется переход ко входу.");}
  const token=await client.getAccessToken(LOGTO_API_RESOURCE);
- const response=await fetch(LOGTO_API_RESOURCE+"/api/admin/keys",{headers:{Authorization:"Bearer "+token}});
+ const userinfoToken=await client.getAccessToken();
+ const response=await fetch(LOGTO_API_RESOURCE+"/api/admin/keys",{headers:{Authorization:"Bearer "+token,"X-Logto-Userinfo-Token":userinfoToken}});
  if(!response.ok)throw new Error(response.status===401||response.status===403?"Эта учётная запись не имеет прав администратора.":"Не удалось проверить права доступа.");
  gate.hidden=true;tools.hidden=false;
 }catch(error){gate.textContent=error.message||"Не удалось проверить права через Logto. Повторите вход.";}
