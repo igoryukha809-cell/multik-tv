@@ -64,7 +64,7 @@ if(req.method==='GET'&&u.pathname==='/api/channel'){const playlist='/live/multik
 if(req.method==='GET'&&u.pathname==='/api/director')return send(res,200,directorStatus());
 if(req.method==='GET'&&u.pathname==='/api/admin/status'){
  if(!await authorized(req))return send(res,403,{error:'Admin access required'});
- let files=[];try{files=fs.readdirSync(process.env.MEDIA_DIR||'/media').filter(x=>/^[\\w .()-]{1,180}\\.(mp4|m4v|mov|webm)$/i.test(x));}catch{}
+ let files=[];try{files=fs.readdirSync(process.env.MEDIA_DIR||'/media').filter(x=>/^[\w .()-]{1,180}\.(mp4|m4v|mov|webm)$/i.test(x));}catch{}
  return send(res,200,{director:directorStatus(),playlist:scheduleRead(),media:files,rtmpConfigured:!!process.env.RTMP_TARGET});
 }
 if(req.method==='POST'&&u.pathname==='/api/admin/upload'){
