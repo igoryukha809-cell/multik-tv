@@ -19,7 +19,10 @@ import LogtoClient from 'https://cdn.jsdelivr.net/npm/@logto/browser@3.1.2/+esm'
 import {LOGTO_ENDPOINT,LOGTO_APP_ID,LOGTO_API_RESOURCE,LOGTO_REDIRECT_URI} from './logto-config.js';
 const client=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE],scopes:['email']});
 const button=document.querySelector('#submit'),githubButton=document.querySelector('#github'),status=document.querySelector('#status');
-document.querySelector('#login').addEventListener('submit',event=>{event.preventDefault();button.disabled=true;githubButton.disabled=true;status.textContent='Переходим к защищённому входу Logto…';client.signIn(LOGTO_REDIRECT_URI);});
-githubButton.addEventListener('click',()=>{button.disabled=true;githubButton.disabled=true;status.textContent='Открываем безопасный вход через GitHub…';client.signIn({redirectUri:LOGTO_REDIRECT_URI,directSignIn:{method:'social',target:'github'}}).catch(error=>{button.disabled=false;githubButton.disabled=false;status.textContent='Не удалось начать вход через GitHub: '+(error?.message||'проверьте подключение GitHub в Logto');});});
+async function startGitHubSignIn(){button.disabled=true;githubButton.disabled=true;status.textContent='Перенаправляем на GitHub для входа…';try{await client.signIn({redirectUri:LOGTO_REDIRECT_URI,directSignIn:{method:'social',target:'github'}});}catch(error){button.disabled=false;githubButton.disabled=false;status.textContent='Не удалось открыть GitHub: '+(error?.message||'проверьте, что GitHub подключён в Logto');}}
+document.querySelector('#login').addEventListener('submit',event=>{event.preventDefault();startGitHubSignIn();});
+githubButton.addEventListener('click',startGitHubSignIn);
+// При открытии страницы сразу начинаем вход через GitHub, без промежуточной формы Logto.
+startGitHubSignIn();
 </script>
 </body></html>
