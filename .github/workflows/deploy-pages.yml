@@ -34,7 +34,6 @@ jobs:
       - name: Deploy site
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
       - name: Verify published pages and broadcast status
         env:
           SITE_URL: ${{ steps.deployment.outputs.page_url }}
