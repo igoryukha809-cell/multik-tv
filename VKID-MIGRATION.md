@@ -6,17 +6,19 @@ Replace the former Logto/GitHub sign-in flow with VK ID. The site must not colle
 
 ## Repository audit
 
-The following files currently depend on Logto and must be migrated together:
+The migration branch has already replaced the old login page with a VK ID placeholder, but live authentication is not implemented yet.
 
-- `login.html` — imports Logto and automatically starts GitHub sign-in on page load.
-- `logto-config.js` — contains the former public Logto SPA configuration.
-- `admin-guard.js` — uses Logto access tokens to protect admin-only pages.
-- `admin.html` — checks admin access through the old Logto-backed storage API.
-- `access-keys.html` — obtains Logto tokens and calls the storage API.
-- `storage-api/server.js` — validates Logto JWTs and calls the Logto user-info endpoint.
-- `cloud-server/server.js` — has a separate Logto token and user-info validation implementation.
+Current state of the relevant files:
 
-The public website contains many pages and media features. Keep those intact; replace only the identity and authorization integration.
+- `login.html` — VK ID landing page. It no longer starts GitHub sign-in automatically. The sign-in button remains disabled until the app configuration and server callback/session flow are ready.
+- `vkid-config.js` — public configuration scaffold. `VKID_APP_ID` is still set to `0`; the callback URL is a placeholder for the current GitHub Pages address and must be confirmed in the VK ID application settings.
+- `logto-config.js` — legacy configuration; verify all references before removing it.
+- `admin-guard.js` — still part of the legacy protected-page flow and needs migration.
+- `admin.html` and `access-keys.html` — still need to be connected to the new server-managed session and authorization checks.
+- `storage-api/server.js` — legacy Logto token validation remains to be replaced.
+- `cloud-server/server.js` — has a separate legacy Logto token/user-info validation implementation that also needs migration.
+
+The public website contains many pages and media features. Keep those intact; replace only the identity and authorization integration. Do not delete legacy auth code until the replacement is deployed and verified.
 
 ## Confirmed SDK details
 
@@ -51,14 +53,15 @@ Do not commit credentials. Do not put secrets in this file.
 
 ## Implementation checklist
 
-- [ ] Confirm the VK ID application ID and exact callback URL.
-- [ ] Add a single public VK ID configuration module.
-- [ ] Replace automatic redirect-to-GitHub behavior with an explicit VK ID sign-in button.
-- [ ] Implement callback handling using the official SDK and PKCE.
-- [ ] Implement server-side token/identity validation and a secure server session.
+- [x] Create the VK ID login-page scaffold and public config module.
+- [x] Remove the old automatic GitHub sign-in behavior from `login.html`.
+- [ ] Confirm the VK ID application ID and exact callback URL in the VK ID dashboard.
+- [ ] Enable the VK ID button only after the callback and session endpoints are ready.
+- [ ] Implement callback handling using the official SDK and PKCE, following its documented state/code-verifier behavior.
+- [ ] Implement server-side identity validation and a secure server-managed session.
 - [ ] Replace Logto checks in the admin pages, storage API, and cloud server.
 - [ ] Preserve the separate server-side administrator allowlist/role check.
-- [ ] Add tests for invalid state, expired/invalid tokens, wrong issuer/audience, CSRF, and non-admin users.
+- [ ] Add tests for invalid state, expired/invalid tokens, incorrect client/application binding, CSRF, and non-admin users.
 - [ ] Deploy the API only after the required configuration is present; verify health and sign-in end to end.
 - [ ] Remove obsolete Logto configuration only after VK ID is deployed and verified.
 
