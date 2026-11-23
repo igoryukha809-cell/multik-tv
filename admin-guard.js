@@ -7,7 +7,7 @@ overlay.innerHTML='<section style="max-width:480px;background:#1b2745;padding:28
 document.body.append(overlay);
 const message=overlay.querySelector("#admin-msg");
 try{
- const client=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE],scopes:["email"]});
+ const client=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE],scopes:[]});
  if(!await client.isAuthenticated()){message.textContent="Для доступа войдите в учётную запись администратора.";throw new Error("AUTH_REQUIRED");}
  const token=await client.getAccessToken(LOGTO_API_RESOURCE);
  const userinfoToken=await client.getAccessToken();
