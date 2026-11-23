@@ -19,7 +19,7 @@ import LogtoClient from 'https://cdn.jsdelivr.net/npm/@logto/browser@3.1.2/+esm'
 import {LOGTO_ENDPOINT,LOGTO_APP_ID,LOGTO_API_RESOURCE,LOGTO_REDIRECT_URI} from './logto-config.js';
 const client=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE]});
 const githubButton=document.querySelector('#github'),status=document.querySelector('#status');
-async function startGitHubSignIn(){githubButton.disabled=true;status.textContent='Перенаправляем на GitHub для входа…';try{await client.signIn({redirectUri:LOGTO_REDIRECT_URI,directSignIn:{method:'social',target:'github'}});}catch(error){githubButton.disabled=false;status.textContent='Не удалось открыть GitHub: '+(error?.message||'проверьте, что GitHub подключён в Logto');}}
+async function startGitHubSignIn(){githubButton.disabled=true;status.textContent='Перенаправляем на GitHub для входа…';try{await client.signIn({redirectUri:LOGTO_REDIRECT_URI,directSignIn:'social:github'});}catch(error){githubButton.disabled=false;status.textContent='Не удалось открыть GitHub: '+(error?.message||'проверьте, что GitHub подключён в Logto');}}
 githubButton.addEventListener('click',startGitHubSignIn);
 // Сначала проверяем сохранённую сессию. Если она есть — сразу открываем защищённый раздел.
 (async()=>{try{if(await client.isAuthenticated()){status.textContent='Вы уже вошли. Открываем аккаунт…';location.replace('./access-keys.html');return;}await startGitHubSignIn();}catch(error){status.textContent='Не удалось проверить сохранённый вход: '+(error?.message||'ошибка авторизации');}})();
