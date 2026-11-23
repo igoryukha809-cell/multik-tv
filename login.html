@@ -2,26 +2,29 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Вход — МУЛЬТИК ТВ</title>
+<meta name="theme-color" content="#10162c">
+<title>Вход — телеканал</title>
 <style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 20% 10%,#283d79,#10162c 55%,#090d19);font:16px system-ui;color:#fff}.panel{width:min(100%,440px);padding:30px;border:1px solid #ffffff25;border-radius:24px;background:#141d35eF;box-shadow:0 20px 70px #0008}h1{margin:0 0 8px;font-size:28px}p{color:#c5cee4;line-height:1.5}label{display:block;margin:22px 0 8px}input,button{width:100%;padding:14px;border-radius:12px;font:inherit}input{border:1px solid #63739a;background:#0c1429;color:white}button{margin-top:14px;border:0;background:#ffcb45;color:#18203a;font-weight:750;cursor:pointer}button:disabled{opacity:.55;cursor:wait}.github-button{margin-top:10px;background:#24292f;color:#fff;border:1px solid #596273}.hint{font-size:13px;color:#9eaccb}.status{min-height:48px;margin-top:14px;color:#ffe08a;overflow-wrap:anywhere;white-space:pre-wrap}a{color:#ffda73}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 20% 10%,#283d79,#10162c 55%,#090d19);font:16px system-ui;color:#fff}.panel{width:min(100%,440px);padding:30px;border:1px solid #ffffff25;border-radius:24px;background:#141d35ef;box-shadow:0 20px 70px #0008}h1{margin:0 0 8px;font-size:28px}p{color:#c5cee4;line-height:1.5}.status{margin-top:16px;padding:12px;border-radius:12px;background:#352d1c;color:#ffe08a;line-height:1.5}button{width:100%;margin-top:14px;padding:14px;border:0;border-radius:12px;background:#2787f5;color:white;font:inherit;font-weight:750}button:disabled{opacity:.55}a{color:#ffda73}
 </style>
 </head>
-<body><main class="panel">
-<h1>МУЛЬТИК ТВ</h1><p>Вход в аккаунт через GitHub. Отдельный пароль МУЛЬТИК ТВ не требуется.</p>
-<div><p class="hint">Используйте только свой аккаунт GitHub. Пароль и электронная почта отдельно на сайте не вводятся.</p><button id="github" class="github-button" type="button">Войти через GitHub</button></div>
-<div class="status" id="status" role="status" aria-live="polite"></div>
-<p class="hint">Авторизация проходит через GitHub и Logto. Не сообщайте никому коды подтверждения.</p>
+<body>
+<main class="panel">
+<h1>Вход через VK ID</h1>
+<p>Для входа будет использоваться официальная авторизация VK ID. Отдельный пароль и форма ввода электронной почты на сайте не нужны.</p>
+<button id="vk-login" type="button" disabled>Войти через VK ID</button>
+<div id="status" class="status" role="status" aria-live="polite">Вход пока не активирован: сначала нужно указать ID приложения VK ID и настроить адрес возврата. Мы не будем имитировать успешную авторизацию.</div>
 <p><a href="./index.html">← На главную</a></p>
 </main>
 <script type="module">
-import LogtoClient from 'https://cdn.jsdelivr.net/npm/@logto/browser@3.1.2/+esm';
-import {LOGTO_ENDPOINT,LOGTO_APP_ID,LOGTO_API_RESOURCE,LOGTO_REDIRECT_URI} from './logto-config.js';
-const client=new LogtoClient({endpoint:LOGTO_ENDPOINT,appId:LOGTO_APP_ID,resources:[LOGTO_API_RESOURCE]});
-const githubButton=document.querySelector('#github'),status=document.querySelector('#status');
-async function startGitHubSignIn(){githubButton.disabled=true;status.textContent='Перенаправляем на GitHub для входа…';try{await client.signIn({redirectUri:LOGTO_REDIRECT_URI,directSignIn:'social:github'});}catch(error){githubButton.disabled=false;status.textContent='Не удалось открыть GitHub: '+(error?.message||'проверьте, что GitHub подключён в Logto');}}
-githubButton.addEventListener('click',startGitHubSignIn);
-// Сначала проверяем сохранённую сессию. Если она есть — сразу открываем защищённый раздел.
-(async()=>{try{if(await client.isAuthenticated()){status.textContent='Вы уже вошли. Открываем аккаунт…';location.replace('./access-keys.html');return;}await startGitHubSignIn();}catch(error){status.textContent='Не удалось проверить сохранённый вход: '+(error?.message||'ошибка авторизации');}})();
+import { VKID_APP_ID, VKID_REDIRECT_URI } from './vkid-config.js';
+const button=document.querySelector('#vk-login');
+const status=document.querySelector('#status');
+if (Number.isInteger(VKID_APP_ID) && VKID_APP_ID > 0 && VKID_REDIRECT_URI.startsWith('https://')) {
+  status.textContent='Приложение VK ID указано. Следующий этап — подключить серверную обработку callback и защищённую сессию; до завершения проверки вход остаётся выключенным.';
+} else {
+  status.textContent='Ожидается настройка приложения VK ID. После регистрации приложения сюда нужно внести его публичный ID и точный HTTPS-адрес возврата.';
+}
 </script>
-</body></html>
+</body>
+</html>
