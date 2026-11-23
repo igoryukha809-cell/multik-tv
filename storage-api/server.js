@@ -19,6 +19,7 @@ app.use(express.json({ limit: "64kb" }));
 const PORT = Number(process.env.PORT || 10000);
 const TOKEN = process.env.UPLOAD_API_TOKEN || "";
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+const ADMIN_LOGTO_SUBJECT = (process.env.ADMIN_LOGTO_SUBJECT || "").trim();
 const LOGTO_ENDPOINT = (process.env.LOGTO_ENDPOINT || "").replace(/\/$/, "");
 const LOGTO_ISSUER = LOGTO_ENDPOINT ? LOGTO_ENDPOINT + "/oidc" : "";
 const LOGTO_API_RESOURCE = (process.env.LOGTO_API_RESOURCE || "").trim();
@@ -73,7 +74,7 @@ function safeEqual(a, b) {
 }
 async function adminAuth(req, res, next) {
   const supplied = (req.headers.authorization || "").replace(/^Bearer /, "");
-  if (!supplied || !ADMIN_EMAIL) return res.status(401).json({ error: "Вход администратора ещё не настроен." });
+  if (!supplied || (!ADMIN_LOGTO_SUBJECT && !ADMIN_EMAIL)) return res.status(401).json({ error: "Вход администратора ещё не настроен. Укажите ADMIN_LOGTO_SUBJECT." });
   try {
     if (LOGTO_ENDPOINT && LOGTO_API_RESOURCE && LOGTO_JWKS) {
       const { payload } = await jwtVerify(supplied, LOGTO_JWKS, {
@@ -81,6 +82,15 @@ async function adminAuth(req, res, next) {
         audience: LOGTO_API_RESOURCE,
         algorithms: ["RS256"]
       });
+      // Предпочтительный способ — точное серверное разрешение по неизменяемому Logto subject.
+      // Email оставлен только как совместимый резервный режим для старой конфигурации.
+      if (ADMIN_LOGTO_SUBJECT) {
+        if (payload.sub !== ADMIN_LOGTO_SUBJECT) {
+          return res.status(403).json({ error: "Эта учётная запись VK ID не имеет прав администратора." });
+        }
+        req.adminUser = { id: payload.sub };
+        return next();
+      }
       const userinfoToken = String(req.headers["x-logto-userinfo-token"] || "").trim();
       if (!userinfoToken) return res.status(401).json({ error: "Не получен токен профиля Logto. Войдите повторно." });
       const infoResponse = await fetch(LOGTO_ENDPOINT + "/oidc/me", {
@@ -89,7 +99,7 @@ async function adminAuth(req, res, next) {
       if (!infoResponse.ok) return res.status(401).json({ error: "Logto не подтвердил профиль пользователя." });
       const user = await infoResponse.json();
       if (!user.email || user.email.toLowerCase() !== ADMIN_EMAIL || user.email_verified !== true) {
-        return res.status(403).json({ error: "Эта подтверждённая почта не имеет прав администратора." });
+        return res.status(403).json({ error: "Эта учётная запись не имеет прав администратора." });
       }
       req.adminUser = { id: payload.sub, email: user.email };
       return next();
@@ -165,7 +175,7 @@ app.get("/health", (_req, res) => res.json({
   ok: true,
   storage: "backblaze-b2",
   configured,
-  accessKeyManager: Boolean(ADMIN_EMAIL && LOGTO_ENDPOINT && LOGTO_API_RESOURCE && LOGTO_JWKS),
+  accessKeyManager: Boolean((ADMIN_LOGTO_SUBJECT || ADMIN_EMAIL) && LOGTO_ENDPOINT && LOGTO_API_RESOURCE && LOGTO_JWKS),
   bucketConfigured: Boolean(BUCKET),
   credentialsConfigured: Boolean(ACCESS_KEY && SECRET_KEY)
 }));
