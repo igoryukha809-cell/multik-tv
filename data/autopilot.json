@@ -1,7 +1,7 @@
 {
   "service": "МУЛЬТИК ТВ",
   "mode": "program-guide-only",
-  "updated_at": "2026-11-24T01:25:43.313927+00:00",
+  "updated_at": "2026-11-24T07:31:51.778013+00:00",
   "automation": "GitHub Actions scheduled task",
   "status": "ok",
   "notice": "Автоматическое обновление программы сайта, не видеотрансляция 24/7.",
