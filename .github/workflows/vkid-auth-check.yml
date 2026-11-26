@@ -1,0 +1,28 @@
+name: VK ID auth checks
+
+on:
+  push:
+    branches: [rebuild-vkid-auth]
+  pull_request:
+    branches: [rebuild-vkid-auth]
+
+jobs:
+  auth-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install auth service dependencies
+        working-directory: auth-service
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run auth helper tests
+        working-directory: auth-service
+        run: npm test
+      - name: Check JavaScript syntax
+        run: |
+          node --check auth-service/auth-core.js
+          node --check auth-service/server.js
+          node --check storage-api/server.js
+          node --check cloud-server/server.js
