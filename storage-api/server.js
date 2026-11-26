@@ -83,7 +83,7 @@ async function adminAuth(req, res, next) {
       });
       if (!verified.ok) return res.status(verified.status === 401 ? 401 : 503).json({ error: "Не удалось проверить общую сессию." });
       const identity = await verified.json();
-      if (identity.authenticated !== true || identity.isAdmin !== true || !/^\\d+$/.test(String(identity.userId || ""))) {
+      if (identity.authenticated !== true || identity.isAdmin !== true || !/^\d+$/.test(String(identity.userId || ""))) {
         return res.status(403).json({ error: "Эта учётная запись VK ID не имеет прав администратора." });
       }
       req.adminUser = { id: String(identity.userId) };
