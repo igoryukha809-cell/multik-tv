@@ -36,7 +36,7 @@ async function adminUser(req){
  if(AUTH_SERVICE_URL||AUTH_SERVICE_SECRET){
   if(!AUTH_SERVICE_URL||!AUTH_SERVICE_SECRET)return null;
   try{
-   const response=await fetch(AUTH_SERVICE_URL+'/internal/session',{headers:{Authorization:'Bearer '+AUTH_SERVICE_SECRET,Cookie:req.headers.cookie||''},signal:AbortSignal.timeout(8000)});
+   const mutating=!['GET','HEAD'].includes(req.method);const response=await fetch(AUTH_SERVICE_URL+(mutating?'/internal/authorize':'/internal/session'),{method:mutating?'POST':'GET',headers:{Authorization:'Bearer '+AUTH_SERVICE_SECRET,Cookie:req.headers.cookie||'',...(mutating?{'X-CSRF-Token':String(req.headers['x-csrf-token']||'')}: {})},signal:AbortSignal.timeout(8000)});
    if(!response.ok)return null;
    const identity=await response.json();
    if(identity.authenticated!==true||identity.isAdmin!==true||!/^\d+$/.test(String(identity.userId||'')))return null;
