@@ -7,6 +7,8 @@ const MAX=32768;
 const ADMIN_EMAIL=(process.env.ADMIN_EMAIL||'').trim().toLowerCase();
 const LOGTO_ENDPOINT=(process.env.LOGTO_ENDPOINT||'').replace(/\/$/,'');
 const LOGTO_API_RESOURCE=(process.env.LOGTO_API_RESOURCE||'').trim();
+const AUTH_SERVICE_URL=(process.env.AUTH_SERVICE_URL||'').replace(/\\/$/,'');
+const AUTH_SERVICE_SECRET=process.env.AUTH_SERVICE_SECRET||'';
 const LOGTO_ISSUER=LOGTO_ENDPOINT?LOGTO_ENDPOINT+'/oidc':'';
 let jwksCache=null,jwksFetchedAt=0;
 async function verifyLogtoToken(token){
@@ -31,6 +33,16 @@ async function verifyLogtoToken(token){
  return payload;
 }
 async function adminUser(req){
+ if(AUTH_SERVICE_URL||AUTH_SERVICE_SECRET){
+  if(!AUTH_SERVICE_URL||!AUTH_SERVICE_SECRET)return null;
+  try{
+   const response=await fetch(AUTH_SERVICE_URL+'/internal/session',{headers:{Authorization:'Bearer '+AUTH_SERVICE_SECRET,Cookie:req.headers.cookie||''},signal:AbortSignal.timeout(8000)});
+   if(!response.ok)return null;
+   const identity=await response.json();
+   if(identity.authenticated!==true||identity.isAdmin!==true||!/^\\d+$/.test(String(identity.userId||'')))return null;
+   return {id:String(identity.userId)};
+  }catch{return null;}
+ }
  const token=String(req.headers.authorization||'').replace(/^Bearer\s+/i,'').trim();
  const userinfoToken=String(req.headers['x-logto-userinfo-token']||'').trim();
  if(!token||!userinfoToken||!ADMIN_EMAIL||!LOGTO_API_RESOURCE||!LOGTO_ENDPOINT)return null;
@@ -53,11 +65,11 @@ function safeSchedule(value){
  });
  return {items};
 }
-function send(res,status,data,type='application/json; charset=utf-8'){res.writeHead(status,{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':ALLOWED_ORIGIN,'Vary':'Origin'});res.end(typeof data==='string'?data:JSON.stringify(data));}
+function send(res,status,data,type='application/json; charset=utf-8'){res.writeHead(status,{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':ALLOWED_ORIGIN,'Access-Control-Allow-Credentials':'true','Vary':'Origin'});res.end(typeof data==='string'?data:JSON.stringify(data));}
 function safeFile(base,p){let d;try{d=decodeURIComponent(p)}catch{return null}const f=path.resolve(base,'.'+d);return f.startsWith(base+path.sep)?f:null}
 function body(req){return new Promise((resolve,reject)=>{let s='';req.on('data',c=>{s+=c;if(s.length>MAX){reject(Error('Request too large'));req.destroy();}});req.on('end',()=>{try{resolve(JSON.parse(s||'{}'))}catch{reject(Error('Invalid JSON'))}});req.on('error',reject)})}
 const server=http.createServer(async(req,res)=>{let u;try{u=new URL(req.url,'http://localhost')}catch{return send(res,400,{error:'Bad URL'})}
-if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Origin':ALLOWED_ORIGIN,'Vary':'Origin','Access-Control-Allow-Methods':'GET,POST,PUT,HEAD,OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization, X-Logto-Userinfo-Token'});return res.end()}
+if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Origin':ALLOWED_ORIGIN,'Vary':'Origin','Access-Control-Allow-Methods':'GET,POST,PUT,HEAD,OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization, X-CSRF-Token'});return res.end()}
 if(!['GET','HEAD','POST','PUT'].includes(req.method))return send(res,405,{error:'Method not allowed'});
 if(req.method==='GET'&&u.pathname==='/health')return send(res,200,{service:'МУЛЬТИК ТВ',status:'online',director:directorStatus().status});
 if(req.method==='GET'&&u.pathname==='/api/channel'){const playlist='/live/multiktv.m3u8',exists=fs.existsSync(path.join(HLS,playlist));return send(res,200,{channel:'МУЛЬТИК ТВ',server:'online',broadcast:exists?'signal-detected':'offline',playlist:exists?'/hls'+playlist:null,director:directorStatus(),updatedAt:new Date().toISOString()})}
