@@ -19,7 +19,8 @@
 - `DATABASE_URL` — приватная строка подключения к PostgreSQL.
 - `VKID_APP_ID` — числовой ID приложения VK ID.
 - `VKID_API_ORIGIN` — HTTPS origin VK ID из актуальных настроек/документации, без пути. Он намеренно не зашит в код.
-- `PUBLIC_SITE_ORIGIN` — точный origin сайта, например `https://example.com`.
+- `PUBLIC_SITE_ORIGIN` — точный origin сайта, например `https://www.example.com`.
+- `SESSION_COOKIE_DOMAIN` — общий родительский домен для сайта и API, например `.example.com`. Он обязателен: auth-service и обе API должны быть под этим доменом или за общим reverse proxy. Для `github.io` так сделать нельзя.
 - `AUTH_SERVICE_SECRET` — длинный случайный секрет для связи API с auth-service.
 - `VK_ADMIN_USER_IDS` — список числовых VK ID администраторов через запятую.
 - `PORT` — необязательный порт (по умолчанию 8080).
