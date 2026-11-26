@@ -22,6 +22,8 @@ const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
 const LOGTO_ENDPOINT = (process.env.LOGTO_ENDPOINT || "").replace(/\/$/, "");
 const LOGTO_ISSUER = LOGTO_ENDPOINT ? LOGTO_ENDPOINT + "/oidc" : "";
 const LOGTO_API_RESOURCE = (process.env.LOGTO_API_RESOURCE || "").trim();
+const AUTH_SERVICE_URL = (process.env.AUTH_SERVICE_URL || "").replace(/\/$/, "");
+const AUTH_SERVICE_SECRET = process.env.AUTH_SERVICE_SECRET || "";
 const LOGTO_JWKS = LOGTO_ENDPOINT ? createRemoteJWKSet(new URL(LOGTO_ENDPOINT + "/oidc/jwks")) : null;
 const DATA_DIR = process.env.DATA_DIR || "./data";
 const ACCESS_KEYS_FILE = process.env.ACCESS_KEYS_FILE || path.join(DATA_DIR, "access-keys.json");
@@ -72,6 +74,24 @@ function safeEqual(a, b) {
   return left.length === right.length && timingSafeEqual(left, right);
 }
 async function adminAuth(req, res, next) {
+  if (AUTH_SERVICE_URL || AUTH_SERVICE_SECRET) {
+    if (!AUTH_SERVICE_URL || !AUTH_SERVICE_SECRET) return res.status(503).json({ error: "Общая служба авторизации настроена не полностью." });
+    try {
+      const verified = await fetch(AUTH_SERVICE_URL + "/internal/session", {
+        headers: { Authorization: "Bearer " + AUTH_SERVICE_SECRET, Cookie: req.headers.cookie || "" },
+        signal: AbortSignal.timeout(8000)
+      });
+      if (!verified.ok) return res.status(verified.status === 401 ? 401 : 503).json({ error: "Не удалось проверить общую сессию." });
+      const identity = await verified.json();
+      if (identity.authenticated !== true || identity.isAdmin !== true || !/^\\d+$/.test(String(identity.userId || ""))) {
+        return res.status(403).json({ error: "Эта учётная запись VK ID не имеет прав администратора." });
+      }
+      req.adminUser = { id: String(identity.userId) };
+      return next();
+    } catch {
+      return res.status(503).json({ error: "Общая служба авторизации временно недоступна." });
+    }
+  }
   const supplied = (req.headers.authorization || "").replace(/^Bearer /, "");
   if (!supplied || !ADMIN_EMAIL) return res.status(401).json({ error: "Вход администратора ещё не настроен." });
   try {
@@ -120,7 +140,8 @@ app.use((req, res, next) => {
   if (origin && ORIGINS.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
-    res.setHeader("Access-Control-Allow-Headers", "Authorization,Content-Type,X-Logto-Userinfo-Token");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Headers", "Authorization,Content-Type,X-CSRF-Token");
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
   }
   if (req.method === "OPTIONS") return res.sendStatus(204);
@@ -165,7 +186,7 @@ app.get("/health", (_req, res) => res.json({
   ok: true,
   storage: "backblaze-b2",
   configured,
-  accessKeyManager: Boolean(ADMIN_EMAIL && LOGTO_ENDPOINT && LOGTO_API_RESOURCE && LOGTO_JWKS),
+  accessKeyManager: Boolean((AUTH_SERVICE_URL && AUTH_SERVICE_SECRET) || (ADMIN_EMAIL && LOGTO_ENDPOINT && LOGTO_API_RESOURCE && LOGTO_JWKS)),
   bucketConfigured: Boolean(BUCKET),
   credentialsConfigured: Boolean(ACCESS_KEY && SECRET_KEY)
 }));
