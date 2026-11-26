@@ -25,7 +25,7 @@ Official source references:
 
 ## Proposed API contract
 
-All endpoints below are to be added only after the hosting/session design is selected.
+An initial shared implementation now exists in `auth-service/`. It is not deployed and is not yet connected to the browser login page. The service requires PostgreSQL and a shared cookie parent domain; see `auth-service/README.md`. The APIs can call its private `/internal/session` and `/internal/authorize` endpoints when `AUTH_SERVICE_URL` and `AUTH_SERVICE_SECRET` are configured. State-changing API calls must include `X-CSRF-Token`.
 
 ### `POST /api/auth/vk/session`
 
@@ -74,7 +74,9 @@ Use a persistent session store (managed database or Redis-compatible store) rath
 - `VKID_APP_ID` — public numeric application ID; may also be used by the frontend config.
 - `VK_ADMIN_USER_IDS` — server-only numeric administrator allowlist.
 - `SESSION_SECRET` — server-only random secret for session/CSRF protections, if required by the chosen session implementation.
-- `SESSION_STORE_URL` — private connection string for the persistent session store.
+- `DATABASE_URL` — private PostgreSQL connection string for the persistent session store.
+- `SESSION_COOKIE_DOMAIN` — shared parent domain for frontend and API subdomains (for example `.example.com`); GitHub Pages `github.io` cannot provide this arrangement.
+- `VKID_API_ORIGIN` — exact current HTTPS origin used by VK ID UserInfo, taken from the active VK ID SDK/application configuration.
 - `PUBLIC_SITE_ORIGIN` — exact frontend origin used for Origin/CORS checks.
 - `VKID_REDIRECT_URI` — exact callback URL registered in the VK ID application dashboard.
 
@@ -108,6 +110,15 @@ No secret belongs in GitHub Pages or a committed config file.
 2. Confirmation of the callback URL in VK ID settings.
 3. The numeric VK user ID(s) that should have administrator privileges.
 4. Decision on the frontend/API same-site domain or proxy arrangement.
-5. Persistent session-store choice and hosting configuration.
+5. Persistent PostgreSQL provisioning, shared cookie-domain configuration, and hosting configuration.
 
 Until these are provided/configured, the VK ID button must remain disabled and the existing production authentication must remain untouched.
+
+
+## Current implementation status (2026-11-26)
+
+- Added `auth-service/`: server-side VK UserInfo verification, opaque PostgreSQL-backed sessions, secure shared-domain cookie, server-side VK numeric-ID admin allowlist, logout revocation, and internal session verification.
+- Both API servers can delegate administrator checks to the shared service when its private URL and secret are configured. Legacy Logto remains as the fallback until the VK ID deployment and frontend migration are complete.
+- Mutating API requests delegated to VK ID must pass CSRF verification through `/internal/authorize`.
+- Added `.github/workflows/vkid-auth-check.yml` for helper tests and JavaScript syntax checks.
+- Not yet complete: VK ID SDK callback integration in the browser, app registration, database provisioning, shared custom-domain/proxy setup, server environment configuration, full end-to-end tests, and deployment.
