@@ -7,7 +7,7 @@ import {
 } from "./auth-core.js";
 
 const { Pool } = pg;
-const required = ["DATABASE_URL", "VKID_APP_ID", "VKID_API_ORIGIN", "PUBLIC_SITE_ORIGIN", "AUTH_SERVICE_SECRET"];
+const required = ["DATABASE_URL", "VKID_APP_ID", "VKID_API_ORIGIN", "PUBLIC_SITE_ORIGIN", "SESSION_COOKIE_DOMAIN", "AUTH_SERVICE_SECRET"];
 for (const name of required) {
   if (!process.env[name]) throw new Error("Missing required environment variable: " + name);
 }
@@ -19,6 +19,7 @@ if (VKID_API_ORIGIN.protocol !== "https:" || VKID_API_ORIGIN.pathname !== "/" ||
   throw new Error("VKID_API_ORIGIN must be an HTTPS origin without a path");
 }
 const SITE_ORIGIN = new URL(process.env.PUBLIC_SITE_ORIGIN).origin;
+const SESSION_COOKIE_DOMAIN = process.env.SESSION_COOKIE_DOMAIN.trim();
 const ADMIN_IDS = parseAdminIds(process.env.VK_ADMIN_USER_IDS);
 const PORT = Number(process.env.PORT || 8080);
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.PGSSLMODE === "disable" ? false : { rejectUnauthorized: true }, max: 10 });
@@ -124,7 +125,7 @@ app.post("/api/auth/vk/session", rateLimit, requireOrigin, async (req, res) => {
       "INSERT INTO vkid_sessions (session_hash, vk_user_id, csrf_hash, expires_at) VALUES ($1, $2, $3, NOW() + ($4 * INTERVAL '1 second'))",
       [sha256(rawSession), vkUserId, sha256(csrfToken), SESSION_TTL_SECONDS]
     );
-    res.setHeader("Set-Cookie", sessionCookie(rawSession));
+    res.setHeader("Set-Cookie", sessionCookie(rawSession, SESSION_COOKIE_DOMAIN));
     return res.status(201).json({ authenticated: true, user: { id: vkUserId, isAdmin: isAdmin(vkUserId) }, csrfToken });
   } catch {
     return res.status(401).json({ error: "Не удалось подтвердить учётную запись VK ID." });
@@ -160,7 +161,7 @@ app.post("/api/auth/logout", requireOrigin, async (req, res) => {
     const row = await loadSession(req);
     const supplied = String(req.headers["x-csrf-token"] || "");
     if (!raw || !row || !supplied || !safeEqual(sha256(supplied), row.csrf_hash)) {
-      res.setHeader("Set-Cookie", clearSessionCookie());
+      res.setHeader("Set-Cookie", clearSessionCookie(SESSION_COOKIE_DOMAIN));
       return res.status(403).json({ error: "Сессия или CSRF-токен недействительны." });
     }
     await pool.query("UPDATE vkid_sessions SET revoked_at = NOW() WHERE session_hash = $1", [sha256(raw)]);
