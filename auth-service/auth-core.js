@@ -1,6 +1,6 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 
-export const SESSION_COOKIE = "__Host-vkid_session";
+export const SESSION_COOKIE = "__Secure-vkid_session";
 export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
 export function sha256(value) {
@@ -44,10 +44,14 @@ export function getVerifiedVkUserId(payload) {
   return String(id);
 }
 
-export function sessionCookie(value, maxAge = SESSION_TTL_SECONDS) {
-  return `${SESSION_COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax`;
+export function sessionCookie(value, domain, maxAge = SESSION_TTL_SECONDS) {
+  const cookieDomain = String(domain || "").trim();
+  if (!/^\\.[a-z0-9.-]+$/i.test(cookieDomain) || cookieDomain.includes("..")) throw new Error("SESSION_COOKIE_DOMAIN must be a shared parent domain such as .example.com");
+  return `${SESSION_COOKIE}=${encodeURIComponent(value)}; Domain=${cookieDomain}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax`;
 }
 
-export function clearSessionCookie() {
-  return `${SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`;
+export function clearSessionCookie(domain) {
+  const cookieDomain = String(domain || "").trim();
+  if (!/^\\.[a-z0-9.-]+$/i.test(cookieDomain) || cookieDomain.includes("..")) throw new Error("Invalid session cookie domain");
+  return `${SESSION_COOKIE}=; Domain=${cookieDomain}; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`;
 }
