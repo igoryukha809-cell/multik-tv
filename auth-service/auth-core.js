@@ -46,12 +46,12 @@ export function getVerifiedVkUserId(payload) {
 
 export function sessionCookie(value, domain, maxAge = SESSION_TTL_SECONDS) {
   const cookieDomain = String(domain || "").trim();
-  if (!/^\\.[a-z0-9.-]+$/i.test(cookieDomain) || cookieDomain.includes("..")) throw new Error("SESSION_COOKIE_DOMAIN must be a shared parent domain such as .example.com");
+  if (!/^\.[a-z0-9.-]+$/i.test(cookieDomain) || cookieDomain.includes("..")) throw new Error("SESSION_COOKIE_DOMAIN must be a shared parent domain such as .example.com");
   return `${SESSION_COOKIE}=${encodeURIComponent(value)}; Domain=${cookieDomain}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax`;
 }
 
 export function clearSessionCookie(domain) {
   const cookieDomain = String(domain || "").trim();
-  if (!/^\\.[a-z0-9.-]+$/i.test(cookieDomain) || cookieDomain.includes("..")) throw new Error("Invalid session cookie domain");
+  if (!/^\.[a-z0-9.-]+$/i.test(cookieDomain) || cookieDomain.includes("..")) throw new Error("Invalid session cookie domain");
   return `${SESSION_COOKIE}=; Domain=${cookieDomain}; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`;
 }
