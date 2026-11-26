@@ -30,7 +30,7 @@ test("VK user ID must come from a numeric user.user_id field", () => {
   assert.throws(() => getVerifiedVkUserId({ user_id: "12345" }));
 });
 
-test("session cookie is host-only, secure, and HttpOnly", () => {
+test("session cookie is shared-domain, secure, and HttpOnly", () => {
   const value = sessionCookie("opaque", ".example.com");
   assert.match(value, /^__Secure-vkid_session=opaque;/);
   assert.match(value, /Domain=\\.example\\.com/);
