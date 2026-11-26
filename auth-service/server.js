@@ -165,7 +165,7 @@ app.post("/api/auth/logout", requireOrigin, async (req, res) => {
       return res.status(403).json({ error: "Сессия или CSRF-токен недействительны." });
     }
     await pool.query("UPDATE vkid_sessions SET revoked_at = NOW() WHERE session_hash = $1", [sha256(raw)]);
-    res.setHeader("Set-Cookie", clearSessionCookie());
+    res.setHeader("Set-Cookie", clearSessionCookie(SESSION_COOKIE_DOMAIN));
     return res.json({ ok: true });
   } catch {
     return res.status(503).json({ error: "Не удалось завершить сессию." });
