@@ -17,6 +17,8 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       LOGTO_ENDPOINT: ${LOGTO_ENDPOINT:-}
       LOGTO_API_RESOURCE: ${LOGTO_API_RESOURCE:-}
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-}
+      AUTH_SERVICE_SECRET: ${AUTH_SERVICE_SECRET:-}
       HLS_DIR: /hls
       DATA_DIR: /data
       LEARNING_FILE: /data/learning.json
