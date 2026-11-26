@@ -31,10 +31,11 @@ test("VK user ID must come from a numeric user.user_id field", () => {
 });
 
 test("session cookie is host-only, secure, and HttpOnly", () => {
-  const value = sessionCookie("opaque");
-  assert.match(value, /^__Host-vkid_session=opaque;/);
+  const value = sessionCookie("opaque", ".example.com");
+  assert.match(value, /^__Secure-vkid_session=opaque;/);
+  assert.match(value, /Domain=\\.example\\.com/);
   assert.match(value, /HttpOnly/);
   assert.match(value, /Secure/);
   assert.match(value, /SameSite=Lax/);
-  assert.match(clearSessionCookie(), /Max-Age=0/);
+  assert.match(clearSessionCookie(".example.com"), /Max-Age=0/);
 });
