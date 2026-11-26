@@ -20,12 +20,15 @@ if (VKID_API_ORIGIN.protocol !== "https:" || VKID_API_ORIGIN.pathname !== "/" ||
 }
 const SITE_ORIGIN = new URL(process.env.PUBLIC_SITE_ORIGIN).origin;
 const SESSION_COOKIE_DOMAIN = process.env.SESSION_COOKIE_DOMAIN.trim();
+const cookieSuffix = SESSION_COOKIE_DOMAIN.slice(1).toLowerCase();
+const siteHost = new URL(SITE_ORIGIN).hostname.toLowerCase();
+if (!siteHost.endsWith("." + cookieSuffix) && siteHost !== cookieSuffix) throw new Error("PUBLIC_SITE_ORIGIN must be under SESSION_COOKIE_DOMAIN");
 const ADMIN_IDS = parseAdminIds(process.env.VK_ADMIN_USER_IDS);
 const PORT = Number(process.env.PORT || 8080);
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.PGSSLMODE === "disable" ? false : { rejectUnauthorized: true }, max: 10 });
 const app = express();
 app.disable("x-powered-by");
-app.set("trust proxy", 1);
+if (process.env.TRUST_PROXY === "1") app.set("trust proxy", 1);
 app.use(helmet());
 app.use(express.json({ limit: "8kb", strict: true }));
 
@@ -173,6 +176,19 @@ app.post("/api/auth/logout", requireOrigin, async (req, res) => {
 });
 
 // Internal endpoint used by the storage and cloud APIs. It is not exposed to browsers.
+app.post("/internal/authorize", requireInternal, async (req, res) => {
+  try {
+    const row = await loadSession(req);
+    const supplied = String(req.headers["x-csrf-token"] || "");
+    if (!row || !supplied || !safeEqual(sha256(supplied), row.csrf_hash)) {
+      return res.status(403).json({ authenticated: false, error: "CSRF validation failed." });
+    }
+    return res.json({ authenticated: true, userId: row.vk_user_id, isAdmin: isAdmin(row.vk_user_id) });
+  } catch {
+    return res.status(503).json({ error: "Session authorization unavailable." });
+  }
+});
+
 app.get("/internal/session", requireInternal, async (req, res) => {
   try {
     const row = await loadSession(req);
