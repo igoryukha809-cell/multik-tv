@@ -1,22 +1,10 @@
 {
   "channel": "МУЛЬТИК ТВ",
-  "state": "playlist_has_errors",
-  "checkedAt": "2026-11-27T02:03:43Z",
+  "state": "playlist_ready_server_required",
+  "checkedAt": "2026-11-27T02:54:05Z",
   "activeItem": null,
   "itemsChecked": 1,
-  "sourcesChecked": 1,
-  "sourceChecks": [
-    {
-      "title": "Pepper & Carrot — Episode 6: The Potion Contest (русская версия)",
-      "reachable": true,
-      "detail": "HTTP 206, video/webm"
-    }
-  ],
-  "errors": [
-    "Запись 1: нет поля startAt",
-    "Запись 1: нет поля endAt",
-    "Запись 1: startAt/endAt должны быть ISO-датами с часовым поясом, endAt позже startAt"
-  ],
-  "message": "Проверка расписания или видеоссылок обнаружила ошибки. Эфир не запущен.",
+  "errors": [],
+  "message": "Записи прошли проверку заполнения и декларации прав. Работающий видеосервер всё ещё необходим.",
   "streaming": false
 }
